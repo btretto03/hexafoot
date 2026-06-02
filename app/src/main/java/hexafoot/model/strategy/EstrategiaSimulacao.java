@@ -14,4 +14,5 @@ public interface EstrategiaSimulacao {
 
     // multiplicador pro cansaço (valores maiores para ofensiva e menores para retranca)
     double getMultiplicadorDesgaste();
+    
 }
