@@ -68,7 +68,7 @@ public class Time {
         return nome;
     }
 
-    public List<Jogador> gettitulares() {
+    public List<Jogador> getTitulares() {
         return titulares;
     }
 
