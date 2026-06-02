@@ -75,6 +75,18 @@ public class Jogador {
         }
     }
 
+    public void recuperarEnergiaPosJogo(boolean foiTitular) {
+        if (foiTitular) {
+            this.fisico += 2; 
+        } else {
+            this.fisico += 10; //se ficou no banco recupera mais energia
+        }
+
+        if (this.fisico > 100) {
+            this.fisico = 100;
+        }
+    }
+
     //-----------------getters e setters-----------------
     public String getNome() {
         return nome;
