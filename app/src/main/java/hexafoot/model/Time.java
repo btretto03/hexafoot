@@ -115,6 +115,4 @@ public class Time {
     public void setGolsSofridos(int golsSofridos) {
         this.golsSofridos = golsSofridos;
     }
-    
-
 }
