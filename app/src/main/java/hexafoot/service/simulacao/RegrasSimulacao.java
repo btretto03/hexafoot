@@ -4,18 +4,27 @@ package hexafoot.service.simulacao;
  * para deixar o jogo realista. Assim, quando estivermos testando o jogo rodando podemos ajustar
  * os valores aqui para aumentar ou diminuir a frequência de gols, cartões e lesões, por exemplo.
  */
-public class RegrasSimulacao {
+public enum RegrasSimulacao {
 
     // ---------------- GOLS ----------------
-    public final  static int CHANCE_GOL = 40; 
+    CHANCE_GOL(40),
 
     // ---------------- CARTÕES ----------------
-    public final  static int CHANCE_BASE_FALTA = 2; 
-    public final  static int CHANCE_BASE_VERMELHO = 1; 
+    CHANCE_BASE_FALTA(2),
+    CHANCE_BASE_VERMELHO(1),
     
     // ---------------- LESÕES ----------------
-    public final  static int CHANCE_BASE_LESAO = 2; 
-    public final  static int AFASTAMENTO_MIN_LESAO = 1;
-    public final  static int AFASTAMENTO_MAX_LESAO = 3;
+    CHANCE_BASE_LESAO(2),
+    AFASTAMENTO_MIN_LESAO(1),
+    AFASTAMENTO_MAX_LESAO(3);
 
+    private final int valor;
+
+    RegrasSimulacao(int valor) {
+        this.valor = valor;
+    }
+
+    public int getValor() {
+        return valor;
+    }
 }
