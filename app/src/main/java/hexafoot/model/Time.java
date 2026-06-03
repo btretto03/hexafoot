@@ -44,6 +44,40 @@ public class Time {
             reservas.add(jogador);
     }
 
+    public boolean removerTitular(Jogador jogador) {
+        return titulares.remove(jogador);
+    }
+
+    public boolean removerReserva(Jogador jogador) {
+        return reservas.remove(jogador);
+    }
+
+    public int calcularForcaAtaqueAtual() {
+        double soma = 0;
+        for (Jogador jogador : titulares) {
+            if ("Ativo".equals(jogador.getStatus())) {
+                double fatorFisico = 0.5 + 0.5 * (jogador.getFisico() / 100.0); //o fisico afeta o desempenho
+                soma += jogador.getAtaque() * fatorFisico;
+            }
+
+        }
+        soma = (soma) * taticaAtual.getModificadorAtaque();
+        return (int) Math.round(soma);
+    }
+
+    public int calcularForcaDefesaAtual() {
+        double soma = 0;
+        for (Jogador jogador : titulares) {
+            if ("Ativo".equals(jogador.getStatus())) {
+                double fatorFisico = 0.5 + 0.5 * (jogador.getFisico() / 100.0);
+                soma += jogador.getDefesa() * fatorFisico;
+            }
+        }
+
+        soma = (soma) * taticaAtual.getModificadorDefesa();
+        return (int) Math.round(soma);
+    }
+
 //-----------------Atualização da tabela e estatísticas-----------------
     public int getSaldoGols() {
         return this.golsMarcados - this.golsSofridos;
@@ -61,6 +95,32 @@ public class Time {
 
     public void registrarDerrota() {
         this.derrotas++;
+    }
+
+//-----------------Cálculo de força do time (titulares)-----------------
+    public int getAtaqueTitulares() {
+        int soma = 0;
+
+        for (Jogador jogador : titulares) {
+            soma += jogador.getAtaque();
+        }
+        return soma;
+    }
+
+    public int getDefesaTitulares() {
+        int soma = 0;
+        for (Jogador jogador : titulares) {
+            soma += jogador.getDefesa();
+        }
+        return soma;
+    }
+
+    public double getAtaqueEfetivo() {
+        return getAtaqueTitulares() * this.taticaAtual.getModificadorAtaque();
+    }
+
+    public double getDefesaEfetiva() {
+        return getDefesaTitulares() * this.taticaAtual.getModificadorDefesa();
     }
 
 //-----------------getters e setters-----------------
