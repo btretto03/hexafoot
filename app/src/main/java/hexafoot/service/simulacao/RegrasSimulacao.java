@@ -7,14 +7,14 @@ package hexafoot.service.simulacao;
 public class RegrasSimulacao {
 
     // ---------------- GOLS ----------------
-    public static int chanceBaseGol = 20; 
+    public static int chanceBaseGol = 40; 
 
     // ---------------- CARTÕES ----------------
-    public static int chanceBaseFalta = 4; 
-    public static int chanceBaseVermelho = 8; 
+    public static int chanceBaseFalta = 2; 
+    public static int chanceBaseVermelho = 1; 
     
     // ---------------- LESÕES ----------------
-    public static int chanceBaseLesao = 8; 
+    public static int chanceBaseLesao = 2; 
     public static int afastamentoMinLesao = 1;
     public static int afastamentoMaxLesao = 3;
 
