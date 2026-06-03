@@ -20,6 +20,14 @@ public class RelogioPartida {
         this.processadores.add(processador);
     }
 
+    //-----------------Registro dos processadores-----------------
+    public void adicionarProcessadoresPadrao() {
+        this.adicionarProcessador(new ProcessadorFisico());
+        this.adicionarProcessador(new ProcessadorLesoes());
+        this.adicionarProcessador(new ProcessadorCartoes());
+        this.adicionarProcessador(new ProcessadorGols());
+    }
+
 //-----------------Motor principal da partida-----------------
     private void avisarProcessadores(int minuto, Partida partida) {
             for (ObserverMinuto processador : processadores) {
