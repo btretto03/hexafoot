@@ -28,11 +28,11 @@ public class ProcessadorCartoes implements ObserverMinuto {
                 continue;
             }
 
-            int chanceCartao = RegrasSimulacao.chanceBaseFalta; //esses valores precisamos testar com o jogo rodando para ajustar
+            int chanceCartao = RegrasSimulacao.CHANCE_BASE_FALTA; //esses valores precisamos testar com o jogo rodando para ajustar
             int rolagemFalta = random.nextInt(1000) + 1;
 
             if (rolagemFalta <= chanceCartao) {
-                int chanceVermelho = RegrasSimulacao.chanceBaseVermelho; //testar
+                int chanceVermelho = RegrasSimulacao.CHANCE_BASE_VERMELHO; //testar
                 chanceVermelho = chanceVermelho + (jogador.getEstresse() / 10); //atributo estresse alto aumenta chance de vermelho
                 
                 int rolagemCor = random.nextInt(100) + 1; 

@@ -31,7 +31,7 @@ public class ProcessadorGols implements ObserverMinuto {
         int forcaAtaque = atacante.calcularForcaAtaqueAtual();
         int forcaDefesa = defensor.calcularForcaDefesaAtual();
 
-        int chanceBase = RegrasSimulacao.chanceBaseGol;
+        int chanceBase = RegrasSimulacao.CHANCE_GOL;
         int chanceFinal = (chanceBase * forcaAtaque) / (forcaAtaque + forcaDefesa);
 
         int rolagemGol = random.nextInt(1000) + 1;

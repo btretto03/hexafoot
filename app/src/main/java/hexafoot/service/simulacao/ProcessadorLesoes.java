@@ -32,7 +32,7 @@ public class ProcessadorLesoes implements ObserverMinuto {
                 continue;
             }
 
-            int chanceLesao = RegrasSimulacao.chanceBaseLesao; 
+            int chanceLesao = RegrasSimulacao.CHANCE_BASE_LESAO; 
             int fadiga = 100 - jogador.getFisico(); //quanto mais fadiga maior chance de lesao
             chanceLesao = chanceLesao + fadiga; 
 
@@ -40,8 +40,8 @@ public class ProcessadorLesoes implements ObserverMinuto {
 
             if (sorteioLesao <= chanceLesao) {
             
-                int afastamentoMin = RegrasSimulacao.afastamentoMinLesao; //também podemos ajustar esses
-                int afastamentoMax = RegrasSimulacao.afastamentoMaxLesao;
+                int afastamentoMin = RegrasSimulacao.AFASTAMENTO_MIN_LESAO; //também podemos ajustar esses
+                int afastamentoMax = RegrasSimulacao.AFASTAMENTO_MAX_LESAO;
 
                 int faixa = afastamentoMax - afastamentoMin + 1;
                 int afastamento = afastamentoMin + random.nextInt(faixa);
