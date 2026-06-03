@@ -13,18 +13,21 @@ public class Time {
     private List<Jogador> titulares;
     private List<Jogador> reservas;
     private EstrategiaSimulacao taticaAtual;
+    private Formacao formacaoAtual;
     private int pontos;
     private int golsMarcados;
     private int golsSofridos;
     private int vitorias;
     private int derrotas;
     private int empates;
+    
 
     public Time(String nome) {
         this.nome = nome;
         this.titulares = new ArrayList<>();
         this.reservas = new ArrayList<>();
         this.taticaAtual = new TaticaEquilibrada(); //tática padrão
+        this.formacaoAtual = Formacao.F_4_4_2; //formação padrão
         this.pontos = 0;
         this.golsMarcados = 0;
         this.golsSofridos = 0;
@@ -61,7 +64,7 @@ public class Time {
             }
 
         }
-        soma = (soma) * taticaAtual.getModificadorAtaque();
+        soma = soma * taticaAtual.getModificadorAtaque() * formacaoAtual.getModificadorAtaque();
         return (int) Math.round(soma);
     }
 
@@ -74,7 +77,7 @@ public class Time {
             }
         }
 
-        soma = (soma) * taticaAtual.getModificadorDefesa();
+        soma = soma * taticaAtual.getModificadorDefesa() * formacaoAtual.getModificadorDefesa();
         return (int) Math.round(soma);
     }
 
@@ -174,5 +177,13 @@ public class Time {
 
     public void setGolsSofridos(int golsSofridos) {
         this.golsSofridos = golsSofridos;
+    }
+    
+    public Formacao getFormacaoAtual() {
+        return formacaoAtual;
+    }
+
+    public void setFormacaoAtual(Formacao formacaoAtual) {
+        this.formacaoAtual = formacaoAtual;
     }
 }
