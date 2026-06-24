@@ -1,4 +1,4 @@
-package hexafoot.model.strategy;
+package hexafoot.model.exception;
 
 /**
  * Exceção lançada quando a convocação não tem exatamente 26 jogadores.
