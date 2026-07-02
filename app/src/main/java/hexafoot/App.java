@@ -3,8 +3,15 @@
  */
 package hexafoot;
 
-public class App {
+import hexafoot.api.SimulacaoApi;
+import java.io.IOException;
 
+public class App {
     public static void main(String[] args) {
+        try {
+            SimulacaoApi.start(8080);
+        } catch (IOException e) {
+            throw new RuntimeException("Falha ao iniciar a API de simulação", e);
+        }
     }
 }
