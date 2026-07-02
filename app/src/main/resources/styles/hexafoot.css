@@ -1,0 +1,149 @@
+.screen-root {
+    -fx-background-color: linear-gradient(to bottom right, #08111f, #102644 55%, #0f1a2f);
+    -fx-font-family: "Segoe UI", "Arial";
+}
+
+.hero-panel,
+.info-card,
+.table-card,
+.metric-card,
+.footer-panel,
+.control-panel {
+    -fx-background-color: rgba(10, 18, 33, 0.88);
+    -fx-background-radius: 24;
+    -fx-border-color: rgba(255, 208, 112, 0.16);
+    -fx-border-radius: 24;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 24, 0.12, 0, 10);
+}
+
+.display-title,
+.page-title {
+    -fx-text-fill: #f8fbff;
+    -fx-font-family: "Bahnschrift", "Segoe UI Semibold", "Segoe UI";
+    -fx-font-size: 44px;
+    -fx-font-weight: 700;
+}
+
+.page-title {
+    -fx-font-size: 34px;
+}
+
+.eyebrow {
+    -fx-text-fill: #f0c96c;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+}
+
+.hero-subtitle,
+.page-subtitle,
+.card-text {
+    -fx-text-fill: #cfd8e6;
+    -fx-font-size: 15px;
+    -fx-line-spacing: 4px;
+}
+
+.card-title {
+    -fx-text-fill: #f7f9fc;
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+}
+
+.metric-value {
+    -fx-text-fill: #f0c96c;
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+}
+
+.status-pill {
+    -fx-background-color: rgba(240, 201, 108, 0.14);
+    -fx-background-radius: 999;
+    -fx-text-fill: #f0c96c;
+    -fx-padding: 10 16 10 16;
+    -fx-font-weight: 700;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button,
+.wide-button {
+    -fx-background-radius: 14;
+    -fx-padding: 12 18 12 18;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.primary-button {
+    -fx-background-color: linear-gradient(to right, #f0c96c, #cf9f31);
+    -fx-text-fill: #0d1524;
+}
+
+.secondary-button {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: #f8fbff;
+    -fx-border-color: rgba(255, 255, 255, 0.10);
+    -fx-border-radius: 14;
+}
+
+.ghost-button {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.12);
+    -fx-border-radius: 14;
+    -fx-text-fill: #d7e2f2;
+}
+
+.wide-button {
+    -fx-min-width: 170;
+}
+
+.wide-progress {
+    -fx-accent: #f0c96c;
+}
+
+.player-table {
+    -fx-background-color: transparent;
+    -fx-table-cell-border-color: rgba(255, 255, 255, 0.04);
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-radius: 16;
+    -fx-background-radius: 16;
+}
+
+.player-table .column-header-background {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-radius: 16 16 0 0;
+}
+
+.player-table .column-header,
+.player-table .filler {
+    -fx-background-color: transparent;
+}
+
+.player-table .column-header .label {
+    -fx-text-fill: #eff5ff;
+    -fx-font-weight: 700;
+}
+
+.player-table .table-row-cell {
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+    -fx-text-background-color: #eff5ff;
+}
+
+.player-table .table-row-cell:filled:selected,
+.player-table .table-row-cell:filled:selected:hover {
+    -fx-background-color: rgba(240, 201, 108, 0.22);
+}
+
+.player-table .table-row-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.table-card {
+    -fx-min-width: 360;
+}
+
+.metric-card {
+    -fx-padding: 20;
+}
+
+.footer-panel {
+    -fx-spacing: 12;
+}

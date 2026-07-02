@@ -1,0 +1,73 @@
+Rodada,Grupo,Mandante,Visitante
+1,A,México,África do Sul
+1,A,Coreia do Sul,República Tcheca
+2,A,México,Coreia do Sul
+2,A,África do Sul,República Tcheca
+3,A,México,República Tcheca
+3,A,Coreia do Sul,África do Sul
+1,B,Canadá,Bósnia e Herzegovina
+1,B,Catar,Suíça
+2,B,Canadá,Catar
+2,B,Bósnia e Herzegovina,Suíça
+3,B,Canadá,Suíça
+3,B,Catar,Bósnia e Herzegovina
+1,C,Brasil,Marrocos
+1,C,Haiti,Escócia
+2,C,Brasil,Haiti
+2,C,Marrocos,Escócia
+3,C,Brasil,Escócia
+3,C,Haiti,Marrocos
+1,D,Estados Unidos,Paraguai
+1,D,Austrália,Turquia
+2,D,Estados Unidos,Austrália
+2,D,Paraguai,Turquia
+3,D,Estados Unidos,Turquia
+3,D,Austrália,Paraguai
+1,E,Alemanha,Curaçau
+1,E,Costa do Marfim,Equador
+2,E,Alemanha,Costa do Marfim
+2,E,Curaçau,Equador
+3,E,Alemanha,Equador
+3,E,Costa do Marfim,Curaçau
+1,F,Holanda,Japão
+1,F,Suécia,Tunísia
+2,F,Holanda,Suécia
+2,F,Japão,Tunísia
+3,F,Holanda,Tunísia
+3,F,Suécia,Japão
+1,G,Bélgica,Egito
+1,G,Irã,Nova Zelândia
+2,G,Bélgica,Irã
+2,G,Egito,Nova Zelândia
+3,G,Bélgica,Nova Zelândia
+3,G,Irã,Egito
+1,H,Espanha,Cabo Verde
+1,H,Arábia Saudita,Uruguai
+2,H,Espanha,Arábia Saudita
+2,H,Cabo Verde,Uruguai
+3,H,Espanha,Uruguai
+3,H,Arábia Saudita,Cabo Verde
+1,I,França,Senegal
+1,I,Iraque,Noruega
+2,I,França,Iraque
+2,I,Senegal,Noruega
+3,I,França,Noruega
+3,I,Iraque,Senegal
+1,J,Argentina,Argélia
+1,J,Áustria,Jordânia
+2,J,Argentina,Áustria
+2,J,Argélia,Jordânia
+3,J,Argentina,Jordânia
+3,J,Áustria,Argélia
+1,K,Portugal,República Democrática do Congo
+1,K,Uzbequistão,Colômbia
+2,K,Portugal,Uzbequistão
+2,K,República Democrática do Congo,Colômbia
+3,K,Portugal,Colômbia
+3,K,Uzbequistão,República Democrática do Congo
+1,L,Inglaterra,Croácia
+1,L,Gana,Panamá
+2,L,Inglaterra,Gana
+2,L,Croácia,Panamá
+3,L,Inglaterra,Panamá
+3,L,Gana,Croácia
