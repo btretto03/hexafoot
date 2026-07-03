@@ -42,6 +42,10 @@ public class GameNavigator {
         applyScene(new FeaturePlaceholderView(this, title, description));
     }
 
+    public void showTabelasChaveamento() {
+        applyScene(new hexafoot.ui.view.TabelasChaveamentoView(this));
+    }
+
     public void exitGame() {
         stage.close();
     }

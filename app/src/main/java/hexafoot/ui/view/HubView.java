@@ -32,11 +32,16 @@ public class HubView implements ScreenView {
     private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM");
     private final BorderPane root;
 
+    private final VBox calendarContainer = new VBox(14);
+    private LocalDate dataSelecionada = LocalDate.of(2026, 6, 11);
+    private LocalDate dataFocoCalendario = LocalDate.of(2026, 6, 11);
+    private final Map<LocalDate, List<MapPartida>> partidasPorData = new java.util.HashMap<>();
+
     public HubView(GameNavigator navigator) {
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
 
-        List<Time> selecoesInternacionais = navigator.getSession().getSelecoesInternacionais();
+        carregarPartidasCalendario();
 
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(24));
@@ -60,22 +65,23 @@ public class HubView implements ScreenView {
 
         heroCopy.getChildren().addAll(title, subtitle, status);
 
-        VBox calendarioPanel = criarCalendarioCompacto(LocalDate.now());
-
-        topBar.getChildren().addAll(heroCopy, calendarioPanel);
+        topBar.getChildren().addAll(heroCopy);
         HBox.setHgrow(heroCopy, Priority.ALWAYS);
 
         VBox nextStepsPanel = criarMenuProximosPassos(navigator);
-        VBox championshipPanel = criarPainelCampeonato(selecoesInternacionais);
+        VBox calendarPanel = criarPainelCalendario();
 
-        HBox content = new HBox(18, nextStepsPanel, championshipPanel);
+        HBox content = new HBox(18, nextStepsPanel, calendarPanel);
         content.setAlignment(Pos.TOP_LEFT);
-        HBox.setHgrow(championshipPanel, Priority.ALWAYS);
+        HBox.setHgrow(calendarPanel, Priority.ALWAYS);
 
         layout.getChildren().addAll(topBar, content);
         VBox.setVgrow(content, Priority.ALWAYS);
 
         root.setCenter(layout);
+
+        // Inicializar seleção no primeiro dia da Copa
+        selecionarData(LocalDate.of(2026, 6, 11));
     }
 
     private VBox criarMenuProximosPassos(GameNavigator navigator) {
@@ -101,9 +107,7 @@ public class HubView implements ScreenView {
 
         Button tabela = new Button("Consultar grupos e mata-mata");
         tabela.getStyleClass().add("secondary-button");
-        tabela.setOnAction(event -> navigator.showFeaturePlaceholder(
-                "Tabelas e chaveamento",
-                "Aqui serão exibidas as classificações dos grupos e a árvore do mata-mata."));
+        tabela.setOnAction(event -> navigator.showTabelasChaveamento());
 
         Button salvar = new Button("Salvar progresso");
         salvar.getStyleClass().add("secondary-button");
@@ -131,152 +135,242 @@ public class HubView implements ScreenView {
         return panel;
     }
 
-    private VBox criarPainelCampeonato(List<Time> selecoesInternacionais) {
-        Label title = new Label("Tabela do campeonato");
+    private static class MapPartida {
+        final String rodada;
+        final String grupo;
+        final String mandante;
+        final String visitante;
+
+        MapPartida(String rodada, String grupo, String mandante, String visitante) {
+            this.rodada = rodada;
+            this.grupo = grupo;
+            this.mandante = mandante;
+            this.visitante = visitante;
+        }
+    }
+
+    private void carregarPartidasCalendario() {
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(
+                getClass().getResourceAsStream("/data/info_torneio/calendario_fase_grupos.csv"), java.nio.charset.StandardCharsets.UTF_8))) {
+            
+            String linha;
+            br.readLine(); // pular cabeçalho
+            int matchIndex = 0;
+            
+            while ((linha = br.readLine()) != null) {
+                String[] campos = linha.split(",");
+                if (campos.length >= 4) {
+                    String rodada = campos[0];
+                    String grupo = campos[1];
+                    String mandante = campos[2];
+                    String visitante = campos[3];
+                    
+                    int diaOffset = matchIndex / 4;
+                    LocalDate dataPartida = LocalDate.of(2026, 6, 11).plusDays(diaOffset);
+                    
+                    MapPartida p = new MapPartida(rodada, grupo, mandante, visitante);
+                    partidasPorData.computeIfAbsent(dataPartida, k -> new ArrayList<>()).add(p);
+                    matchIndex++;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private VBox criarPainelCalendario() {
+        Label title = new Label("Calendário da Copa");
         title.getStyleClass().add("card-title");
 
-        Label subtitle = new Label("Classificação organizada por grupos, com pontos, saldo e desempenho atual de cada seleção.");
+        Label subtitle = new Label("Acompanhe o cronograma de partidas, rodadas e fases eliminatórias de 11 de junho a 19 de julho de 2026.");
         subtitle.getStyleClass().add("card-text");
         subtitle.setWrapText(true);
 
-        VBox groupsContainer = new VBox(14);
-        groupsContainer.getStyleClass().add("groups-container");
-
-        Map<String, List<Time>> grupos = agruparPorGrupo(selecoesInternacionais);
-        for (Map.Entry<String, List<Time>> entry : grupos.entrySet()) {
-            groupsContainer.getChildren().add(criarCartaoGrupo(entry.getKey(), entry.getValue()));
-        }
-
-        ScrollPane scrollPane = new ScrollPane(groupsContainer);
-        scrollPane.getStyleClass().add("championship-scroll");
-        scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-
-        VBox panel = new VBox(12, title, subtitle, scrollPane);
+        VBox panel = new VBox(12, title, subtitle, calendarContainer);
         panel.getStyleClass().add("info-card");
         panel.getStyleClass().add("championship-panel");
         panel.setPadding(new Insets(22));
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+        VBox.setVgrow(calendarContainer, Priority.ALWAYS);
         return panel;
     }
 
-    private VBox criarCartaoGrupo(String grupo, List<Time> times) {
-        Label label = new Label(grupo);
-        label.getStyleClass().add("group-title");
-
-        TableView<Time> tabela = criarTabelaClassificacao(times);
-        VBox card = new VBox(10, label, tabela);
-        card.getStyleClass().add("group-card");
-        card.setPadding(new Insets(16));
-        return card;
-    }
-
-    private TableView<Time> criarTabelaClassificacao(List<Time> times) {
-        TableView<Time> tabela = new TableView<>();
-        tabela.getStyleClass().add("group-table");
-        tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-        tabela.setItems(javafx.collections.FXCollections.observableArrayList(new ArrayList<>(times)));
-        tabela.setPrefHeight(220);
-        tabela.setMinHeight(220);
-        tabela.setMaxHeight(220);
-
-        tabela.getColumns().add(criarColunaTexto("Time", time -> time.getNome(), 1.6));
-        tabela.getColumns().add(criarColunaInteiro("P", Time::getPontos, 0.6));
-        tabela.getColumns().add(criarColunaInteiro("J", time -> time.getVitorias() + time.getEmpates() + time.getDerrotas(), 0.6));
-        tabela.getColumns().add(criarColunaInteiro("V", Time::getVitorias, 0.6));
-        tabela.getColumns().add(criarColunaInteiro("E", Time::getEmpates, 0.6));
-        tabela.getColumns().add(criarColunaInteiro("D", Time::getDerrotas, 0.6));
-        tabela.getColumns().add(criarColunaInteiro("GP", Time::getGolsMarcados, 0.7));
-        tabela.getColumns().add(criarColunaInteiro("GC", Time::getGolsSofridos, 0.7));
-        tabela.getColumns().add(criarColunaInteiro("SG", Time::getSaldoGols, 0.7));
-
-        return tabela;
-    }
-
-    private TableColumn<Time, String> criarColunaTexto(String titulo, java.util.function.Function<Time, String> extrator, double largura) {
-        TableColumn<Time, String> coluna = new TableColumn<>(titulo);
-        coluna.setCellValueFactory(celula -> new ReadOnlyStringWrapper(extrator.apply(celula.getValue())));
-        coluna.setPrefWidth(largura * 100);
-        return coluna;
-    }
-
-    private TableColumn<Time, Number> criarColunaInteiro(String titulo, java.util.function.ToIntFunction<Time> extrator, double largura) {
-        TableColumn<Time, Number> coluna = new TableColumn<>(titulo);
-        coluna.setCellValueFactory(celula -> new ReadOnlyIntegerWrapper(extrator.applyAsInt(celula.getValue())));
-        coluna.setPrefWidth(largura * 100);
-        return coluna;
-    }
-
-    private Map<String, List<Time>> agruparPorGrupo(List<Time> selecoes) {
-        Map<String, List<Time>> grupos = new LinkedHashMap<>();
-        List<Time> ordenadas = new ArrayList<>(selecoes);
-        Comparator<Time> comparadorClassificacao = Comparator
-            .comparingInt(Time::getPontos).reversed()
-            .thenComparing(Comparator.comparingInt(Time::getSaldoGols).reversed())
-            .thenComparing(Comparator.comparingInt(Time::getGolsMarcados).reversed())
-            .thenComparing(Time::getNome);
-
-        ordenadas.sort(comparadorClassificacao);
-
-        for (int i = 0; i < ordenadas.size(); i++) {
-            String grupo = formatarGrupo(i / 4);
-            grupos.computeIfAbsent(grupo, key -> new ArrayList<>()).add(ordenadas.get(i));
+    private void selecionarData(LocalDate data) {
+        if (data.isBefore(LocalDate.of(2026, 6, 11)) || data.isAfter(LocalDate.of(2026, 7, 19))) {
+            return;
         }
-
-        for (List<Time> grupo : grupos.values()) {
-            grupo.sort(comparadorClassificacao);
+        this.dataSelecionada = data;
+        
+        if (dataSelecionada.isBefore(dataFocoCalendario)) {
+            dataFocoCalendario = dataSelecionada;
+        } else if (dataSelecionada.isAfter(dataFocoCalendario.plusDays(6))) {
+            dataFocoCalendario = dataSelecionada.minusDays(6);
         }
-
-        return grupos;
+        
+        atualizarCalendario();
     }
 
-    private String formatarGrupo(int indice) {
-        if (indice < 26) {
-            return "Grupo " + (char) ('A' + indice);
-        }
+    private void atualizarCalendario() {
+        calendarContainer.getChildren().clear();
 
-        return "Grupo " + (indice + 1);
-    }
+        // 1. Barra de Navegação de Data
+        HBox navBar = new HBox(20);
+        navBar.setAlignment(Pos.CENTER);
+        navBar.setPadding(new Insets(10, 0, 10, 0));
 
-    private VBox criarCalendarioCompacto(LocalDate hoje) {
-        Label titulo = new Label("Calendário");
-        titulo.getStyleClass().add("card-title");
+        Button btnLeft = new Button("◀");
+        btnLeft.getStyleClass().add("secondary-button");
+        btnLeft.setDisable(dataSelecionada.equals(LocalDate.of(2026, 6, 11)));
+        btnLeft.setOnAction(event -> selecionarData(dataSelecionada.minusDays(1)));
 
         Locale localePtBr = Locale.forLanguageTag("pt-BR");
-        Label dataAtual = new Label(hoje.getDayOfWeek().getDisplayName(TextStyle.SHORT, localePtBr) + " • " + hoje.format(FORMATO_DATA));
-        dataAtual.getStyleClass().add("card-text");
+        String textoDia = dataSelecionada.getDayOfWeek().getDisplayName(TextStyle.FULL, localePtBr) + ", " 
+                + dataSelecionada.getDayOfMonth() + " de " 
+                + dataSelecionada.getMonth().getDisplayName(TextStyle.FULL, localePtBr) + " de " 
+                + dataSelecionada.getYear();
+        Label lblData = new Label(textoDia.substring(0, 1).toUpperCase(localePtBr) + textoDia.substring(1));
+        lblData.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
+        lblData.setAlignment(Pos.CENTER);
 
-        HBox dias = new HBox(10);
-        dias.getStyleClass().add("calendar-row");
+        Button btnRight = new Button("▶");
+        btnRight.getStyleClass().add("secondary-button");
+        btnRight.setDisable(dataSelecionada.equals(LocalDate.of(2026, 7, 19)));
+        btnRight.setOnAction(event -> selecionarData(dataSelecionada.plusDays(1)));
 
-        for (int i = 0; i < 5; i++) {
-            LocalDate data = hoje.plusDays(i);
-            dias.getChildren().add(criarDiaCalendario(data, i == 0));
+        Region spacerL = new Region();
+        Region spacerR = new Region();
+        HBox.setHgrow(spacerL, Priority.ALWAYS);
+        HBox.setHgrow(spacerR, Priority.ALWAYS);
+
+        navBar.getChildren().addAll(btnLeft, spacerL, lblData, spacerR, btnRight);
+
+        // 2. Timeline Horizontal
+        HBox timeline = criarLinhaDiasCalendario();
+
+        // 3. Área de Partidas
+        VBox partidasBox = new VBox(10);
+        partidasBox.setPadding(new Insets(15, 0, 0, 0));
+
+        Label lblPartidasTitulo = new Label("Partidas Agendadas");
+        lblPartidasTitulo.getStyleClass().add("pitch-row-title");
+        lblPartidasTitulo.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        partidasBox.getChildren().add(lblPartidasTitulo);
+
+        List<MapPartida> partidasDoDia = partidasPorData.get(dataSelecionada);
+        if (partidasDoDia != null && !partidasDoDia.isEmpty()) {
+            for (MapPartida p : partidasDoDia) {
+                partidasBox.getChildren().add(criarCardPartida(p));
+            }
+        } else {
+            partidasBox.getChildren().add(criarCardMataMata(dataSelecionada));
         }
 
-        VBox card = new VBox(10, titulo, dataAtual, dias);
-        card.getStyleClass().add("calendar-card");
-        card.setPadding(new Insets(18));
-        return card;
+        ScrollPane partidasScroll = new ScrollPane(partidasBox);
+        partidasScroll.getStyleClass().add("pitch-scroll");
+        partidasScroll.setFitToWidth(true);
+        partidasScroll.setFitToHeight(true);
+        VBox.setVgrow(partidasScroll, Priority.ALWAYS);
+
+        calendarContainer.getChildren().addAll(navBar, timeline, partidasScroll);
     }
 
-    private VBox criarDiaCalendario(LocalDate data, boolean destaque) {
+    private HBox criarLinhaDiasCalendario() {
+        HBox row = new HBox(10);
+        row.setAlignment(Pos.CENTER);
+        
+        for (int i = 0; i < 7; i++) {
+            LocalDate data = dataFocoCalendario.plusDays(i);
+            boolean isSelected = data.equals(dataSelecionada);
+            
+            VBox tile = criarDiaCalendarioGrande(data, isSelected);
+            row.getChildren().add(tile);
+            HBox.setHgrow(tile, Priority.ALWAYS);
+        }
+        
+        return row;
+    }
+
+    private VBox criarDiaCalendarioGrande(LocalDate data, boolean destaque) {
         Locale localePtBr = Locale.forLanguageTag("pt-BR");
         Label diaSemana = new Label(data.getDayOfWeek().getDisplayName(TextStyle.SHORT, localePtBr).toUpperCase(localePtBr));
         diaSemana.getStyleClass().add("calendar-day-name");
+        diaSemana.setStyle("-fx-font-size: 11px;");
 
         Label numero = new Label(String.valueOf(data.getDayOfMonth()));
         numero.getStyleClass().add("calendar-day-number");
+        numero.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        VBox tile = new VBox(6, diaSemana, numero);
+        Label mes = new Label(data.getMonth().getDisplayName(TextStyle.SHORT, localePtBr).toUpperCase(localePtBr));
+        mes.setStyle("-fx-font-size: 9px; -fx-text-fill: rgba(255, 255, 255, 0.5);");
+
+        VBox tile = new VBox(4, diaSemana, numero, mes);
         tile.setAlignment(Pos.CENTER);
         tile.getStyleClass().add("calendar-tile");
+        tile.setStyle("-fx-padding: 8; -fx-min-width: 60; -fx-min-height: 70; -fx-cursor: hand;");
+        
         if (destaque) {
             tile.getStyleClass().add("calendar-tile-today");
         }
-
+        
+        tile.setOnMouseClicked(event -> selecionarData(data));
         return tile;
+    }
+
+    private HBox criarCardPartida(MapPartida p) {
+        Label lblGrupo = new Label("Grupo " + p.grupo);
+        lblGrupo.getStyleClass().add("status-pill");
+        lblGrupo.setStyle("-fx-min-width: 70; -fx-alignment: center;");
+
+        Label lblRodada = new Label("Rodada " + p.rodada);
+        lblRodada.setStyle("-fx-font-size: 13px; -fx-text-fill: rgba(255, 255, 255, 0.6);");
+
+        Label lblTimes = new Label(p.mandante + " vs " + p.visitante);
+        lblTimes.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff;");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox card = new HBox(15, lblGrupo, lblTimes, spacer, lblRodada);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 12; -fx-padding: 12 18 12 18;");
+        return card;
+    }
+
+    private HBox criarCardMataMata(LocalDate data) {
+        Label lblFase = new Label();
+        lblFase.getStyleClass().add("status-pill");
+        lblFase.setStyle("-fx-min-width: 100; -fx-alignment: center; -fx-background-color: rgba(139, 240, 161, 0.2); -fx-text-fill: #8bf0a1; -fx-border-color: rgba(139, 240, 161, 0.3);");
+
+        Label lblTimes = new Label();
+        lblTimes.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff;");
+
+        if (data.isEqual(LocalDate.of(2026, 6, 29)) || data.isEqual(LocalDate.of(2026, 6, 30)) ||
+            data.isEqual(LocalDate.of(2026, 7, 1)) || data.isEqual(LocalDate.of(2026, 7, 2))) {
+            lblFase.setText("OITAVAS");
+            lblTimes.setText("Confronto Eliminatório - Oitavas de Final");
+        } else if (data.isEqual(LocalDate.of(2026, 7, 4)) || data.isEqual(LocalDate.of(2026, 7, 5))) {
+            lblFase.setText("QUARTAS");
+            lblTimes.setText("Confronto Eliminatório - Quartas de Final");
+        } else if (data.isEqual(LocalDate.of(2026, 7, 8)) || data.isEqual(LocalDate.of(2026, 7, 9))) {
+            lblFase.setText("SEMIFINAL");
+            lblTimes.setText("Confronto Eliminatório - Semifinal");
+        } else if (data.isEqual(LocalDate.of(2026, 7, 18))) {
+            lblFase.setText("3º LUGAR");
+            lblTimes.setText("Disputa de Terceiro Lugar");
+        } else if (data.isEqual(LocalDate.of(2026, 7, 19))) {
+            lblFase.setText("FINAL");
+            lblTimes.setText("Grande Final da Copa do Mundo 2026");
+        } else {
+            lblFase.setText("FOLGA");
+            lblTimes.setText("Dia de Treinamento / Descanso de Atletas");
+        }
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox card = new HBox(15, lblFase, lblTimes, spacer);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 12; -fx-padding: 12 18 12 18;");
+        return card;
     }
 
     private Label criarPill(String text) {

@@ -39,7 +39,8 @@ public class FabricaSelecao {
                 time.adicionarReserva(jogadores.get(i));
             }
         }
-
+        time.setFormacaoAtual(hexafoot.model.Formacao.F_4_3_3);
+        time.escalarMelhoresJogadores();
         return time;
     }
 

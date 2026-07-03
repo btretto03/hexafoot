@@ -94,19 +94,19 @@
 }
 
 .pitch-panel {
-    min-width: 650;
-    -fx-min-width: 650;
+    min-width: 560;
+    -fx-min-width: 560;
 }
 
 .bench-panel {
-    background-color: rgba(34, 31, 10, 0.92);
-    -fx-background-color: rgba(34, 31, 10, 0.92);
-    border-color: rgba(242, 214, 126, 0.22);
-    -fx-border-color: rgba(242, 214, 126, 0.22);
-    min-width: 340;
-    -fx-min-width: 340;
-    max-width: 390;
-    -fx-max-width: 390;
+    background-color: rgba(8, 18, 16, 0.88);
+    -fx-background-color: rgba(8, 18, 16, 0.88);
+    border-color: rgba(102, 203, 122, 0.18);
+    -fx-border-color: rgba(102, 203, 122, 0.18);
+    min-width: 360;
+    -fx-min-width: 360;
+    max-width: 410;
+    -fx-max-width: 410;
 }
 
 .football-field {
@@ -142,11 +142,11 @@
 }
 
 .bench-player-card {
-    background-color: rgba(246, 242, 219, 0.94);
-    -fx-background-color: rgba(246, 242, 219, 0.94);
-    -fx-text-fill: #182016;
-    border-color: rgba(180, 166, 102, 0.24);
-    -fx-border-color: rgba(180, 166, 102, 0.24);
+    background-color: rgba(8, 28, 24, 0.85);
+    -fx-background-color: rgba(8, 28, 24, 0.85);
+    -fx-text-fill: #f8fbff;
+    border-color: rgba(102, 203, 122, 0.25);
+    -fx-border-color: rgba(102, 203, 122, 0.25);
     min-width: 245;
     -fx-min-width: 245;
 }
@@ -184,11 +184,13 @@
     -fx-border-style: dashed;
 }
 
+.field-player-card.slot-selected,
+.bench-player-card.slot-selected,
 .slot-selected {
-    background-color: rgba(240, 201, 108, 0.35);
-    -fx-background-color: rgba(240, 201, 108, 0.35);
-    border-color: rgba(240, 201, 108, 0.95);
-    -fx-border-color: rgba(240, 201, 108, 0.95);
+    background-color: rgba(139, 240, 161, 0.35);
+    -fx-background-color: rgba(139, 240, 161, 0.35);
+    border-color: #8bf0a1;
+    -fx-border-color: #8bf0a1;
 }
 
 .slot-drag-over {
@@ -510,4 +512,23 @@
 
 .footer-panel {
     -fx-spacing: 12;
+}
+
+.highlighted-green-text {
+    -fx-text-fill: #8bf0a1;
+    -fx-font-weight: bold;
+}
+
+.comparison-panel {
+    background-color: rgba(8, 18, 16, 0.88);
+    -fx-background-color: rgba(8, 18, 16, 0.88);
+    border-radius: 24;
+    -fx-background-radius: 24;
+    border-color: rgba(102, 203, 122, 0.18);
+    -fx-border-color: rgba(102, 203, 122, 0.18);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.36), 24, 0.12, 0, 10);
+    min-width: 320;
+    -fx-min-width: 320;
+    max-width: 360;
+    -fx-max-width: 360;
 }

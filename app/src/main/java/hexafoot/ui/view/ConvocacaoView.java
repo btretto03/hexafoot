@@ -1,6 +1,7 @@
 package hexafoot.ui.view;
 
 import hexafoot.model.Jogador;
+import hexafoot.model.Time;
 import hexafoot.service.simulacao.GerenciadorConvocacao;
 import hexafoot.ui.GameNavigator;
 import javafx.collections.FXCollections;
@@ -69,6 +70,9 @@ public class ConvocacaoView implements ScreenView {
         this.avancarButton.getStyleClass().add("primary-button");
         this.avancarButton.setOnAction(event -> {
             if (convocados.size() == 26) {
+                Time timeBrasil = navigator.getSession().getElencoBrasil();
+                timeBrasil.setFormacaoAtual(hexafoot.model.Formacao.F_4_3_3);
+                timeBrasil.escalarMelhoresJogadores();
                 navigator.showHub();
                 return;
             }
@@ -143,7 +147,7 @@ public class ConvocacaoView implements ScreenView {
         Label title = new Label("Convocação da Seleção Brasileira");
         title.getStyleClass().add("page-title");
 
-        Label subtitle = new Label("Selecione 26 jogadores. Os 11 primeiros entram como titulares e os demais formam o banco.");
+        Label subtitle = new Label("Selecione 26 jogadores. 11 entram como titulares e os demais formam o banco.");
         subtitle.getStyleClass().add("page-subtitle");
         subtitle.setWrapText(true);
 
