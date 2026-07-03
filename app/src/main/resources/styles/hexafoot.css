@@ -1,6 +1,8 @@
 .screen-root {
-    -fx-background-color: linear-gradient(to bottom right, #08111f, #102644 55%, #0f1a2f);
-    -fx-font-family: "Segoe UI", "Arial";
+    background-color: linear-gradient(to bottom right, #081a12, #113522 54%, #07131f);
+    -fx-background-color: linear-gradient(to bottom right, #081a12, #113522 54%, #07131f);
+    font-family: "Bahnschrift", "Segoe UI", "Arial";
+    -fx-font-family: "Bahnschrift", "Segoe UI", "Arial";
 }
 
 .hero-panel,
@@ -8,139 +10,501 @@
 .table-card,
 .metric-card,
 .footer-panel,
-.control-panel {
-    -fx-background-color: rgba(10, 18, 33, 0.88);
+.control-panel,
+.pitch-card,
+.calendar-card,
+.group-card,
+.next-steps-panel,
+.championship-panel {
+    background-color: rgba(8, 18, 16, 0.88);
+    -fx-background-color: rgba(8, 18, 16, 0.88);
+    border-radius: 24;
     -fx-background-radius: 24;
-    -fx-border-color: rgba(255, 208, 112, 0.16);
+    border-color: rgba(102, 203, 122, 0.18);
+    -fx-border-color: rgba(102, 203, 122, 0.18);
     -fx-border-radius: 24;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 24, 0.12, 0, 10);
+    -fx-border-radius: 24;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.36), 24, 0.12, 0, 10);
 }
 
 .display-title,
 .page-title {
     -fx-text-fill: #f8fbff;
+    font-family: "Bahnschrift", "Segoe UI Semibold", "Segoe UI";
     -fx-font-family: "Bahnschrift", "Segoe UI Semibold", "Segoe UI";
+    font-size: 44px;
     -fx-font-size: 44px;
+    font-weight: 700;
     -fx-font-weight: 700;
 }
 
 .page-title {
+    font-size: 34px;
     -fx-font-size: 34px;
 }
 
 .eyebrow {
-    -fx-text-fill: #f0c96c;
+    -fx-text-fill: #8bf0a1;
+    font-size: 12px;
     -fx-font-size: 12px;
+    font-weight: 700;
     -fx-font-weight: 700;
+    letter-spacing: 1px;
+    -fx-letter-spacing: 1px;
 }
 
 .hero-subtitle,
 .page-subtitle,
 .card-text {
-    -fx-text-fill: #cfd8e6;
+    -fx-text-fill: #d7e4d8;
+    font-size: 15px;
     -fx-font-size: 15px;
     -fx-line-spacing: 4px;
 }
 
 .card-title {
     -fx-text-fill: #f7f9fc;
+    font-size: 18px;
     -fx-font-size: 18px;
+    font-weight: 700;
     -fx-font-weight: 700;
 }
 
 .metric-value {
-    -fx-text-fill: #f0c96c;
+    -fx-text-fill: #8bf0a1;
+    font-size: 30px;
     -fx-font-size: 30px;
+    font-weight: 800;
     -fx-font-weight: 800;
 }
 
-.status-pill {
-    -fx-background-color: rgba(240, 201, 108, 0.14);
-    -fx-background-radius: 999;
-    -fx-text-fill: #f0c96c;
-    -fx-padding: 10 16 10 16;
+.calendar-card {
+    min-width: 320;
+    -fx-min-width: 320;
+}
+.pitch-panel,
+.bench-panel {
+    background-color: rgba(8, 18, 16, 0.88);
+    -fx-background-color: rgba(8, 18, 16, 0.88);
+    border-radius: 24;
+    -fx-background-radius: 24;
+    border-color: rgba(102, 203, 122, 0.18);
+    -fx-border-color: rgba(102, 203, 122, 0.18);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.36), 24, 0.12, 0, 10);
+}
+
+.pitch-panel {
+    min-width: 650;
+    -fx-min-width: 650;
+}
+
+.bench-panel {
+    background-color: rgba(34, 31, 10, 0.92);
+    -fx-background-color: rgba(34, 31, 10, 0.92);
+    border-color: rgba(242, 214, 126, 0.22);
+    -fx-border-color: rgba(242, 214, 126, 0.22);
+    min-width: 340;
+    -fx-min-width: 340;
+    max-width: 390;
+    -fx-max-width: 390;
+}
+
+.football-field {
+    background-color: linear-gradient(to bottom, rgba(107, 154, 45, 0.38), rgba(35, 100, 28, 0.84));
+    -fx-background-color: linear-gradient(to bottom, rgba(107, 154, 45, 0.38), rgba(35, 100, 28, 0.84));
+    border-radius: 24;
+    -fx-background-radius: 24;
+    border-color: rgba(255, 255, 255, 0.18);
+    -fx-border-color: rgba(255, 255, 255, 0.18);
+}
+
+.pitch-row-title {
+    -fx-text-fill: #eff5ff;
+    font-size: 12px;
+    -fx-font-size: 12px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.field-player-card,
+.bench-player-card {
+    background-color: rgba(6, 24, 54, 0.92);
+    -fx-background-color: rgba(6, 24, 54, 0.92);
+    border-radius: 16;
+    -fx-background-radius: 16;
+    border-color: rgba(255, 255, 255, 0.18);
+    -fx-border-color: rgba(255, 255, 255, 0.18);
+    -fx-text-fill: #f8fbff;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    font-weight: 700;
     -fx-font-weight: 700;
+}
+
+.bench-player-card {
+    background-color: rgba(246, 242, 219, 0.94);
+    -fx-background-color: rgba(246, 242, 219, 0.94);
+    -fx-text-fill: #182016;
+    border-color: rgba(180, 166, 102, 0.24);
+    -fx-border-color: rgba(180, 166, 102, 0.24);
+    min-width: 245;
+    -fx-min-width: 245;
+}
+
+.field-player-card {
+    min-width: 120;
+    -fx-min-width: 120;
+}
+
+.slot-zone-a {
+    border-color: rgba(255, 176, 101, 0.5);
+    -fx-border-color: rgba(255, 176, 101, 0.5);
+}
+
+.slot-zone-m {
+    border-color: rgba(251, 242, 115, 0.45);
+    -fx-border-color: rgba(251, 242, 115, 0.45);
+}
+
+.slot-zone-d {
+    border-color: rgba(142, 208, 255, 0.5);
+    -fx-border-color: rgba(142, 208, 255, 0.5);
+}
+
+.slot-zone-g {
+    border-color: rgba(185, 255, 177, 0.6);
+    -fx-border-color: rgba(185, 255, 177, 0.6);
+}
+
+.slot-empty {
+    background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+    border-style: dashed;
+    -fx-border-style: dashed;
+}
+
+.slot-selected {
+    background-color: rgba(240, 201, 108, 0.35);
+    -fx-background-color: rgba(240, 201, 108, 0.35);
+    border-color: rgba(240, 201, 108, 0.95);
+    -fx-border-color: rgba(240, 201, 108, 0.95);
+}
+
+.slot-drag-over {
+    background-color: rgba(255, 255, 255, 0.16);
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 241, 153, 0.95);
+    -fx-border-color: rgba(255, 241, 153, 0.95);
+}
+
+.pitch-scroll,
+.bench-scroll {
+    background-color: transparent;
+    -fx-background-color: transparent;
+    border-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.pitch-scroll > .viewport,
+.bench-scroll > .viewport {
+    background-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.calendar-row {
+    padding: 0;
+    -fx-padding: 0;
+}
+
+.calendar-tile {
+    min-width: 56;
+    -fx-min-width: 56;
+    min-height: 64;
+    -fx-min-height: 64;
+    background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 14;
+    -fx-background-radius: 14;
+    border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 14;
+    -fx-border-radius: 14;
+}
+
+.calendar-tile-today {
+    background-color: rgba(139, 240, 161, 0.18);
+    -fx-background-color: rgba(139, 240, 161, 0.18);
+    border-color: rgba(139, 240, 161, 0.42);
+    -fx-border-color: rgba(139, 240, 161, 0.42);
+}
+
+.calendar-day-name {
+    -fx-text-fill: #8bf0a1;
+    font-size: 11px;
+    -fx-font-size: 11px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.calendar-day-number {
+    -fx-text-fill: #f8fbff;
+    font-size: 18px;
+    -fx-font-size: 18px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.next-steps-panel {
+    min-width: 320;
+    -fx-min-width: 320;
+    max-width: 360;
+    -fx-max-width: 360;
+}
+
+.next-steps-stack {
+    -fx-spacing: 12;
+}
+
+.championship-panel {
+    min-width: 540;
+    -fx-min-width: 540;
+}
+
+.championship-scroll {
+    background-color: transparent;
+    -fx-background-color: transparent;
+    border-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.championship-scroll > .viewport {
+    background-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.groups-container {
+    padding: 0 8 0 0;
+    -fx-padding: 0 8 0 0;
+}
+
+.group-card {
+    background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 18;
+    -fx-background-radius: 18;
+    border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 18;
+    -fx-border-radius: 18;
+}
+
+.group-title {
+    -fx-text-fill: #8bf0a1;
+    font-size: 18px;
+    -fx-font-size: 18px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.group-table {
+    background-color: transparent;
+    -fx-background-color: transparent;
+    -fx-table-cell-border-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.06);
+    -fx-border-color: rgba(255, 255, 255, 0.06);
+    border-radius: 14;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+}
+
+.group-table .column-header-background {
+    background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 14 14 0 0;
+    -fx-background-radius: 14 14 0 0;
+}
+
+.group-table .column-header .label {
+    -fx-text-fill: #eff5ff;
+    font-size: 11px;
+    -fx-font-size: 11px;
+    font-weight: 800;
+    -fx-font-weight: 800;
+}
+
+.group-table .table-row-cell {
+    background-color: rgba(255, 255, 255, 0.02);
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+    -fx-text-background-color: #eff5ff;
+}
+
+.group-table .table-row-cell:filled:selected,
+.group-table .table-row-cell:filled:selected:hover {
+    background-color: rgba(240, 201, 108, 0.22);
+    -fx-background-color: rgba(240, 201, 108, 0.22);
+}
+
+.group-table .table-row-cell:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.status-pill {
+    background-color: rgba(139, 240, 161, 0.12);
+    -fx-background-color: rgba(139, 240, 161, 0.12);
+    border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #c9ffd5;
+    padding: 10 16 10 16;
+    -fx-padding: 10 16 10 16;
+    font-weight: 700;
+    -fx-font-weight: 700;
+}
+
+.match-pill {
+    background-color: rgba(255, 255, 255, 0.09);
+    -fx-background-color: rgba(255, 255, 255, 0.09);
+    border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #f8fbff;
+    padding: 8 14 8 14;
+    -fx-padding: 8 14 8 14;
+    font-size: 12px;
+    -fx-font-size: 12px;
+    font-weight: 700;
+    -fx-font-weight: 700;
+}
+
+.pitch-title {
+    -fx-text-fill: #f8fbff;
+    font-size: 22px;
+    -fx-font-size: 22px;
+    font-weight: 800;
+    -fx-font-weight: 800;
 }
 
 .primary-button,
 .secondary-button,
 .ghost-button,
 .wide-button {
+    border-radius: 14;
     -fx-background-radius: 14;
+    padding: 12 18 12 18;
     -fx-padding: 12 18 12 18;
+    font-weight: 700;
     -fx-font-weight: 700;
+    cursor: hand;
     -fx-cursor: hand;
 }
 
 .primary-button {
-    -fx-background-color: linear-gradient(to right, #f0c96c, #cf9f31);
-    -fx-text-fill: #0d1524;
+    background-color: linear-gradient(to right, #8bf0a1, #49be68);
+    -fx-background-color: linear-gradient(to right, #8bf0a1, #49be68);
+    -fx-text-fill: #0a1810;
 }
 
 .secondary-button {
+    background-color: rgba(255, 255, 255, 0.08);
     -fx-background-color: rgba(255, 255, 255, 0.08);
     -fx-text-fill: #f8fbff;
+    border-color: rgba(255, 255, 255, 0.10);
     -fx-border-color: rgba(255, 255, 255, 0.10);
+    border-radius: 14;
     -fx-border-radius: 14;
 }
 
 .ghost-button {
+    background-color: transparent;
     -fx-background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.12);
     -fx-border-color: rgba(255, 255, 255, 0.12);
+    border-radius: 14;
     -fx-border-radius: 14;
     -fx-text-fill: #d7e2f2;
 }
 
+.search-field {
+    background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 14;
+    -fx-background-radius: 14;
+    border-color: rgba(139, 240, 161, 0.18);
+    -fx-border-color: rgba(139, 240, 161, 0.18);
+    border-radius: 14;
+    -fx-border-radius: 14;
+    -fx-text-fill: #f8fbff;
+    -fx-prompt-text-fill: rgba(215, 226, 242, 0.6);
+    padding: 12 14 12 14;
+    -fx-padding: 12 14 12 14;
+    font-size: 14px;
+    -fx-font-size: 14px;
+}
+
 .wide-button {
+    min-width: 170;
     -fx-min-width: 170;
 }
 
 .wide-progress {
-    -fx-accent: #f0c96c;
+    -fx-accent: #8bf0a1;
 }
 
 .player-table {
+    background-color: transparent;
     -fx-background-color: transparent;
     -fx-table-cell-border-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
     -fx-border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 16;
     -fx-border-radius: 16;
+    -fx-background-radius: 16;
     -fx-background-radius: 16;
 }
 
 .player-table .column-header-background {
+    background-color: rgba(255, 255, 255, 0.06);
     -fx-background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 16 16 0 0;
     -fx-background-radius: 16 16 0 0;
 }
 
 .player-table .column-header,
 .player-table .filler {
+    background-color: transparent;
     -fx-background-color: transparent;
 }
 
 .player-table .column-header .label {
     -fx-text-fill: #eff5ff;
+    font-weight: 700;
     -fx-font-weight: 700;
 }
 
 .player-table .table-row-cell {
+    background-color: rgba(255, 255, 255, 0.02);
     -fx-background-color: rgba(255, 255, 255, 0.02);
     -fx-text-background-color: #eff5ff;
 }
 
 .player-table .table-row-cell:filled:selected,
 .player-table .table-row-cell:filled:selected:hover {
+    background-color: rgba(240, 201, 108, 0.22);
     -fx-background-color: rgba(240, 201, 108, 0.22);
 }
 
 .player-table .table-row-cell:hover {
+    background-color: rgba(255, 255, 255, 0.05);
     -fx-background-color: rgba(255, 255, 255, 0.05);
 }
 
 .table-card {
+    min-width: 360;
     -fx-min-width: 360;
 }
 
 .metric-card {
+    padding: 20;
     -fx-padding: 20;
 }
 

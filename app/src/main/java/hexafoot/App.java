@@ -12,7 +12,7 @@ public class App extends Application {
         GameSession session = new GameSession();
         GameNavigator navigator = new GameNavigator(stage, session);
 
-        stage.setTitle("Hexafoot 2026: Road to the Cup");
+        stage.setTitle("Hexafoot 2026: caminho para a Copa");
         stage.setMinWidth(1280);
         stage.setMinHeight(720);
         navigator.showMainMenu();

@@ -1,6 +1,7 @@
 package hexafoot.ui;
 
 import hexafoot.ui.view.ConvocacaoView;
+import hexafoot.ui.view.EscalacaoTaticaView;
 import hexafoot.ui.view.FeaturePlaceholderView;
 import hexafoot.ui.view.HubView;
 import hexafoot.ui.view.MainMenuView;
@@ -31,6 +32,10 @@ public class GameNavigator {
 
     public void showHub() {
         applyScene(new HubView(this));
+    }
+
+    public void showEscalacaoTatica() {
+        applyScene(new EscalacaoTaticaView(this));
     }
 
     public void showFeaturePlaceholder(String title, String description) {

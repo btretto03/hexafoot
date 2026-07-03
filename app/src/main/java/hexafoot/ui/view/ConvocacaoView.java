@@ -5,6 +5,7 @@ import hexafoot.service.simulacao.GerenciadorConvocacao;
 import hexafoot.ui.GameNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -12,6 +13,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -19,14 +21,17 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.input.KeyCode;
 
 public class ConvocacaoView implements ScreenView {
     private final GameNavigator navigator;
     private final BorderPane root;
     private final ObservableList<Jogador> disponiveis;
+    private final FilteredList<Jogador> disponiveisFiltrados;
     private final ObservableList<Jogador> convocados;
     private final TableView<Jogador> tabelaDisponiveis;
     private final TableView<Jogador> tabelaConvocados;
+    private final TextField buscaField;
     private final Label contadorLabel;
     private final ProgressBar progresso;
     private final Button avancarButton;
@@ -38,14 +43,20 @@ public class ConvocacaoView implements ScreenView {
 
         GerenciadorConvocacao gerenciador = navigator.getSession().getGerenciadorConvocacao();
         this.disponiveis = FXCollections.observableArrayList(gerenciador.getJogadoresDisponiveis());
+        this.disponiveisFiltrados = new FilteredList<>(disponiveis, jogador -> true);
         this.convocados = FXCollections.observableArrayList(gerenciador.getElencoOficial().getTitulares());
         this.convocados.addAll(gerenciador.getElencoOficial().getReservas());
 
         this.tabelaDisponiveis = criarTabela("Jogadores disponíveis");
         this.tabelaConvocados = criarTabela("Convocados do Brasil");
 
-        tabelaDisponiveis.setItems(disponiveis);
+        tabelaDisponiveis.setItems(disponiveisFiltrados);
         tabelaConvocados.setItems(convocados);
+
+        this.buscaField = new TextField();
+        this.buscaField.setPromptText("Pesquisar jogador por nome");
+        this.buscaField.getStyleClass().add("search-field");
+        this.buscaField.textProperty().addListener((observable, antigo, novo) -> aplicarFiltro(novo));
 
         this.contadorLabel = new Label();
         this.contadorLabel.getStyleClass().add("status-pill");
@@ -80,6 +91,41 @@ public class ConvocacaoView implements ScreenView {
         VBox leftPanel = criarPainelComTabela("Base de 50 atletas", tabelaDisponiveis);
         VBox rightPanel = criarPainelComTabela("Convocação final", tabelaConvocados);
 
+        leftPanel.getChildren().add(1, buscaField);
+
+        tabelaDisponiveis.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                adicionarConvocado();
+                event.consume();
+                return;
+            }
+
+            if (event.getCode() == KeyCode.RIGHT) {
+                focarConvocados();
+                event.consume();
+            }
+        });
+
+        tabelaConvocados.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.BACK_SPACE) {
+                removerConvocado();
+                event.consume();
+                return;
+            }
+
+            if (event.getCode() == KeyCode.LEFT) {
+                focarDisponiveis();
+                event.consume();
+            }
+        });
+
+        buscaField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DOWN || event.getCode() == KeyCode.ENTER) {
+                focarDisponiveis();
+                event.consume();
+            }
+        });
+
         VBox controlPanel = new VBox(14, adicionarButton, removerButton, voltarButton);
         controlPanel.getStyleClass().add("control-panel");
         controlPanel.setAlignment(Pos.CENTER);
@@ -109,6 +155,7 @@ public class ConvocacaoView implements ScreenView {
         root.setCenter(center);
 
         atualizarEstadoVisual();
+        aplicarFiltro("");
     }
 
     private VBox criarPainelComTabela(String titulo, TableView<Jogador> tabela) {
@@ -154,6 +201,7 @@ public class ConvocacaoView implements ScreenView {
 
         navigator.getSession().getGerenciadorConvocacao().inserirNoElenco(selecionado);
         sincronizarListas();
+        focarDisponiveis();
     }
 
     private void removerConvocado() {
@@ -164,6 +212,7 @@ public class ConvocacaoView implements ScreenView {
 
         navigator.getSession().getGerenciadorConvocacao().removerDoElenco(selecionado);
         sincronizarListas();
+        focarConvocados();
     }
 
     private void sincronizarListas() {
@@ -171,7 +220,33 @@ public class ConvocacaoView implements ScreenView {
         disponiveis.setAll(gerenciador.getJogadoresDisponiveis());
         convocados.setAll(gerenciador.getElencoOficial().getTitulares());
         convocados.addAll(gerenciador.getElencoOficial().getReservas());
+        aplicarFiltro(buscaField.getText());
         atualizarEstadoVisual();
+    }
+
+    private void aplicarFiltro(String termo) {
+        String pesquisa = termo == null ? "" : termo.trim().toLowerCase();
+        disponiveisFiltrados.setPredicate(jogador -> {
+            if (pesquisa.isEmpty()) {
+                return true;
+            }
+
+            return jogador.getNome().toLowerCase().contains(pesquisa);
+        });
+    }
+
+    private void focarDisponiveis() {
+        tabelaDisponiveis.requestFocus();
+        if (!disponiveisFiltrados.isEmpty() && tabelaDisponiveis.getSelectionModel().getSelectedIndex() < 0) {
+            tabelaDisponiveis.getSelectionModel().selectFirst();
+        }
+    }
+
+    private void focarConvocados() {
+        tabelaConvocados.requestFocus();
+        if (!convocados.isEmpty() && tabelaConvocados.getSelectionModel().getSelectedIndex() < 0) {
+            tabelaConvocados.getSelectionModel().selectFirst();
+        }
     }
 
     private void atualizarEstadoVisual() {
