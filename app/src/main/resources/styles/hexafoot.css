@@ -194,10 +194,14 @@
 }
 
 .slot-drag-over {
-    background-color: rgba(255, 255, 255, 0.16);
-    -fx-background-color: rgba(255, 255, 255, 0.16);
-    border-color: rgba(255, 241, 153, 0.95);
-    -fx-border-color: rgba(255, 241, 153, 0.95);
+    /* Remove qualquer borda que mude o tamanho do layout */
+    -fx-border-width: 0px; 
+    
+    /* Cria um brilho verde interno que não deforma o campo */
+    -fx-effect: innershadow(three-pass-box, #8bf0a1, 12, 0.5, 0, 0);
+    
+    /* Opcional: uma leve mudada no fundo para dar destaque */
+    -fx-background-color: rgba(139, 240, 161, 0.15); 
 }
 
 .pitch-scroll,
@@ -511,7 +515,16 @@
 }
 
 .footer-panel {
-    -fx-spacing: 12;
+    /* Um fundo grafite escuro que se destaca do preto puro do fundo do ecrã */
+    -fx-background-color: #111111; 
+    
+    /* Uma linha brilhante muito sutil apenas no topo para separar o campo dos botões */
+    -fx-border-color: rgba(255, 255, 255, 0.08) transparent transparent transparent; 
+    -fx-border-width: 1px;
+    
+    /* Arredonda levemente os cantos superiores do painel */
+    -fx-background-radius: 12px 12px 0px 0px;
+    -fx-border-radius: 12px 12px 0px 0px;
 }
 
 .highlighted-green-text {
@@ -531,4 +544,8 @@
     -fx-min-width: 320;
     max-width: 360;
     -fx-max-width: 360;
+}
+
+.list-cell {
+    -fx-font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
 }

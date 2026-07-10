@@ -1,11 +1,13 @@
 package hexafoot.ui;
 
+import hexafoot.model.Partida;
 import hexafoot.ui.view.ConvocacaoView;
 import hexafoot.ui.view.EscalacaoTaticaView;
 import hexafoot.ui.view.FeaturePlaceholderView;
 import hexafoot.ui.view.HubView;
 import hexafoot.ui.view.MainMenuView;
 import hexafoot.ui.view.ScreenView;
+import hexafoot.ui.view.SimulacaoPartidaView;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -58,5 +60,9 @@ public class GameNavigator {
         Scene scene = new Scene(view.getRoot(), WIDTH, HEIGHT);
         scene.getStylesheets().add(getClass().getResource("/styles/hexafoot.css").toExternalForm());
         stage.setScene(scene);
+    }
+
+    public void showSimulacaoPartida(Partida partida) {
+        applyScene(new SimulacaoPartidaView(this, partida));
     }
 }

@@ -80,18 +80,27 @@ public class EscalacaoTaticaView implements ScreenView {
         this.reservas = FXCollections.observableArrayList(time.getReservas());
         this.formacaoLabel = new Label();
         this.taticaLabel = new Label();
-        this.campoContainer = new VBox(14);
-        this.bancoContainer = new VBox(14);
-        this.painelComparacao = new VBox(14);
-        this.formacaoBox = new VBox(10);
-        this.taticaBox = new VBox(10);
+        this.campoContainer = new VBox(10);
+        this.bancoContainer = new VBox(10);
+        this.painelComparacao = new VBox(10);
+        this.formacaoBox = new VBox(8);
+        this.taticaBox = new VBox(8);
 
-        VBox layout = new VBox(18);
-        layout.setPadding(new Insets(24));
-        layout.getChildren().addAll(criarCabecalho(), criarAreaPrincipal(), criarRodape());
-        VBox.setVgrow(layout.getChildren().get(1), Priority.ALWAYS);
+        // A MÁGICA DE LAYOUT ACONTECE AQUI:
+        // Separamos as secções no Topo, Centro e Base do BorderPane.
+        VBox cabecalho = criarCabecalho();
+        BorderPane.setMargin(cabecalho, new Insets(16, 24, 8, 24));
 
-        root.setCenter(layout);
+        HBox areaPrincipal = criarAreaPrincipal();
+        BorderPane.setMargin(areaPrincipal, new Insets(0, 24, 8, 24));
+
+        VBox rodape = criarRodape();
+        BorderPane.setMargin(rodape, new Insets(0, 24, 16, 24));
+
+        this.root.setTop(cabecalho);
+        this.root.setCenter(areaPrincipal);
+        this.root.setBottom(rodape);
+
         atualizarTela();
     }
 
@@ -99,7 +108,7 @@ public class EscalacaoTaticaView implements ScreenView {
         Label title = new Label("Escalação e tática");
         title.getStyleClass().add("page-title");
 
-        Label subtitle = new Label("Escolha os jogadores que ficarão no campo e no banco, ajuste a formação e altere o estilo de jogo sem sair da central do técnico.");
+        Label subtitle = new Label("Escolha os jogadores que ficarão no campo e no banco, ajuste a formação e altere o estilo de jogo.");
         subtitle.getStyleClass().add("page-subtitle");
         subtitle.setWrapText(true);
 
@@ -108,26 +117,26 @@ public class EscalacaoTaticaView implements ScreenView {
                 criarPill("Tática atual"),
                 criarPill("Análise de jogadores"));
 
-        VBox header = new VBox(12, title, subtitle, status);
+        VBox header = new VBox(8, title, subtitle, status);
         header.getStyleClass().add("hero-panel");
-        header.setPadding(new Insets(24));
+        header.setPadding(new Insets(16, 20, 16, 20)); // Padding otimizado
         return header;
     }
 
     private HBox criarAreaPrincipal() {
         campoContainer.getStyleClass().add("pitch-panel");
-        campoContainer.setPadding(new Insets(22));
+        campoContainer.setPadding(new Insets(14));
         VBox.setVgrow(campoContainer, Priority.ALWAYS);
 
         bancoContainer.getStyleClass().add("bench-panel");
-        bancoContainer.setPadding(new Insets(22));
+        bancoContainer.setPadding(new Insets(14));
         VBox.setVgrow(bancoContainer, Priority.ALWAYS);
 
         painelComparacao.getStyleClass().add("comparison-panel");
-        painelComparacao.setPadding(new Insets(22, 12, 22, 12));
+        painelComparacao.setPadding(new Insets(16, 12, 16, 12));
         VBox.setVgrow(painelComparacao, Priority.ALWAYS);
 
-        HBox content = new HBox(18, campoContainer, bancoContainer, painelComparacao);
+        HBox content = new HBox(14, campoContainer, bancoContainer, painelComparacao);
         HBox.setHgrow(campoContainer, Priority.ALWAYS);
         HBox.setHgrow(bancoContainer, Priority.ALWAYS);
         HBox.setHgrow(painelComparacao, Priority.ALWAYS);
@@ -147,20 +156,22 @@ public class EscalacaoTaticaView implements ScreenView {
         taticaBox.getChildren().addAll(taticaTitle, taticaLabel, criarBotoesTatica());
         
         HBox controls = new HBox(18, formacaoBox, taticaBox);
-        controls.setAlignment(Pos.TOP_LEFT);
+        controls.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(formacaoBox, Priority.ALWAYS);
         HBox.setHgrow(taticaBox, Priority.ALWAYS);
 
         Button voltar = new Button("Voltar ao hub");
         voltar.getStyleClass().add("ghost-button");
+        voltar.setStyle("-fx-min-height: 42px; -fx-padding: 0 24px; -fx-font-weight: bold;");
         voltar.setOnAction(event -> navigator.showHub());
 
         HBox footerLine = new HBox(14, controls, new Region(), voltar);
         HBox.setHgrow(footerLine.getChildren().get(1), Priority.ALWAYS);
         footerLine.setAlignment(Pos.CENTER_LEFT);
 
-        VBox wrapper = new VBox(16, footerLine);
+        VBox wrapper = new VBox(12, footerLine);
         wrapper.getStyleClass().add("footer-panel");
+        wrapper.setPadding(new Insets(16, 24, 16, 24)); // Padding otimizado para não espremer o campo
         return wrapper;
     }
 
@@ -214,7 +225,6 @@ public class EscalacaoTaticaView implements ScreenView {
         campoContainer.getChildren().setAll(criarCampo());
         bancoContainer.getChildren().setAll(criarBanco());
 
-        // Atualizar os botões ativos no rodapé
         if (formacaoBox.getChildren().size() > 2) {
             formacaoBox.getChildren().set(2, criarBotoesFormacao());
         }
@@ -229,7 +239,7 @@ public class EscalacaoTaticaView implements ScreenView {
         Label titulo = new Label("Campo de jogo");
         titulo.getStyleClass().add("card-title");
 
-        Label dica = new Label("Clique em dois jogadores para trocá-los ou arraste-os. O campo segue a formação escolhida.");
+        Label dica = new Label("Clique ou arraste os jogadores. O campo segue a formação escolhida.");
         dica.getStyleClass().add("card-text");
         dica.setWrapText(true);
 
@@ -244,8 +254,8 @@ public class EscalacaoTaticaView implements ScreenView {
         List<Jogador> linhaMeio = slice(titularesOrdenados, goleiros + defensores, meio);
         List<Jogador> linhaAtaque = slice(titularesOrdenados, goleiros + defensores + meio, atacantes);
 
-        VBox linesContainer = new VBox(18);
-        linesContainer.setPadding(new Insets(18));
+        VBox linesContainer = new VBox(8); // Espaçamento reduzido
+        linesContainer.setPadding(new Insets(12)); // Padding reduzido
         linesContainer.setAlignment(Pos.CENTER);
 
         linesContainer.getChildren().add(criarLinhaCampo("Ataque", "A", linhaAtaque, goleiros + defensores + meio));
@@ -263,7 +273,7 @@ public class EscalacaoTaticaView implements ScreenView {
         scroll.setFitToWidth(true);
         scroll.setFitToHeight(true);
 
-        VBox panel = new VBox(12, titulo, dica, scroll);
+        VBox panel = new VBox(8, titulo, dica, scroll);
         panel.getStyleClass().add("pitch-card");
         VBox.setVgrow(scroll, Priority.ALWAYS);
         return panel;
@@ -282,7 +292,7 @@ public class EscalacaoTaticaView implements ScreenView {
             row.getChildren().add(criarSlotJogador(jogador, Origem.CAMPO, indiceBase + i, sigla, true));
         }
 
-        VBox wrapper = new VBox(8, titulo, row);
+        VBox wrapper = new VBox(6, titulo, row);
         wrapper.setAlignment(Pos.CENTER);
         return wrapper;
     }
@@ -291,7 +301,7 @@ public class EscalacaoTaticaView implements ScreenView {
         HBox topo = new HBox(12);
         Label titulo = new Label("Banco de reservas");
         titulo.getStyleClass().add("card-title");
-        Label resumo = new Label(reservas.size() + " jogadores disponíveis para troca");
+        Label resumo = new Label(reservas.size() + " jogadores");
         resumo.getStyleClass().add("card-text");
         topo.getChildren().addAll(titulo, new Region(), resumo);
         HBox.setHgrow(topo.getChildren().get(1), Priority.ALWAYS);
@@ -314,8 +324,19 @@ public class EscalacaoTaticaView implements ScreenView {
 
     private Button criarSlotJogador(Jogador jogador, Origem origem, int indice, String sigla, boolean campo) {
         Button botao = new Button();
-        botao.setMaxWidth(Double.MAX_VALUE);
-        botao.setMinHeight(campo ? 92 : 76);
+        
+        // Bloquear largura para evitar tremidas horizontais
+        double larguraFixa = 115;
+        botao.setMinWidth(larguraFixa);
+        botao.setPrefWidth(larguraFixa);
+        botao.setMaxWidth(larguraFixa);
+        
+        // Bloquear altura num tamanho otimizado (reduzido de 92 para 70) para caber na janela
+        double alturaFixa = campo ? 70 : 66; 
+        botao.setMinHeight(alturaFixa);
+        botao.setPrefHeight(alturaFixa);
+        botao.setMaxHeight(alturaFixa);
+        
         botao.setWrapText(true);
         botao.getStyleClass().add(campo ? "field-player-card" : "bench-player-card");
         botao.getStyleClass().add(campo ? "slot-zone-" + sigla.toLowerCase() : "slot-bench");
@@ -328,16 +349,13 @@ public class EscalacaoTaticaView implements ScreenView {
         }
 
         botao.setText(campo
-                ? sigla + " • " + jogador.getNome() + "\n" + jogador.getPosicao() + " • " + jogador.getFisico() + "%"
-                : jogador.getNome() + "\n" + jogador.getPosicao() + " • " + jogador.getFisico() + "%");
+                ? sigla + " • " + obterNomeCurto(jogador.getNome()) + "\n" + jogador.getPosicao() + " • " + jogador.getFisico() + "%"
+                : obterNomeCurto(jogador.getNome()) + "\n" + jogador.getPosicao() + " • " + jogador.getFisico() + "%");
 
         registrarArraste(botao, origem, indice);
         registrarAlvo(botao, origem, indice);
 
-        // Clique para seleção e troca
         botao.setOnAction(event -> tratarSelecaoClique(origem, indice, botao));
-
-        // Hover para comparação
         botao.setOnMouseEntered(event -> tratarMouseEntrouSlot(jogador));
         botao.setOnMouseExited(event -> tratarMouseSaiuSlot());
 
@@ -348,22 +366,18 @@ public class EscalacaoTaticaView implements ScreenView {
         Jogador jogadorClicado = (origem == Origem.CAMPO) ? titulares.get(indice) : reservas.get(indice);
 
         if (jogadorSelecionadoIndice == null) {
-            // Seleciona o primeiro jogador
             jogadorSelecionadoOrigem = origem;
             jogadorSelecionadoIndice = indice;
             jogadorSelecionado = jogadorClicado;
             botao.getStyleClass().add("slot-selected");
             atualizarPainelComparacao();
         } else {
-            // Segundo jogador clicado
             Origem orig = jogadorSelecionadoOrigem;
             int ind = jogadorSelecionadoIndice;
             
             if (orig == origem && ind == indice) {
-                // Clicou no mesmo jogador, remove seleção
                 atualizarTela();
             } else {
-                // Tenta mover
                 boolean sucesso = moverJogador(orig, ind, origem, indice);
                 atualizarTela();
             }
@@ -384,12 +398,12 @@ public class EscalacaoTaticaView implements ScreenView {
         painelComparacao.getChildren().clear();
 
         Label titulo = new Label("Análise de Jogador");
-        titulo.setStyle("-fx-font-size: 22px; -fx-font-weight: 800; -fx-text-fill: #f8fbff; -fx-padding: 0 0 10 0;");
+        titulo.setStyle("-fx-font-size: 20px; -fx-font-weight: 800; -fx-text-fill: #f8fbff; -fx-padding: 0 0 8 0;");
         painelComparacao.getChildren().add(titulo);
 
         if (jogadorSelecionado == null && jogadorHovered == null) {
             Label info = new Label("Clique em um jogador para ver os atributos.\n\nPasse o mouse sobre outro para comparar.");
-            info.setStyle("-fx-font-size: 15px; -fx-text-fill: rgba(255, 255, 255, 0.75); -fx-line-spacing: 5px;");
+            info.setStyle("-fx-font-size: 14px; -fx-text-fill: rgba(255, 255, 255, 0.75); -fx-line-spacing: 5px;");
             info.setWrapText(true);
             painelComparacao.getChildren().add(info);
             return;
@@ -397,43 +411,42 @@ public class EscalacaoTaticaView implements ScreenView {
 
         if (jogadorSelecionado != null && jogadorHovered != null && jogadorSelecionado != jogadorHovered) {
             Label sub = new Label("Comparando Atletas");
-            sub.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.9); -fx-padding: 0 0 5 0;");
+            sub.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.9); -fx-padding: 0 0 4 0;");
             painelComparacao.getChildren().add(sub);
 
             Label nome1 = new Label("1. " + jogadorSelecionado.getNome() + " (" + jogadorSelecionado.getPosicao() + ")");
-            nome1.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #eff5ff;");
+            nome1.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #eff5ff;");
 
             Label nome2 = new Label("2. " + jogadorHovered.getNome() + " (" + jogadorHovered.getPosicao() + ")");
-            nome2.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
+            nome2.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
 
             painelComparacao.getChildren().addAll(nome1, nome2);
 
             GridPane grid = new GridPane();
-            grid.setHgap(10);
-            grid.setVgap(14);
-            grid.setPadding(new Insets(15, 0, 0, 0));
+            grid.setHgap(8);
+            grid.setVgap(12);
+            grid.setPadding(new Insets(12, 0, 0, 0));
             VBox.setVgrow(grid, Priority.ALWAYS);
 
-            ColumnConstraints colAtrib = new ColumnConstraints(95);
-            ColumnConstraints colVal1 = new ColumnConstraints(65);
-            ColumnConstraints colVal2 = new ColumnConstraints(65);
-            ColumnConstraints colDiff = new ColumnConstraints(60);
+            ColumnConstraints colAtrib = new ColumnConstraints(90);
+            ColumnConstraints colVal1 = new ColumnConstraints(60);
+            ColumnConstraints colVal2 = new ColumnConstraints(60);
+            ColumnConstraints colDiff = new ColumnConstraints(55);
             grid.getColumnConstraints().addAll(colAtrib, colVal1, colVal2, colDiff);
 
-            // Headers
             Label hAtrib = new Label("Atributo");
-            hAtrib.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
+            hAtrib.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
             
             Label hVal1 = new Label(obterNomeCurto(jogadorSelecionado.getNome()));
-            hVal1.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
+            hVal1.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
             GridPane.setHalignment(hVal1, javafx.geometry.HPos.CENTER);
 
             Label hVal2 = new Label(obterNomeCurto(jogadorHovered.getNome()));
-            hVal2.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
+            hVal2.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
             GridPane.setHalignment(hVal2, javafx.geometry.HPos.CENTER);
 
             Label hDiff = new Label("Dif.");
-            hDiff.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
+            hDiff.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
             GridPane.setHalignment(hDiff, javafx.geometry.HPos.CENTER);
 
             grid.add(hAtrib, 0, 0);
@@ -441,7 +454,6 @@ public class EscalacaoTaticaView implements ScreenView {
             grid.add(hVal2, 2, 0);
             grid.add(hDiff, 3, 0);
 
-            // Add comparison rows
             adicionarLinhaGrid(grid, 1, "Ataque", jogadorSelecionado.getAtaque(), jogadorHovered.getAtaque(), false);
             adicionarLinhaGrid(grid, 2, "Defesa", jogadorSelecionado.getDefesa(), jogadorHovered.getDefesa(), false);
             adicionarLinhaGrid(grid, 3, "Físico", jogadorSelecionado.getFisico(), jogadorHovered.getFisico(), false);
@@ -449,41 +461,39 @@ public class EscalacaoTaticaView implements ScreenView {
 
             painelComparacao.getChildren().add(grid);
 
-            // Additional details at bottom
             Label statusLabel = new Label("Status: " + jogadorSelecionado.getStatus() + " vs " + jogadorHovered.getStatus());
-            statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: rgba(255, 255, 255, 0.85); -fx-padding: 10 0 0 0;");
+            statusLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: rgba(255, 255, 255, 0.85); -fx-padding: 8 0 0 0;");
             painelComparacao.getChildren().add(statusLabel);
         } else {
             Jogador j = (jogadorSelecionado != null) ? jogadorSelecionado : jogadorHovered;
             
             Label sub = new Label((jogadorSelecionado != null) ? "Jogador Selecionado" : "Visualizando Atleta");
-            sub.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.9); -fx-padding: 0 0 5 0;");
+            sub.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.9); -fx-padding: 0 0 4 0;");
             
             Label nome = new Label(j.getNome());
-            nome.setStyle("-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #8bf0a1;");
+            nome.setStyle("-fx-font-size: 16px; -fx-font-weight: 800; -fx-text-fill: #8bf0a1;");
 
             Label posicao = new Label("Posição: " + j.getPosicao());
-            posicao.setStyle("-fx-font-size: 14px; -fx-text-fill: rgba(255, 255, 255, 0.85);");
+            posicao.setStyle("-fx-font-size: 13px; -fx-text-fill: rgba(255, 255, 255, 0.85);");
 
             Label status = new Label("Status: " + j.getStatus());
-            status.setStyle("-fx-font-size: 14px; -fx-text-fill: rgba(255, 255, 255, 0.85);");
+            status.setStyle("-fx-font-size: 13px; -fx-text-fill: rgba(255, 255, 255, 0.85);");
 
             GridPane grid = new GridPane();
-            grid.setHgap(10);
-            grid.setVgap(14);
-            grid.setPadding(new Insets(15, 0, 0, 0));
+            grid.setHgap(8);
+            grid.setVgap(12);
+            grid.setPadding(new Insets(12, 0, 0, 0));
             VBox.setVgrow(grid, Priority.ALWAYS);
 
-            ColumnConstraints colAtrib = new ColumnConstraints(120);
-            ColumnConstraints colVal = new ColumnConstraints(100);
+            ColumnConstraints colAtrib = new ColumnConstraints(110);
+            ColumnConstraints colVal = new ColumnConstraints(90);
             grid.getColumnConstraints().addAll(colAtrib, colVal);
 
-            // Headers
             Label hAtrib = new Label("Atributo");
-            hAtrib.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
+            hAtrib.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
 
             Label hVal = new Label("Valor");
-            hVal.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
+            hVal.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
 
             grid.add(hAtrib, 0, 0);
             grid.add(hVal, 1, 0);
@@ -508,27 +518,27 @@ public class EscalacaoTaticaView implements ScreenView {
 
     private void adicionarLinhaGrid(GridPane grid, int row, String atributo, int val1, int val2, boolean menorMelhor) {
         Label labelAtrib = new Label(atributo);
-        labelAtrib.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #eff5ff;");
+        labelAtrib.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #eff5ff;");
 
         Label labelVal1 = new Label(String.valueOf(val1));
-        labelVal1.setStyle("-fx-font-size: 15px; -fx-text-fill: #f8fbff;");
+        labelVal1.setStyle("-fx-font-size: 14px; -fx-text-fill: #f8fbff;");
         GridPane.setHalignment(labelVal1, javafx.geometry.HPos.CENTER);
 
         Label labelVal2 = new Label(String.valueOf(val2));
-        labelVal2.setStyle("-fx-font-size: 15px; -fx-text-fill: #f8fbff;");
+        labelVal2.setStyle("-fx-font-size: 14px; -fx-text-fill: #f8fbff;");
         GridPane.setHalignment(labelVal2, javafx.geometry.HPos.CENTER);
 
         int diff = val2 - val1;
         Label labelDiff = new Label();
         if (diff > 0) {
             labelDiff.setText("+" + diff);
-            labelDiff.setStyle(menorMelhor ? "-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;" : "-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
+            labelDiff.setStyle(menorMelhor ? "-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;" : "-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
         } else if (diff < 0) {
             labelDiff.setText(String.valueOf(diff));
-            labelDiff.setStyle(menorMelhor ? "-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;" : "-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+            labelDiff.setStyle(menorMelhor ? "-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;" : "-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
         } else {
             labelDiff.setText("=");
-            labelDiff.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #808080;");
+            labelDiff.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #808080;");
         }
         GridPane.setHalignment(labelDiff, javafx.geometry.HPos.CENTER);
 
@@ -540,10 +550,10 @@ public class EscalacaoTaticaView implements ScreenView {
 
     private void adicionarLinhaGridSimples(GridPane grid, int row, String atributo, Object valor) {
         Label labelAtrib = new Label(atributo);
-        labelAtrib.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #eff5ff;");
+        labelAtrib.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #eff5ff;");
 
         Label labelVal = new Label(String.valueOf(valor));
-        labelVal.setStyle("-fx-font-size: 15px; -fx-text-fill: #f8fbff; -fx-font-weight: bold;");
+        labelVal.setStyle("-fx-font-size: 14px; -fx-text-fill: #f8fbff; -fx-font-weight: bold;");
 
         grid.add(labelAtrib, 0, row);
         grid.add(labelVal, 1, row);

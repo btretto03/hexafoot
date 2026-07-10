@@ -3,12 +3,11 @@ package hexafoot.service.simulacao;
 import hexafoot.model.Partida;
 import java.util.ArrayList;
 
-
 /**
  * Entidade RelogioPartida - Motor central de tempo da simulação, 
  * responsável por avançar os minutos do jogo e notificar todos os processadores seguindo o padrão Observer.
+ * Adaptado para suportar simulação passo a passo (JavaFX).
  */
-
 public class RelogioPartida {
     private ArrayList<ObserverMinuto> processadores;
 
@@ -28,14 +27,21 @@ public class RelogioPartida {
         this.adicionarProcessador(new ProcessadorGols());
     }
 
-//-----------------Motor principal da partida-----------------
+    //-----------------Motor principal da partida-----------------
     private void avisarProcessadores(int minuto, Partida partida) {
-            for (ObserverMinuto processador : processadores) {
-                processador.atualizarMinuto(minuto, partida);
-            }
+        for (ObserverMinuto processador : processadores) {
+            processador.atualizarMinuto(minuto, partida);
+        }
     }
 
-    public void simularJogo(Partida partida) {
+    // ---> NOVO MÉTODO PARA O JAVAFX <---
+    // A interface gráfica vai chamar este método a cada "X" milissegundos
+    public void processarMinutoIsolado(int minuto, Partida partida) {
+        avisarProcessadores(minuto, partida);
+    }
+
+    // ---> MÉTODO ANTIGO (Mantido para testes no console) <---
+    public void simularJogoCompleto(Partida partida) {
 
         //primeiro tempo
         for (int i = 1; i <= 45; i ++) {
@@ -60,4 +66,3 @@ public class RelogioPartida {
         }
     }
 }
-

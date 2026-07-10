@@ -7,14 +7,14 @@ package hexafoot.service.simulacao;
 public enum RegrasSimulacao {
 
     // ---------------- GOLS ----------------
-    CHANCE_GOL(40),
+    CHANCE_GOL(15),
 
     // ---------------- CARTÕES ----------------
     CHANCE_BASE_FALTA(2),
     CHANCE_BASE_VERMELHO(1),
     
     // ---------------- LESÕES ----------------
-    CHANCE_BASE_LESAO(2),
+    CHANCE_BASE_LESAO(1),
     AFASTAMENTO_MIN_LESAO(1),
     AFASTAMENTO_MAX_LESAO(3);
 

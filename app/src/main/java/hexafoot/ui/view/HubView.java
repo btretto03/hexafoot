@@ -1,5 +1,6 @@
 package hexafoot.ui.view;
 
+import hexafoot.model.Partida;
 import hexafoot.model.Time;
 import hexafoot.ui.GameNavigator;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
@@ -101,9 +102,19 @@ public class HubView implements ScreenView {
 
         Button partidas = new Button("Ver partida e simulação");
         partidas.getStyleClass().add("secondary-button");
-        partidas.setOnAction(event -> navigator.showFeaturePlaceholder(
-                "Simulação da partida",
-                "Esta tela exibirá placar, cronômetro, eventos minuto a minuto e substituições."));
+        partidas.setOnAction(event -> {
+            // Pega o elenco do Brasil (já escalado)
+            Time brasil = navigator.getSession().getElencoBrasil();
+            
+            // TODO: Aqui depois você vai puxar o adversário correto baseado no calendário
+            // Por enquanto, pegamos a primeira seleção internacional como exemplo de adversário
+            Time adversario = navigator.getSession().getSelecoesInternacionais().get(0);
+            
+            Partida novaPartida = new Partida(brasil, adversario);
+            
+            // Navega para a tela de simulação
+            navigator.showSimulacaoPartida(novaPartida);
+        });
 
         Button tabela = new Button("Consultar grupos e mata-mata");
         tabela.getStyleClass().add("secondary-button");
