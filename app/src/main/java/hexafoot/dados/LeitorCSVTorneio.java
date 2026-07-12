@@ -13,9 +13,14 @@ import java.util.List;
  */
 public class LeitorCSVTorneio {
     private static final String ARQUIVO_GRUPOS = "/data/info_torneio/grupos.csv";
+    private static final String ARQUIVO_CALENDARIO_FASE_GRUPOS = "/data/info_torneio/calendario_fase_grupos.csv";
 
     public List<String[]> lerGrupos() {
         return lerArquivo(ARQUIVO_GRUPOS, 5);
+    }
+
+    public List<String[]> lerCalendarioFaseGrupos() {
+        return lerArquivo(ARQUIVO_CALENDARIO_FASE_GRUPOS, 4);
     }
 
     private List<String[]> lerArquivo(String caminho, int quantidadeColunas) {
@@ -39,15 +44,13 @@ public class LeitorCSVTorneio {
 
                 String[] campos = linha.split(",", -1);
                 if (campos.length != quantidadeColunas) {
-                    throw new IllegalStateException(
-                            "Linha " + numeroLinha + " inválida no arquivo " + caminho);
+                    throw new IllegalStateException("Linha " + numeroLinha + " inválida no arquivo " + caminho);
                 }
 
                 for (int i = 0; i < campos.length; i++) {
                     campos[i] = campos[i].trim();
                     if (campos[i].isEmpty()) {
-                        throw new IllegalStateException(
-                                "Campo vazio na linha " + numeroLinha + " do arquivo " + caminho);
+                        throw new IllegalStateException("Campo vazio na linha " + numeroLinha + " do arquivo " + caminho);
                     }
                 }
 
