@@ -32,6 +32,7 @@ public class GerenciadorTorneio {
     private final Time brasil;
     private final List<Grupo> grupos;
     private final List<PartidaTorneio> partidasFaseGrupos;
+    private final SimuladorPartidaCpu simuladorPartidaCpu;
     private FaseTorneio faseAtual;
     private int rodadaAtual;
 
@@ -48,6 +49,7 @@ public class GerenciadorTorneio {
         FabricaTorneio fabricaTorneio = new FabricaTorneio();
         this.grupos = fabricaTorneio.montarGrupos(todasSelecoes);
         this.partidasFaseGrupos = fabricaTorneio.montarCalendarioFaseGrupos(grupos);
+        this.simuladorPartidaCpu = new SimuladorPartidaCpu();
         this.faseAtual = FaseTorneio.FASE_DE_GRUPOS;
         this.rodadaAtual = 1;
     }
@@ -98,6 +100,24 @@ public class GerenciadorTorneio {
 
     public boolean isFaseGruposConcluida() {
         return partidasFaseGrupos.stream().allMatch(partida -> partida.getStatus() == StatusPartidaTorneio.CONCLUIDA);
+    }
+
+    public List<PartidaTorneio> simularPartidasCpu() {
+        int rodadaProcessada = rodadaAtual;
+        List<PartidaTorneio> partidasSimuladas = new ArrayList<>();
+
+        for (PartidaTorneio partidaTorneio : getPartidasDaRodada(rodadaProcessada)) {
+            if (envolveBrasil(partidaTorneio) || partidaTorneio.getStatus() != StatusPartidaTorneio.AGENDADA) {
+                continue;
+            }
+
+            Partida partida = iniciarPartida(partidaTorneio.getId());
+            simuladorPartidaCpu.simularPartida(partida);
+            registrarResultado(partidaTorneio.getId(), partida);
+            partidasSimuladas.add(partidaTorneio);
+        }
+
+        return List.copyOf(partidasSimuladas);
     }
 
     private Grupo buscarGrupo(String identificadorGrupo) {
