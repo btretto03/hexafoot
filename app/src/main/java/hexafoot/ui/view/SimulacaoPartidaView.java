@@ -15,6 +15,7 @@ import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.GameNavigator;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -326,7 +327,9 @@ public class SimulacaoPartidaView implements ScreenView {
 
     private void avancarMinuto() {
         if (minutoAtual > 90) {
-            finalizarPartida();
+            timeline.stop();
+            jogoEmAndamento = false;
+            Platform.runLater(this::finalizarPartida);
             return;
         }
 

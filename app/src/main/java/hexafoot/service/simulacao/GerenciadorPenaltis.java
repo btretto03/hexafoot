@@ -57,6 +57,12 @@ public class GerenciadorPenaltis {
             }
         }
 
+        for (Jogador jogador : time.getTitulares()) {
+            if (batedores.contains(jogador) == false) {
+                batedores.add(jogador);
+            }
+        }
+
         return batedores;
     }
 
@@ -85,7 +91,7 @@ public class GerenciadorPenaltis {
         int cobrancasVisitante = 0;
 
         for (int i = 0; i < 5; i ++) { //serie de 5 cobrancas
-            Jogador batedorMandante = batedoresMandante.get(i);
+            Jogador batedorMandante = obterBatedor(batedoresMandante, i);
             boolean fezGolMandante = realizarCobranca(batedorMandante, goleiroVisitante, partida, "Mandante");
             
             if (fezGolMandante == true) {
@@ -97,7 +103,7 @@ public class GerenciadorPenaltis {
                 break;
             }
 
-            Jogador batedorVisitante = batedoresVisitante.get(i);
+            Jogador batedorVisitante = obterBatedor(batedoresVisitante, i);
             boolean fezGolVisitante = realizarCobranca(batedorVisitante, goleiroMandante, partida, "Visitante");
             
             if (fezGolVisitante == true) {
@@ -112,13 +118,13 @@ public class GerenciadorPenaltis {
 
         int rodadaMorteSubita = 5; //morte subita
         while (placarMandante == placarVisitante) {
-            Jogador batedorMandante = batedoresMandante.get(rodadaMorteSubita % batedoresMandante.size());
+            Jogador batedorMandante = obterBatedor(batedoresMandante, rodadaMorteSubita);
             boolean fezGolMandante = realizarCobranca(batedorMandante, goleiroVisitante, partida, "Mandante");
             if (fezGolMandante == true) {
                 placarMandante ++;
             }
 
-            Jogador batedorVisitante = batedoresVisitante.get(rodadaMorteSubita % batedoresVisitante.size());
+            Jogador batedorVisitante = obterBatedor(batedoresVisitante, rodadaMorteSubita);
             boolean fezGolVisitante = realizarCobranca(batedorVisitante, goleiroMandante, partida, "Visitante");
             if (fezGolVisitante == true) {
                 placarVisitante ++;
@@ -131,6 +137,14 @@ public class GerenciadorPenaltis {
         }
 
         return partida.getVisitante();
+    }
+
+    private Jogador obterBatedor(List<Jogador> batedores, int indice) {
+        if (batedores.isEmpty()) {
+            throw new IllegalStateException("O time precisa ter ao menos um jogador disponível para disputar os pênaltis");
+        }
+
+        return batedores.get(indice % batedores.size());
     }
 
     private boolean realizarCobranca(Jogador batedor, Jogador goleiro, Partida partida, String lado) {
