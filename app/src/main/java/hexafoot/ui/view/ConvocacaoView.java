@@ -73,6 +73,7 @@ public class ConvocacaoView implements ScreenView {
                 Time timeBrasil = navigator.getSession().getElencoBrasil();
                 timeBrasil.setFormacaoAtual(hexafoot.model.Formacao.F_4_3_3);
                 timeBrasil.escalarMelhoresJogadores();
+                navigator.getSession().iniciarTorneio();
                 navigator.showHub();
                 return;
             }
