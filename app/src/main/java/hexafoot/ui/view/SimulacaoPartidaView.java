@@ -3,6 +3,7 @@ package hexafoot.ui.view;
 import hexafoot.model.EventoPartida;
 import hexafoot.model.Jogador;
 import hexafoot.model.Partida;
+import hexafoot.model.PartidaTorneio;
 import hexafoot.model.Time;
 import hexafoot.model.strategy.EstrategiaSimulacao;
 import hexafoot.model.strategy.TaticaEquilibrada;
@@ -37,7 +38,7 @@ import java.util.Map;
 public class SimulacaoPartidaView implements ScreenView {
     private final BorderPane root;
     private final GameNavigator navigator;
-    
+    private final PartidaTorneio partidaTorneio;
     private final Partida partida;
     private final RelogioPartida relogio;
     private int minutoAtual = 1;
@@ -63,6 +64,7 @@ public class SimulacaoPartidaView implements ScreenView {
     private Button btnVelLenta;
     private Button btnVelNormal;
     private Button btnVelRapida;
+    private Button btnVoltar;
 
     private VBox painelTecnico;
     private ComboBox<Jogador> comboSai;
@@ -72,8 +74,9 @@ public class SimulacaoPartidaView implements ScreenView {
     private Button btnTaticaEquilibrada;
     private Button btnTaticaRetranca;
 
-    public SimulacaoPartidaView(GameNavigator navigator, Partida partida) {
+    public SimulacaoPartidaView(GameNavigator navigator, PartidaTorneio partidaTorneio, Partida partida) {
         this.navigator = navigator;
+        this.partidaTorneio = partidaTorneio;
         this.partida = partida;
         
         this.relogio = new RelogioPartida();
@@ -276,8 +279,9 @@ public class SimulacaoPartidaView implements ScreenView {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button btnVoltar = new Button("Voltar ao Hub");
+        btnVoltar = new Button("Voltar ao Hub");
         btnVoltar.getStyleClass().add("ghost-button");
+        btnVoltar.setDisable(true);
         btnVoltar.setOnAction(e -> {
             if (timeline != null) timeline.stop();
             navigator.showHub();
@@ -676,7 +680,8 @@ public class SimulacaoPartidaView implements ScreenView {
     private void finalizarPartida() {
         timeline.stop();
         jogoEmAndamento = false;
-        partida.aplicarResultadoNaTabela();
+        navigator.getSession().getGerenciadorTorneio().registrarResultado(partidaTorneio.getId(), partida);
+        navigator.getSession().getGerenciadorTorneio().simularPartidasCpu();
         
         lblTempo.setText("FIM");
         atualizarEstadoBotoesTempo();
@@ -685,6 +690,7 @@ public class SimulacaoPartidaView implements ScreenView {
         btnVelLenta.setDisable(true);
         btnVelNormal.setDisable(true);
         btnVelRapida.setDisable(true);
+        btnVoltar.setDisable(false);
         
         painelTecnico.setDisable(true);
         

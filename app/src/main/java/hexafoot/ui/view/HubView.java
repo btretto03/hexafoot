@@ -1,6 +1,5 @@
 package hexafoot.ui.view;
 
-import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
 import hexafoot.ui.GameNavigator;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
@@ -105,10 +104,7 @@ public class HubView implements ScreenView {
         Button partidas = new Button("Ver partida e simulação");
         partidas.getStyleClass().add("secondary-button");
         partidas.setDisable(proximaPartidaBrasil == null);
-        partidas.setOnAction(event -> {
-            Partida partida = navigator.getSession().getGerenciadorTorneio().iniciarPartida(proximaPartidaBrasil.getId());
-            navigator.showSimulacaoPartida(partida);
-        });
+        partidas.setOnAction(event -> navigator.showSimulacaoPartida(proximaPartidaBrasil));
 
         Button tabela = new Button("Consultar grupos e mata-mata");
         tabela.getStyleClass().add("secondary-button");

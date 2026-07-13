@@ -1,6 +1,7 @@
 package hexafoot.ui;
 
 import hexafoot.model.Partida;
+import hexafoot.model.PartidaTorneio;
 import hexafoot.ui.view.ConvocacaoView;
 import hexafoot.ui.view.EscalacaoTaticaView;
 import hexafoot.ui.view.FeaturePlaceholderView;
@@ -62,7 +63,8 @@ public class GameNavigator {
         stage.setScene(scene);
     }
 
-    public void showSimulacaoPartida(Partida partida) {
-        applyScene(new SimulacaoPartidaView(this, partida));
+    public void showSimulacaoPartida(PartidaTorneio partidaTorneio) {
+        Partida partida = session.getGerenciadorTorneio().iniciarPartida(partidaTorneio.getId());
+        applyScene(new SimulacaoPartidaView(this, partidaTorneio, partida));
     }
 }
