@@ -1,7 +1,7 @@
 package hexafoot.ui.view;
 
 import hexafoot.model.Partida;
-import hexafoot.model.Time;
+import hexafoot.model.PartidaTorneio;
 import hexafoot.ui.GameNavigator;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -100,20 +100,14 @@ public class HubView implements ScreenView {
         escalacao.getStyleClass().add("primary-button");
         escalacao.setOnAction(event -> navigator.showEscalacaoTatica());
 
+        PartidaTorneio proximaPartidaBrasil = navigator.getSession().getGerenciadorTorneio().getProximaPartidaBrasil().orElse(null);
+
         Button partidas = new Button("Ver partida e simulação");
         partidas.getStyleClass().add("secondary-button");
+        partidas.setDisable(proximaPartidaBrasil == null);
         partidas.setOnAction(event -> {
-            // Pega o elenco do Brasil (já escalado)
-            Time brasil = navigator.getSession().getElencoBrasil();
-            
-            // TODO: Aqui depois você vai puxar o adversário correto baseado no calendário
-            // Por enquanto, pegamos a primeira seleção internacional como exemplo de adversário
-            Time adversario = navigator.getSession().getSelecoesInternacionais().get(0);
-            
-            Partida novaPartida = new Partida(brasil, adversario);
-            
-            // Navega para a tela de simulação
-            navigator.showSimulacaoPartida(novaPartida);
+            Partida partida = navigator.getSession().getGerenciadorTorneio().iniciarPartida(proximaPartidaBrasil.getId());
+            navigator.showSimulacaoPartida(partida);
         });
 
         Button tabela = new Button("Consultar grupos e mata-mata");
