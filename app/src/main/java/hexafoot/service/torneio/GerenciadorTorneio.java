@@ -130,6 +130,35 @@ public class GerenciadorTorneio {
         return Collections.unmodifiableMap(classificados); //Retornando a classificação imutável
     }
 
+    public void iniciarMataMata() {
+        Map<String, Time> classificados = getClassificadosFaseGrupos();
+
+        for (PartidaTorneio partida : partidasMataMata) {
+            if (partida.getFase() == FaseTorneio.DEZESSEIS_AVOS) {
+                Time mandante = classificados.get(partida.getIdentificadorOrigemMandante());
+                Time visitante = classificados.get(partida.getIdentificadorOrigemVisitante());
+                partida.definirParticipantes(mandante, visitante);
+            }
+        }
+
+        faseAtual = FaseTorneio.DEZESSEIS_AVOS;
+    }
+
+    public List<PartidaTorneio> getPartidasFaseAtual() {
+        if (faseAtual == FaseTorneio.FASE_DE_GRUPOS) {
+            return getPartidasDaRodada(rodadaAtual);
+        }
+
+        List<PartidaTorneio> partidas = new ArrayList<>();
+        for (PartidaTorneio partida : partidasMataMata) {
+            if (partida.getFase() == faseAtual) {
+                partidas.add(partida);
+            }
+        }
+
+        return List.copyOf(partidas);
+    }
+
     private List<Time> calcularTerceirosOrdenados() {
         List<Time> terceiros = new ArrayList<>();
         for (Grupo grupo : grupos) {

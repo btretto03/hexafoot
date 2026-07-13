@@ -5,7 +5,7 @@ package hexafoot.model;
  */
 public enum FaseTorneio {
     FASE_DE_GRUPOS,
-    RODADA_DE_32,
+    DEZESSEIS_AVOS,
     OITAVAS,
     QUARTAS,
     SEMIFINAL,
