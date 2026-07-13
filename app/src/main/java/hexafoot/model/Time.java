@@ -27,7 +27,7 @@ public class Time {
         this.titulares = new ArrayList<>();
         this.reservas = new ArrayList<>();
         this.taticaAtual = new TaticaEquilibrada(); //tática padrão
-        this.formacaoAtual = Formacao.F_4_4_2; //formação padrão
+        this.formacaoAtual = Formacao.F_4_3_3; //formação padrão
         this.pontos = 0;
         this.golsMarcados = 0;
         this.golsSofridos = 0;
@@ -38,13 +38,15 @@ public class Time {
 
 //-----------------Gerenciamento de elenco-----------------
     public void adicionarTitular(Jogador jogador) {
-        if (titulares.size() < 11) {
+        if (titulares.size() < 11 && titulares.contains(jogador) == false && reservas.contains(jogador) == false) {
             titulares.add(jogador);
         }
     }
 
     public void adicionarReserva(Jogador jogador) {
+        if (titulares.contains(jogador) == false && reservas.contains(jogador) == false) {
             reservas.add(jogador);
+        }
     }
 
     public boolean removerTitular(Jogador jogador) {
@@ -185,5 +187,83 @@ public class Time {
 
     public void setFormacaoAtual(Formacao formacaoAtual) {
         this.formacaoAtual = formacaoAtual;
+    }
+
+    public void escalarMelhoresJogadores() {
+        List<Jogador> todos = new ArrayList<>();
+        todos.addAll(titulares);
+        todos.addAll(reservas);
+
+        List<Jogador> goleiros = new ArrayList<>();
+        List<Jogador> defensores = new ArrayList<>();
+        List<Jogador> meias = new ArrayList<>();
+        List<Jogador> atacantes = new ArrayList<>();
+
+        for (Jogador j : todos) {
+            String pos = normalizarPosicao(j.getPosicao());
+            if ("goleiro".equals(pos)) {
+                goleiros.add(j);
+            } else if ("defensor".equals(pos)) {
+                defensores.add(j);
+            } else if ("meio-campista".equals(pos)) {
+                meias.add(j);
+            } else {
+                atacantes.add(j);
+            }
+        }
+
+        // Ordenar por qualidade (decrescente)
+        goleiros.sort((j1, j2) -> Integer.compare(j2.getDefesa(), j1.getDefesa()));
+        defensores.sort((j1, j2) -> Integer.compare(j2.getDefesa(), j1.getDefesa()));
+        meias.sort((j1, j2) -> Integer.compare((j2.getAtaque() + j2.getDefesa()), (j1.getAtaque() + j1.getDefesa())));
+        atacantes.sort((j1, j2) -> Integer.compare(j2.getAtaque(), j1.getAtaque()));
+
+        int qtdG = 1;
+        int qtdD = formacaoAtual.getQuantidadeDefensores();
+        int qtdM = formacaoAtual.getQuantidadeMeio();
+        int qtdA = formacaoAtual.getQuantidadeAtacantes();
+
+        List<Jogador> novosTitulares = new ArrayList<>();
+        List<Jogador> novosReservas = new ArrayList<>();
+
+        preencherMelhores(goleiros, qtdG, novosTitulares, novosReservas);
+        preencherMelhores(defensores, qtdD, novosTitulares, novosReservas);
+        preencherMelhores(meias, qtdM, novosTitulares, novosReservas);
+        preencherMelhores(atacantes, qtdA, novosTitulares, novosReservas);
+
+        // Prevenção contra escassez de alguma posição específica
+        while (novosTitulares.size() < 11 && !novosReservas.isEmpty()) {
+            novosTitulares.add(novosReservas.remove(0));
+        }
+
+        titulares.clear();
+        titulares.addAll(novosTitulares);
+
+        reservas.clear();
+        reservas.addAll(novosReservas);
+    }
+
+    private void preencherMelhores(List<Jogador> origem, int qtd, List<Jogador> targetTitulares, List<Jogador> targetReservas) {
+        for (int i = 0; i < origem.size(); i++) {
+            if (i < qtd) {
+                targetTitulares.add(origem.get(i));
+            } else {
+                targetReservas.add(origem.get(i));
+            }
+        }
+    }
+
+    private String normalizarPosicao(String posicao) {
+        String limpa = posicao == null ? "" : posicao.trim().toLowerCase();
+        if (limpa.contains("gole")) {
+            return "goleiro";
+        }
+        if (limpa.contains("def")) {
+            return "defensor";
+        }
+        if (limpa.contains("meio")) {
+            return "meio-campista";
+        }
+        return "atacante";
     }
 }

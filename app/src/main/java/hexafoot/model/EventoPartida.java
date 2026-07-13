@@ -40,4 +40,36 @@ public class EventoPartida {
     public Jogador getJogadorSubstituinte() {
         return jogadorSubstituinte;
     }
+
+    //-----------------Formatação para a Interface Gráfica-----------------
+    @Override
+    public String toString() {
+        // Garantimos que o nome do jogador seja pego corretamente
+        String nomeAutor = (autor != null) ? autor.getNome() : "Desconhecido";
+        
+        // Padronizamos o texto do tipo para evitar problemas com letras maiúsculas/minúsculas
+        String tipoFormatado = (tipo != null) ? tipo.toLowerCase() : "";
+
+        // Retornamos uma mensagem estilizada dependendo do tipo de evento
+        if (tipoFormatado.contains("gol")) {
+            return "⚽ GOL! " + nomeAutor + " manda para o fundo das redes!";
+        } 
+        else if (tipoFormatado.contains("amarelo")) {
+            return "🟨 Cartão Amarelo para " + nomeAutor + ".";
+        } 
+        else if (tipoFormatado.contains("vermelho")) {
+            return "🟥 EXPULSO! Cartão Vermelho direto para " + nomeAutor + "!";
+        } 
+        else if (tipoFormatado.contains("lesão") || tipoFormatado.contains("lesao")) {
+            return "🚑 Sentiu! " + nomeAutor + " sofreu uma lesão e precisa de atendimento.";
+        } 
+        else if (tipoFormatado.contains("substituição") || tipoFormatado.contains("substituicao")) {
+            String nomeEntra = (jogadorSubstituinte != null) ? jogadorSubstituinte.getNome() : "Reserva";
+            return "🔄 Substituição: Sai " + nomeAutor + ", entra " + nomeEntra + ".";
+        } 
+        else {
+            // Um fallback genérico caso apareça um evento novo no futuro
+            return tipo + " - " + nomeAutor;
+        }
+    }
 }

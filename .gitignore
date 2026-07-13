@@ -1,8 +1,12 @@
 .gradle/
 build/
+.tools/
 
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 .vscode/
 bin/
+
+.tools/

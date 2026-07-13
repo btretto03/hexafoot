@@ -34,7 +34,7 @@ public class ProcessadorLesoes implements ObserverMinuto {
 
             int chanceLesao = RegrasSimulacao.CHANCE_BASE_LESAO.getValor(); 
             int fadiga = 100 - jogador.getFisico(); //quanto mais fadiga maior chance de lesao
-            chanceLesao = chanceLesao + fadiga; 
+            chanceLesao = chanceLesao + (fadiga / 5); 
 
             int sorteioLesao = random.nextInt(10000) + 1;
 

@@ -11,14 +11,18 @@ import java.util.List;
  */
 public class LeitorCSVSelecao {
 
-    private static final String PASTA_ELENCOS = "app/src/main/resources/data/elencos/";
+    private static final String PASTA_ELENCOS = "src/main/resources/data/elencos";
 
     //-----------------Leitura dos elencos-----------------
     public List<ArquivoCSVSelecao> listarArquivosDeSelecoes() {
         List<ArquivoCSVSelecao> arquivos = new ArrayList<>();
 
         File pasta = new File(PASTA_ELENCOS);
-        File[] csvs = pasta.listFiles();
+        File[] csvs = pasta.listFiles((dir, nome) -> nome.endsWith(".csv"));
+
+        if (csvs == null) {
+            throw new IllegalStateException("Nao foi possivel localizar a pasta de elencos em " + pasta.getAbsolutePath());
+        }
 
         for (File csv : csvs) {
             String nomeArquivo = csv.getName().replace(".csv", "");
