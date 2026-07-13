@@ -9,9 +9,12 @@ import hexafoot.model.StatusPartidaTorneio;
 import hexafoot.model.Time;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -118,6 +121,48 @@ public class GerenciadorTorneio {
         }
 
         return List.copyOf(partidasSimuladas);
+    }
+
+    public List<Time> getMelhoresTerceiros() {
+        exigirFaseGruposConcluida();
+        return calcularTerceirosOrdenados().stream().limit(8).toList();
+    }
+
+    public Map<String, Time> getClassificadosFaseGrupos() {
+        exigirFaseGruposConcluida();
+        Map<String, Time> classificados = new LinkedHashMap<>();
+        List<Grupo> gruposOrdenados = grupos.stream().sorted(Comparator.comparing(Grupo::getIdentificador)).toList();
+
+        //Identificando os melhores de cada grupo como X1X2 (X1: Posição; X2: Grupo)
+        for (Grupo grupo : gruposOrdenados) {
+            List<Time> classificacao = getClassificacaoGrupo(grupo.getIdentificador());
+            classificados.put("1" + grupo.getIdentificador(), classificacao.get(0));
+            classificados.put("2" + grupo.getIdentificador(), classificacao.get(1));
+        }
+
+        //Identificando os melhores terceiros como 3_X (X: Posição entre os terceiros lugares)
+        List<Time> melhoresTerceiros = getMelhoresTerceiros();
+        for (int i = 0; i < melhoresTerceiros.size(); i++) {
+            classificados.put("3_" + (i + 1), melhoresTerceiros.get(i));
+        }
+
+        return Collections.unmodifiableMap(classificados); //Retornando a classificação imutável
+    }
+
+    private List<Time> calcularTerceirosOrdenados() {
+        List<Time> terceiros = new ArrayList<>();
+        for (Grupo grupo : grupos) {
+            terceiros.add(getClassificacaoGrupo(grupo.getIdentificador()).get(2));
+        }
+
+        terceiros.sort(COMPARADOR_CLASSIFICACAO);
+        return List.copyOf(terceiros);
+    }
+
+    private void exigirFaseGruposConcluida() {
+        if (!isFaseGruposConcluida()) {
+            throw new IllegalStateException("Os classificados só podem ser definidos após a conclusão da fase de grupos");
+        }
     }
 
     private Grupo buscarGrupo(String identificadorGrupo) {
