@@ -289,6 +289,27 @@
     -fx-background-color: transparent;
 }
 
+.tournament-tabs,
+.tournament-tabs > .tab-content-area,
+.tournament-tabs > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tournament-tabs > .tab-header-area .tab {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-radius: 6 6 0 0;
+    -fx-padding: 8 18;
+}
+
+.tournament-tabs > .tab-header-area .tab:selected {
+    -fx-background-color: #2f8f4e;
+}
+
+.tournament-tabs > .tab-header-area .tab-label {
+    -fx-text-fill: #f8fbff;
+    -fx-font-weight: 700;
+}
+
 .groups-container {
     padding: 0 8 0 0;
     -fx-padding: 0 8 0 0;
@@ -325,10 +346,16 @@
 }
 
 .group-table .column-header-background {
-    background-color: rgba(255, 255, 255, 0.05);
-    -fx-background-color: rgba(255, 255, 255, 0.05);
+    background-color: #173a2a;
+    -fx-background-color: #173a2a;
     border-radius: 14 14 0 0;
     -fx-background-radius: 14 14 0 0;
+}
+
+.group-table .column-header,
+.group-table .filler {
+    background-color: #173a2a;
+    -fx-background-color: #173a2a;
 }
 
 .group-table .column-header .label {

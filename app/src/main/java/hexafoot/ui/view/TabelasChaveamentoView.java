@@ -1,6 +1,10 @@
 package hexafoot.ui.view;
 
+import hexafoot.model.FaseTorneio;
 import hexafoot.model.Grupo;
+import hexafoot.model.Partida;
+import hexafoot.model.PartidaTorneio;
+import hexafoot.model.StatusPartidaTorneio;
 import hexafoot.model.Time;
 import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.GameNavigator;
@@ -11,6 +15,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
@@ -35,7 +41,7 @@ public class TabelasChaveamentoView implements ScreenView {
         Label title = new Label("Tabelas e Chaveamento");
         title.getStyleClass().add("page-title");
 
-        Label subtitle = new Label("Classificação organizada por grupos, com pontos, saldo e desempenho atual de cada seleção.");
+        Label subtitle = new Label("Acompanhe a classificação dos grupos e todos os confrontos do mata-mata.");
         subtitle.getStyleClass().add("page-subtitle");
         subtitle.setWrapText(true);
 
@@ -55,17 +61,115 @@ public class TabelasChaveamentoView implements ScreenView {
             groupsContainer.getChildren().add(criarCartaoGrupo("Grupo " + grupo.getIdentificador(), classificacao));
         }
 
-        ScrollPane scrollPane = new ScrollPane(groupsContainer);
+        ScrollPane gruposScroll = criarScrollPane(groupsContainer);
+        VBox mataMataContainer = criarChaveamentoMataMata(gerenciadorTorneio);
+        ScrollPane mataMataScroll = criarScrollPane(mataMataContainer);
+
+        Tab gruposTab = new Tab("Grupos", gruposScroll);
+        Tab mataMataTab = new Tab("Mata-mata", mataMataScroll);
+        TabPane abas = new TabPane(gruposTab, mataMataTab);
+        abas.getStyleClass().add("tournament-tabs");
+        abas.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+
+        if (gerenciadorTorneio.getFaseAtual() == FaseTorneio.ENCERRADO) {
+            abas.getSelectionModel().select(mataMataTab);
+        }
+
+        VBox.setVgrow(abas, Priority.ALWAYS);
+        layout.getChildren().addAll(header, abas);
+        VBox.setVgrow(layout, Priority.ALWAYS);
+
+        root.setCenter(layout);
+    }
+
+    private ScrollPane criarScrollPane(VBox conteudo) {
+        ScrollPane scrollPane = new ScrollPane(conteudo);
         scrollPane.getStyleClass().add("championship-scroll");
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        VBox.setVgrow(scrollPane, Priority.ALWAYS);
+        return scrollPane;
+    }
 
-        layout.getChildren().addAll(header, scrollPane);
-        VBox.setVgrow(layout, Priority.ALWAYS);
+    private VBox criarChaveamentoMataMata(GerenciadorTorneio gerenciadorTorneio) {
+        VBox container = new VBox(16);
+        container.getStyleClass().add("groups-container");
 
-        root.setCenter(layout);
+        if (gerenciadorTorneio.getFaseAtual() == FaseTorneio.ENCERRADO) {
+            Label resultado = new Label("Campeão: " + gerenciadorTorneio.getCampeao().getNome() + " | Terceiro colocado: " + gerenciadorTorneio.getTerceiroColocado().getNome());
+            resultado.getStyleClass().add("page-subtitle");
+            container.getChildren().add(resultado);
+        }
+
+        FaseTorneio[] fases = {FaseTorneio.DEZESSEIS_AVOS, FaseTorneio.OITAVAS, FaseTorneio.QUARTAS, FaseTorneio.SEMIFINAL, FaseTorneio.TERCEIRO_LUGAR, FaseTorneio.FINAL};
+        for (FaseTorneio fase : fases) {
+            VBox secao = new VBox(10);
+            Label titulo = new Label(formatarFase(fase));
+            titulo.getStyleClass().add("group-title");
+            secao.getChildren().add(titulo);
+
+            for (PartidaTorneio partida : gerenciadorTorneio.getPartidasMataMata()) {
+                if (partida.getFase() == fase) {
+                    secao.getChildren().add(criarCartaoPartida(partida));
+                }
+            }
+
+            container.getChildren().add(secao);
+        }
+
+        return container;
+    }
+
+    private VBox criarCartaoPartida(PartidaTorneio partidaTorneio) {
+        String mandante = nomeParticipante(partidaTorneio.getMandante(), partidaTorneio.getIdentificadorOrigemMandante());
+        String visitante = nomeParticipante(partidaTorneio.getVisitante(), partidaTorneio.getIdentificadorOrigemVisitante());
+
+        Label confronto = new Label(partidaTorneio.getId() + " | " + mandante + " x " + visitante);
+        confronto.getStyleClass().add("card-title");
+
+        String detalhes = "Agendada";
+        if (partidaTorneio.getStatus() == StatusPartidaTorneio.EM_ANDAMENTO) {
+            detalhes = "Em andamento";
+        } else if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
+            Partida partida = partidaTorneio.getPartida();
+            detalhes = "Placar: " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " | Vencedor: " + partidaTorneio.getVencedor().getNome();
+        }
+
+        Label resultado = new Label(detalhes);
+        resultado.getStyleClass().add("card-text");
+
+        VBox card = new VBox(5, confronto, resultado);
+        card.getStyleClass().add("group-card");
+        card.setPadding(new Insets(12));
+        return card;
+    }
+
+    private String nomeParticipante(Time time, String origem) {
+        if (time != null) {
+            return time.getNome();
+        }
+
+        return origem;
+    }
+
+    private String formatarFase(FaseTorneio fase) {
+        if (fase == FaseTorneio.DEZESSEIS_AVOS) {
+            return "Dezesseis-avos";
+        }
+        if (fase == FaseTorneio.OITAVAS) {
+            return "Oitavas de final";
+        }
+        if (fase == FaseTorneio.QUARTAS) {
+            return "Quartas de final";
+        }
+        if (fase == FaseTorneio.SEMIFINAL) {
+            return "Semifinais";
+        }
+        if (fase == FaseTorneio.TERCEIRO_LUGAR) {
+            return "Terceiro lugar";
+        }
+
+        return "Final";
     }
 
     private VBox criarCartaoGrupo(String grupo, List<Time> times) {

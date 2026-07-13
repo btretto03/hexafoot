@@ -692,6 +692,7 @@ public class SimulacaoPartidaView implements ScreenView {
 
             if (gerenciadorTorneio.isFaseGruposConcluida()) {
                 gerenciadorTorneio.iniciarMataMata();
+                gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
             }
         } else {
             List<Jogador> batedoresEscolhidos = List.of();
@@ -706,7 +707,7 @@ public class SimulacaoPartidaView implements ScreenView {
             }
 
             gerenciadorTorneio.registrarResultadoBrasilMataMata(partidaTorneio.getId(), partida, batedoresEscolhidos);
-            gerenciadorTorneio.simularPartidasCpu();
+            gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
         }
         
         lblTempo.setText("FIM");

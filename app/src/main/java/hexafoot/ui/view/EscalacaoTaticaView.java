@@ -71,6 +71,7 @@ public class EscalacaoTaticaView implements ScreenView {
     public EscalacaoTaticaView(GameNavigator navigator) {
         this.navigator = navigator;
         this.time = navigator.getSession().getElencoBrasil();
+        removerJogadoresDuplicados();
         reorganizarTitularesConformeFormacao();
 
         this.root = new BorderPane();
@@ -674,6 +675,32 @@ public class EscalacaoTaticaView implements ScreenView {
 
         time.getTitulares().clear();
         time.getTitulares().addAll(reorganizados);
+    }
+
+    private void removerJogadoresDuplicados() {
+        List<Jogador> titularesSemRepeticao = new ArrayList<>();
+        List<Jogador> reservasSemRepeticao = new ArrayList<>();
+
+        for (Jogador jogador : time.getTitulares()) {
+            if (titularesSemRepeticao.contains(jogador) == false) {
+                titularesSemRepeticao.add(jogador);
+            }
+        }
+
+        for (Jogador jogador : time.getReservas()) {
+            if (titularesSemRepeticao.contains(jogador) == false && reservasSemRepeticao.contains(jogador) == false) {
+                reservasSemRepeticao.add(jogador);
+            }
+        }
+
+        while (titularesSemRepeticao.size() < 11 && reservasSemRepeticao.isEmpty() == false) {
+            titularesSemRepeticao.add(reservasSemRepeticao.remove(0));
+        }
+
+        time.getTitulares().clear();
+        time.getTitulares().addAll(titularesSemRepeticao);
+        time.getReservas().clear();
+        time.getReservas().addAll(reservasSemRepeticao);
     }
 
     private List<Jogador> preencherLinha(List<Jogador> origem, String posicao, int quantidade) {

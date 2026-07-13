@@ -40,7 +40,7 @@ public class GerenciadorPenaltis {
         }
         
         for (Jogador jogador : time.getTitulares()) {
-            if ("Meio-campista".equals(jogador.getPosicao())) {
+            if ("Meio-campista".equals(jogador.getPosicao()) || "Meio-Campo".equals(jogador.getPosicao())) {
                 batedores.add(jogador);
             }
         }

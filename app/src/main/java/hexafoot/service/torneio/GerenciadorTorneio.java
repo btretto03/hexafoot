@@ -138,6 +138,16 @@ public class GerenciadorTorneio {
         return simularPartidasCpuMataMata();
     }
 
+    public void simularAteProximaPartidaBrasilOuFim() {
+        while (faseAtual != FaseTorneio.FASE_DE_GRUPOS && faseAtual != FaseTorneio.ENCERRADO && getProximaPartidaBrasil().isEmpty()) {
+            List<PartidaTorneio> partidasSimuladas = simularPartidasCpu();
+
+            if (partidasSimuladas.isEmpty()) {
+                return;
+            }
+        }
+    }
+
     private List<PartidaTorneio> simularPartidasCpuFaseDeGrupos() {
         int rodadaProcessada = rodadaAtual;
         List<PartidaTorneio> partidasSimuladas = new ArrayList<>();

@@ -38,13 +38,15 @@ public class Time {
 
 //-----------------Gerenciamento de elenco-----------------
     public void adicionarTitular(Jogador jogador) {
-        if (titulares.size() < 11) {
+        if (titulares.size() < 11 && titulares.contains(jogador) == false && reservas.contains(jogador) == false) {
             titulares.add(jogador);
         }
     }
 
     public void adicionarReserva(Jogador jogador) {
+        if (titulares.contains(jogador) == false && reservas.contains(jogador) == false) {
             reservas.add(jogador);
+        }
     }
 
     public boolean removerTitular(Jogador jogador) {
