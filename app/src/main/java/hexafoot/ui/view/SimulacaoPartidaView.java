@@ -10,6 +10,7 @@ import hexafoot.model.strategy.TaticaEquilibrada;
 import hexafoot.model.strategy.TaticaOfensiva;
 import hexafoot.model.strategy.TaticaRetranca;
 import hexafoot.service.simulacao.RelogioPartida;
+import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.GameNavigator;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -680,8 +681,13 @@ public class SimulacaoPartidaView implements ScreenView {
     private void finalizarPartida() {
         timeline.stop();
         jogoEmAndamento = false;
-        navigator.getSession().getGerenciadorTorneio().registrarResultado(partidaTorneio.getId(), partida);
-        navigator.getSession().getGerenciadorTorneio().simularPartidasCpu();
+        GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
+        gerenciadorTorneio.registrarResultado(partidaTorneio.getId(), partida);
+        gerenciadorTorneio.simularPartidasCpu();
+
+        if (gerenciadorTorneio.isFaseGruposConcluida()) {
+            gerenciadorTorneio.iniciarMataMata();
+        }
         
         lblTempo.setText("FIM");
         atualizarEstadoBotoesTempo();

@@ -1,11 +1,12 @@
 package hexafoot.ui.view;
 
+import hexafoot.model.Grupo;
 import hexafoot.model.Time;
+import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.GameNavigator;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -13,16 +14,11 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TabelasChaveamentoView implements ScreenView {
     private final BorderPane root;
@@ -31,7 +27,7 @@ public class TabelasChaveamentoView implements ScreenView {
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
 
-        List<Time> selecoesInternacionais = navigator.getSession().getSelecoesInternacionais();
+        GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
 
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(24));
@@ -54,9 +50,9 @@ public class TabelasChaveamentoView implements ScreenView {
         VBox groupsContainer = new VBox(14);
         groupsContainer.getStyleClass().add("groups-container");
 
-        Map<String, List<Time>> grupos = agruparPorGrupo(selecoesInternacionais);
-        for (Map.Entry<String, List<Time>> entry : grupos.entrySet()) {
-            groupsContainer.getChildren().add(criarCartaoGrupo(entry.getKey(), entry.getValue()));
+        for (Grupo grupo : gerenciadorTorneio.getGrupos()) {
+            List<Time> classificacao = gerenciadorTorneio.getClassificacaoGrupo(grupo.getIdentificador());
+            groupsContainer.getChildren().add(criarCartaoGrupo("Grupo " + grupo.getIdentificador(), classificacao));
         }
 
         ScrollPane scrollPane = new ScrollPane(groupsContainer);
@@ -117,36 +113,6 @@ public class TabelasChaveamentoView implements ScreenView {
         coluna.setCellValueFactory(celula -> new ReadOnlyIntegerWrapper(extrator.applyAsInt(celula.getValue())));
         coluna.setPrefWidth(largura * 100);
         return coluna;
-    }
-
-    private Map<String, List<Time>> agruparPorGrupo(List<Time> selecoes) {
-        Map<String, List<Time>> grupos = new LinkedHashMap<>();
-        List<Time> ordenadas = new ArrayList<>(selecoes);
-        Comparator<Time> comparadorClassificacao = Comparator
-            .comparingInt(Time::getPontos).reversed()
-            .thenComparing(Comparator.comparingInt(Time::getSaldoGols).reversed())
-            .thenComparing(Comparator.comparingInt(Time::getGolsMarcados).reversed())
-            .thenComparing(Time::getNome);
-
-        ordenadas.sort(comparadorClassificacao);
-
-        for (int i = 0; i < ordenadas.size(); i++) {
-            String grupo = formatarGrupo(i / 4);
-            grupos.computeIfAbsent(grupo, key -> new ArrayList<>()).add(ordenadas.get(i));
-        }
-
-        for (List<Time> grupo : grupos.values()) {
-            grupo.sort(comparadorClassificacao);
-        }
-
-        return grupos;
-    }
-
-    private String formatarGrupo(int indice) {
-        if (indice < 26) {
-            return "Grupo " + (char) ('A' + indice);
-        }
-        return "Grupo " + (indice + 1);
     }
 
     @Override
