@@ -1,6 +1,7 @@
 package hexafoot.ui.view;
 
 import hexafoot.model.EventoPartida;
+import hexafoot.model.FaseTorneio;
 import hexafoot.model.Jogador;
 import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
@@ -20,6 +21,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class SimulacaoPartidaView implements ScreenView {
     private final BorderPane root;
@@ -682,11 +685,28 @@ public class SimulacaoPartidaView implements ScreenView {
         timeline.stop();
         jogoEmAndamento = false;
         GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
-        gerenciadorTorneio.registrarResultado(partidaTorneio.getId(), partida);
-        gerenciadorTorneio.simularPartidasCpu();
 
-        if (gerenciadorTorneio.isFaseGruposConcluida()) {
-            gerenciadorTorneio.iniciarMataMata();
+        if (partidaTorneio.getFase() == FaseTorneio.FASE_DE_GRUPOS) {
+            gerenciadorTorneio.registrarResultado(partidaTorneio.getId(), partida);
+            gerenciadorTorneio.simularPartidasCpu();
+
+            if (gerenciadorTorneio.isFaseGruposConcluida()) {
+                gerenciadorTorneio.iniciarMataMata();
+            }
+        } else {
+            List<Jogador> batedoresEscolhidos = List.of();
+
+            if (partida.getGolsMandante() == partida.getGolsVisitante()) {
+                batedoresEscolhidos = escolherBatedoresPenaltis(gerenciadorTorneio.getBrasil());
+
+                if (batedoresEscolhidos.isEmpty()) {
+                    prepararNovaEscolhaDeBatedores();
+                    return;
+                }
+            }
+
+            gerenciadorTorneio.registrarResultadoBrasilMataMata(partidaTorneio.getId(), partida, batedoresEscolhidos);
+            gerenciadorTorneio.simularPartidasCpu();
         }
         
         lblTempo.setText("FIM");
@@ -703,6 +723,55 @@ public class SimulacaoPartidaView implements ScreenView {
         String textoFim = "🏁 FIM DE JOGO! " + formatarNomePais(partida.getMandante().getNome()) + " " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " " + formatarNomePais(partida.getVisitante().getNome());
         HBox fimCard = criarCardEventoPersonalizado(90, textoFim, "info");
         containerEventos.getChildren().add(0, fimCard);
+    }
+
+    private List<Jogador> escolherBatedoresPenaltis(Time brasil) {
+        List<Jogador> disponiveis = new ArrayList<>();
+        List<Jogador> escolhidos = new ArrayList<>();
+
+        for (Jogador jogador : brasil.getTitulares()) {
+            if ("Ativo".equals(jogador.getStatus())) {
+                disponiveis.add(jogador);
+            }
+        }
+
+        if (disponiveis.size() < 5) {
+            new Alert(Alert.AlertType.ERROR, "O Brasil precisa ter pelo menos cinco titulares ativos para disputar os pênaltis.").showAndWait();
+            return List.of();
+        }
+
+        for (int cobranca = 1; cobranca <= 5; cobranca++) {
+            List<String> nomes = new ArrayList<>();
+            for (Jogador jogador : disponiveis) {
+                nomes.add(jogador.getNome() + " - " + jogador.getPosicao());
+            }
+
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(nomes.get(0), nomes);
+            dialog.setTitle("Decisão por pênaltis");
+            dialog.setHeaderText("Escolha o batedor da " + cobranca + "ª cobrança");
+            dialog.setContentText("Jogador:");
+
+            Optional<String> escolha = dialog.showAndWait();
+            if (escolha.isEmpty()) {
+                return List.of();
+            }
+
+            int indiceEscolhido = nomes.indexOf(escolha.get());
+            escolhidos.add(disponiveis.remove(indiceEscolhido));
+        }
+
+        return List.copyOf(escolhidos);
+    }
+
+    private void prepararNovaEscolhaDeBatedores() {
+        lblTempo.setText("PÊNALTIS");
+        btnPausar.setText("Escolher batedores");
+        btnPausar.setDisable(false);
+        btnPausar.setOnAction(event -> finalizarPartida());
+        btnVelLenta.setDisable(true);
+        btnVelNormal.setDisable(true);
+        btnVelRapida.setDisable(true);
+        painelTecnico.setDisable(true);
     }
 
     @Override
