@@ -14,6 +14,7 @@ import java.util.List;
 public class LeitorCSVTorneio {
     private static final String ARQUIVO_GRUPOS = "/data/info_torneio/grupos.csv";
     private static final String ARQUIVO_CALENDARIO_FASE_GRUPOS = "/data/info_torneio/calendario_fase_grupos.csv";
+    private static final String ARQUIVO_GABARITO_MATA_MATA = "/data/info_torneio/gabarito_mata_mata.csv";
 
     public List<String[]> lerGrupos() {
         return lerArquivo(ARQUIVO_GRUPOS, 5);
@@ -21,6 +22,10 @@ public class LeitorCSVTorneio {
 
     public List<String[]> lerCalendarioFaseGrupos() {
         return lerArquivo(ARQUIVO_CALENDARIO_FASE_GRUPOS, 4);
+    }
+
+    public List<String[]> lerGabaritoMataMata() {
+        return lerArquivo(ARQUIVO_GABARITO_MATA_MATA, 4);
     }
 
     private List<String[]> lerArquivo(String caminho, int quantidadeColunas) {
@@ -35,29 +40,20 @@ public class LeitorCSVTorneio {
             reader.readLine();
 
             String linha;
-            int numeroLinha = 1;
             while ((linha = reader.readLine()) != null) {
-                numeroLinha++;
                 if (linha.isBlank()) {
                     continue;
                 }
 
                 String[] campos = linha.split(",", -1);
-                if (campos.length != quantidadeColunas) {
-                    throw new IllegalStateException("Linha " + numeroLinha + " inválida no arquivo " + caminho);
-                }
-
                 for (int i = 0; i < campos.length; i++) {
                     campos[i] = campos[i].trim();
-                    if (campos[i].isEmpty()) {
-                        throw new IllegalStateException("Campo vazio na linha " + numeroLinha + " do arquivo " + caminho);
-                    }
                 }
 
                 linhas.add(campos);
             }
         } catch (IOException e) {
-            throw new IllegalStateException("Não foi possível ler o arquivo " + caminho, e);
+            throw new IllegalStateException("Erro ao ler o arquivo " + caminho, e);
         }
 
         return linhas;

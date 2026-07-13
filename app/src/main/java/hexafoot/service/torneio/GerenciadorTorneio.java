@@ -13,16 +13,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
  * Coordena o estado e as consultas gerais da Copa.
  */
 public class GerenciadorTorneio {
-    private static final int QUANTIDADE_SELECOES_INTERNACIONAIS = 47;
 
     //A classificação dos times é pelo critérios Mais Pontos -> Maior Saldo de Gols -> Mais Gols pró -> Ordem alfabética (Último caso)
     private static final Comparator<Time> COMPARADOR_CLASSIFICACAO = Comparator.comparingInt(Time::getPontos)
@@ -35,23 +32,19 @@ public class GerenciadorTorneio {
     private final Time brasil;
     private final List<Grupo> grupos;
     private final List<PartidaTorneio> partidasFaseGrupos;
+    private final List<PartidaTorneio> partidasMataMata;
     private final SimuladorPartidaCpu simuladorPartidaCpu;
     private FaseTorneio faseAtual;
     private int rodadaAtual;
 
     public GerenciadorTorneio(Time brasil, List<Time> selecoesInternacionais) {
         this.brasil = brasil;
-
-        if (selecoesInternacionais.size() != QUANTIDADE_SELECOES_INTERNACIONAIS) {
-            throw new IllegalArgumentException("O torneio deve possuir exatamente 47 seleções internacionais");
-        }
-
         List<Time> todasSelecoes = new ArrayList<>(selecoesInternacionais);
         todasSelecoes.add(brasil);
-
         FabricaTorneio fabricaTorneio = new FabricaTorneio();
         this.grupos = fabricaTorneio.montarGrupos(todasSelecoes);
         this.partidasFaseGrupos = fabricaTorneio.montarCalendarioFaseGrupos(grupos);
+        this.partidasMataMata = fabricaTorneio.montarChaveamentoMataMata();
         this.simuladorPartidaCpu = new SimuladorPartidaCpu();
         this.faseAtual = FaseTorneio.FASE_DE_GRUPOS;
         this.rodadaAtual = 1;
@@ -64,35 +57,25 @@ public class GerenciadorTorneio {
     }
 
     public List<PartidaTorneio> getPartidasDaRodada(int rodada) {
-        if (rodada < 1 || rodada > 3) {
-            throw new IllegalArgumentException("A rodada da fase de grupos deve estar entre 1 e 3");
-        }
-
         return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodada).equals(partida.getRodada())).toList();
     }
 
     public Optional<PartidaTorneio> getProximaPartidaBrasil() {
-        return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodadaAtual).equals(partida.getRodada())).filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA).filter(this::envolveBrasil).findFirst();
+        return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodadaAtual).equals(partida.getRodada()))
+                                .filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
+                                .filter(this::envolveBrasil).findFirst();
     }
 
     public Partida iniciarPartida(String idPartida) {
         PartidaTorneio partidaTorneio = buscarPartida(idPartida);
-        if (!Integer.valueOf(rodadaAtual).equals(partidaTorneio.getRodada())) {
-            throw new IllegalStateException("Só é possível iniciar partidas da rodada atual");
-        }
-
         return partidaTorneio.iniciar();
     }
 
     public boolean registrarResultado(String idPartida, Partida partida) {
-        Objects.requireNonNull(partida, "A partida concluída não pode ser nula");
         PartidaTorneio partidaTorneio = buscarPartida(idPartida);
 
         if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
             return false;
-        }
-        if (partidaTorneio.getStatus() != StatusPartidaTorneio.EM_ANDAMENTO || partidaTorneio.getPartida() != partida) {
-            throw new IllegalStateException("O resultado deve pertencer à partida iniciada pelo torneio");
         }
 
         partida.aplicarResultadoNaTabela();
@@ -124,12 +107,10 @@ public class GerenciadorTorneio {
     }
 
     public List<Time> getMelhoresTerceiros() {
-        exigirFaseGruposConcluida();
         return calcularTerceirosOrdenados().stream().limit(8).toList();
     }
 
     public Map<String, Time> getClassificadosFaseGrupos() {
-        exigirFaseGruposConcluida();
         Map<String, Time> classificados = new LinkedHashMap<>();
         List<Grupo> gruposOrdenados = grupos.stream().sorted(Comparator.comparing(Grupo::getIdentificador)).toList();
 
@@ -159,20 +140,12 @@ public class GerenciadorTorneio {
         return List.copyOf(terceiros);
     }
 
-    private void exigirFaseGruposConcluida() {
-        if (!isFaseGruposConcluida()) {
-            throw new IllegalStateException("Os classificados só podem ser definidos após a conclusão da fase de grupos");
-        }
-    }
-
     private Grupo buscarGrupo(String identificadorGrupo) {
         String identificadorNormalizado = identificadorGrupo.trim().toUpperCase();
-
         return grupos.stream().filter(grupo -> grupo.getIdentificador().equals(identificadorNormalizado)).findFirst().orElseThrow(() -> new IllegalArgumentException("Grupo não encontrado: " + identificadorGrupo));
     }
 
     private PartidaTorneio buscarPartida(String idPartida) {
-        Objects.requireNonNull(idPartida, "O ID da partida não pode ser nulo");
         return partidasFaseGrupos.stream().filter(partida -> partida.getId().equals(idPartida.trim())).findFirst().orElseThrow(() -> new IllegalArgumentException("Partida não encontrada: " + idPartida));
     }
 
@@ -197,6 +170,10 @@ public class GerenciadorTorneio {
 
     public List<PartidaTorneio> getPartidasFaseGrupos() {
         return partidasFaseGrupos;
+    }
+
+    public List<PartidaTorneio> getPartidasMataMata() {
+        return partidasMataMata;
     }
 
     public FaseTorneio getFaseAtual() {
