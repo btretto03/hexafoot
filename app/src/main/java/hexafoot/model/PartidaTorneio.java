@@ -14,6 +14,8 @@ public class PartidaTorneio {
     private Time visitante;
     private StatusPartidaTorneio status;
     private Partida partida;
+    private Time vencedor;
+    private Time perdedor;
 
 
 // -----Desing pattern factory para criar diferentes tipos de partida-----
@@ -28,6 +30,8 @@ public class PartidaTorneio {
         this.visitante = visitante;
         this.status = StatusPartidaTorneio.AGENDADA;
         this.partida = null;
+        this.vencedor = null;
+        this.perdedor = null;
     }
 
     public static PartidaTorneio criarFaseDeGrupos(String id, int rodada, Grupo grupo, Time mandante, Time visitante) {
@@ -45,6 +49,18 @@ public class PartidaTorneio {
     }
 
     public void concluir() {
+        this.status = StatusPartidaTorneio.CONCLUIDA;
+    }
+
+    public void concluir(Time vencedor) {
+        this.vencedor = vencedor;
+
+        if (vencedor == mandante) {
+            this.perdedor = visitante;
+        } else {
+            this.perdedor = mandante;
+        }
+
         this.status = StatusPartidaTorneio.CONCLUIDA;
     }
 
@@ -91,5 +107,13 @@ public class PartidaTorneio {
 
     public Partida getPartida() {
         return partida;
+    }
+
+    public Time getVencedor() {
+        return vencedor;
+    }
+
+    public Time getPerdedor() {
+        return perdedor;
     }
 }

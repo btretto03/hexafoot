@@ -60,7 +60,7 @@ public class GerenciadorPenaltis {
         return batedores;
     }
 
-    public void disputarDecisaoPorPenaltis(Partida partida, List<Jogador> batedoresEscolhidos) {
+    public Time disputarDecisaoPorPenaltis(Partida partida, List<Jogador> batedoresEscolhidos) {
         List<Jogador> batedoresMandante = new ArrayList<>();
         List<Jogador> batedoresVisitante = new ArrayList<>();
 
@@ -126,6 +126,11 @@ public class GerenciadorPenaltis {
 
             rodadaMorteSubita ++;
         }
+        if (placarMandante > placarVisitante) {
+            return partida.getMandante();
+        }
+
+        return partida.getVisitante();
     }
 
     private boolean realizarCobranca(Jogador batedor, Jogador goleiro, Partida partida, String lado) {

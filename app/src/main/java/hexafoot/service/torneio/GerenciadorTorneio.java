@@ -72,7 +72,7 @@ public class GerenciadorTorneio {
     }
 
     public boolean registrarResultado(String idPartida, Partida partida) {
-        PartidaTorneio partidaTorneio = buscarPartida(idPartida);
+        PartidaTorneio partidaTorneio = buscarPartidaFaseGrupos(idPartida);
 
         if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
             return false;
@@ -81,6 +81,29 @@ public class GerenciadorTorneio {
         partida.aplicarResultadoNaTabela();
         partidaTorneio.concluir();
         atualizarRodadaAtual();
+        return true;
+    }
+
+    public boolean registrarResultadoMataMata(String idPartida, Partida partida, Time vencedorDesempate) {
+        PartidaTorneio partidaTorneio = buscarPartidaMataMata(idPartida);
+
+        if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
+            return false;
+        }
+
+        Time vencedor;
+
+        if (partida.getGolsMandante() > partida.getGolsVisitante()) {
+            vencedor = partida.getMandante();
+        } else if (partida.getGolsVisitante() > partida.getGolsMandante()) {
+            vencedor = partida.getVisitante();
+        } else {
+            vencedor = vencedorDesempate;
+        }
+
+        partidaTorneio.concluir(vencedor);
+        propagarResultado(partidaTorneio);
+        atualizarFaseMataMata();
         return true;
     }
 
@@ -175,7 +198,65 @@ public class GerenciadorTorneio {
     }
 
     private PartidaTorneio buscarPartida(String idPartida) {
-        return partidasFaseGrupos.stream().filter(partida -> partida.getId().equals(idPartida.trim())).findFirst().orElseThrow(() -> new IllegalArgumentException("Partida não encontrada: " + idPartida));
+        for (PartidaTorneio partida : partidasFaseGrupos) {
+            if (partida.getId().equals(idPartida.trim())) {
+                return partida;
+            }
+        }
+
+        return buscarPartidaMataMata(idPartida);
+    }
+
+    private PartidaTorneio buscarPartidaFaseGrupos(String idPartida) {
+        return partidasFaseGrupos.stream().filter(partida -> partida.getId().equals(idPartida.trim())).findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Partida da fase de grupos não encontrada: " + idPartida));
+    }
+
+    private PartidaTorneio buscarPartidaMataMata(String idPartida) {
+        return partidasMataMata.stream().filter(partida -> partida.getId().equals(idPartida.trim())).findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Partida do mata-mata não encontrada: " + idPartida));
+    }
+
+    private void propagarResultado(PartidaTorneio partidaConcluida) {
+        String origemVencedor = "Vencedor_" + partidaConcluida.getId();
+        String origemPerdedor = "Perdedor_" + partidaConcluida.getId();
+
+        for (PartidaTorneio proximaPartida : partidasMataMata) {
+            if (origemVencedor.equals(proximaPartida.getIdentificadorOrigemMandante())) {
+                proximaPartida.definirParticipantes(partidaConcluida.getVencedor(), proximaPartida.getVisitante());
+            }
+            if (origemVencedor.equals(proximaPartida.getIdentificadorOrigemVisitante())) {
+                proximaPartida.definirParticipantes(proximaPartida.getMandante(), partidaConcluida.getVencedor());
+            }
+            if (origemPerdedor.equals(proximaPartida.getIdentificadorOrigemMandante())) {
+                proximaPartida.definirParticipantes(partidaConcluida.getPerdedor(), proximaPartida.getVisitante());
+            }
+            if (origemPerdedor.equals(proximaPartida.getIdentificadorOrigemVisitante())) {
+                proximaPartida.definirParticipantes(proximaPartida.getMandante(), partidaConcluida.getPerdedor());
+            }
+        }
+    }
+
+    private void atualizarFaseMataMata() {
+        for (PartidaTorneio partida : getPartidasFaseAtual()) {
+            if (partida.getStatus() != StatusPartidaTorneio.CONCLUIDA) {
+                return;
+            }
+        }
+
+        if (faseAtual == FaseTorneio.DEZESSEIS_AVOS) {
+            faseAtual = FaseTorneio.OITAVAS;
+        } else if (faseAtual == FaseTorneio.OITAVAS) {
+            faseAtual = FaseTorneio.QUARTAS;
+        } else if (faseAtual == FaseTorneio.QUARTAS) {
+            faseAtual = FaseTorneio.SEMIFINAL;
+        } else if (faseAtual == FaseTorneio.SEMIFINAL) {
+            faseAtual = FaseTorneio.TERCEIRO_LUGAR;
+        } else if (faseAtual == FaseTorneio.TERCEIRO_LUGAR) {
+            faseAtual = FaseTorneio.FINAL;
+        } else if (faseAtual == FaseTorneio.FINAL) {
+            faseAtual = FaseTorneio.ENCERRADO;
+        }
     }
 
     private void atualizarRodadaAtual() {
