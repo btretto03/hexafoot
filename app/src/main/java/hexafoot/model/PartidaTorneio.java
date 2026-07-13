@@ -14,23 +14,22 @@ public class PartidaTorneio {
     private final String identificadorOrigemVisitante;
     private final Time mandante;
     private final Time visitante;
-    private final StatusPartidaTorneio status;
+    private StatusPartidaTorneio status;
+    private Partida partida;
 
 
 // -----Desing pattern factory para criar diferentes tipos de partida-----
-    private PartidaTorneio(
-            String id, FaseTorneio fase, Integer rodada, Grupo grupo, String identificadorOrigemMandante, String identificadorOrigemVisitante, Time mandante, Time visitante) {
+    private PartidaTorneio(String id, FaseTorneio fase, Integer rodada, Grupo grupo, String identificadorOrigemMandante, String identificadorOrigemVisitante, Time mandante, Time visitante) {
         this.id = validarTexto(id, "O ID da partida");
         this.fase = Objects.requireNonNull(fase, "A fase da partida não pode ser nula");
         this.rodada = rodada;
         this.grupo = grupo;
-        this.identificadorOrigemMandante = validarTexto(
-                identificadorOrigemMandante, "O identificador de origem do mandante");
-        this.identificadorOrigemVisitante = validarTexto(
-                identificadorOrigemVisitante, "O identificador de origem do visitante");
+        this.identificadorOrigemMandante = validarTexto(identificadorOrigemMandante, "O identificador de origem do mandante");
+        this.identificadorOrigemVisitante = validarTexto(identificadorOrigemVisitante, "O identificador de origem do visitante");
         this.mandante = mandante;
         this.visitante = visitante;
         this.status = StatusPartidaTorneio.AGENDADA;
+        this.partida = null;
     }
 
     public static PartidaTorneio criarFaseDeGrupos(String id, int rodada, Grupo grupo, Time mandante, Time visitante) {
@@ -51,7 +50,7 @@ public class PartidaTorneio {
         return new PartidaTorneio(id, FaseTorneio.FASE_DE_GRUPOS, rodada, grupo, mandante.getNome(), visitante.getNome(), mandante, visitante);
     }
 
-    public static PartidaTorneio criarEliminatoria(String id,FaseTorneio fase,String identificadorOrigemMandante,String identificadorOrigemVisitante) {
+    public static PartidaTorneio criarEliminatoria(String id, FaseTorneio fase, String identificadorOrigemMandante, String identificadorOrigemVisitante) {
         Objects.requireNonNull(fase, "A fase da partida não pode ser nula");
 
         if (fase == FaseTorneio.FASE_DE_GRUPOS || fase == FaseTorneio.ENCERRADO) {
@@ -70,6 +69,27 @@ public class PartidaTorneio {
         }
 
         return normalizado;
+    }
+
+    public Partida iniciar() {
+        if (mandante == null || visitante == null) {
+            throw new IllegalStateException("Os participantes da partida ainda não foram definidos");
+        }
+        if (status != StatusPartidaTorneio.AGENDADA) {
+            throw new IllegalStateException("A partida só pode ser iniciada quando estiver agendada");
+        }
+
+        this.partida = new Partida(mandante, visitante);
+        this.status = StatusPartidaTorneio.EM_ANDAMENTO;
+        return partida;
+    }
+
+    public void concluir() {
+        if (status != StatusPartidaTorneio.EM_ANDAMENTO) {
+            throw new IllegalStateException("A partida só pode ser concluída quando estiver em andamento");
+        }
+
+        this.status = StatusPartidaTorneio.CONCLUIDA;
     }
 
     public String getId() {
@@ -106,5 +126,9 @@ public class PartidaTorneio {
 
     public StatusPartidaTorneio getStatus() {
         return status;
+    }
+
+    public Partida getPartida() {
+        return partida;
     }
 }

@@ -3,6 +3,7 @@ package hexafoot.service.torneio;
 import hexafoot.dados.FabricaTorneio;
 import hexafoot.model.FaseTorneio;
 import hexafoot.model.Grupo;
+import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
 import hexafoot.model.StatusPartidaTorneio;
 import hexafoot.model.Time;
@@ -69,10 +70,52 @@ public class GerenciadorTorneio {
         return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodadaAtual).equals(partida.getRodada())).filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA).filter(this::envolveBrasil).findFirst();
     }
 
+    public Partida iniciarPartida(String idPartida) {
+        PartidaTorneio partidaTorneio = buscarPartida(idPartida);
+        if (!Integer.valueOf(rodadaAtual).equals(partidaTorneio.getRodada())) {
+            throw new IllegalStateException("Só é possível iniciar partidas da rodada atual");
+        }
+
+        return partidaTorneio.iniciar();
+    }
+
+    public boolean registrarResultado(String idPartida, Partida partida) {
+        Objects.requireNonNull(partida, "A partida concluída não pode ser nula");
+        PartidaTorneio partidaTorneio = buscarPartida(idPartida);
+
+        if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
+            return false;
+        }
+        if (partidaTorneio.getStatus() != StatusPartidaTorneio.EM_ANDAMENTO || partidaTorneio.getPartida() != partida) {
+            throw new IllegalStateException("O resultado deve pertencer à partida iniciada pelo torneio");
+        }
+
+        partida.aplicarResultadoNaTabela();
+        partidaTorneio.concluir();
+        atualizarRodadaAtual();
+        return true;
+    }
+
+    public boolean isFaseGruposConcluida() {
+        return partidasFaseGrupos.stream().allMatch(partida -> partida.getStatus() == StatusPartidaTorneio.CONCLUIDA);
+    }
+
     private Grupo buscarGrupo(String identificadorGrupo) {
         String identificadorNormalizado = identificadorGrupo.trim().toUpperCase();
 
         return grupos.stream().filter(grupo -> grupo.getIdentificador().equals(identificadorNormalizado)).findFirst().orElseThrow(() -> new IllegalArgumentException("Grupo não encontrado: " + identificadorGrupo));
+    }
+
+    private PartidaTorneio buscarPartida(String idPartida) {
+        Objects.requireNonNull(idPartida, "O ID da partida não pode ser nulo");
+        return partidasFaseGrupos.stream().filter(partida -> partida.getId().equals(idPartida.trim())).findFirst().orElseThrow(() -> new IllegalArgumentException("Partida não encontrada: " + idPartida));
+    }
+
+    private void atualizarRodadaAtual() {
+        boolean rodadaConcluida = getPartidasDaRodada(rodadaAtual).stream().allMatch(partida -> partida.getStatus() == StatusPartidaTorneio.CONCLUIDA);
+        if (rodadaConcluida && rodadaAtual < 3) {
+            rodadaAtual++;
+        }
     }
 
     private boolean envolveBrasil(PartidaTorneio partida) {
