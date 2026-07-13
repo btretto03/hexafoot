@@ -3,10 +3,12 @@ package hexafoot.service.torneio;
 import hexafoot.dados.FabricaTorneio;
 import hexafoot.model.FaseTorneio;
 import hexafoot.model.Grupo;
+import hexafoot.model.Jogador;
 import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
 import hexafoot.model.StatusPartidaTorneio;
 import hexafoot.model.Time;
+import hexafoot.service.simulacao.GerenciadorPenaltis;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +36,7 @@ public class GerenciadorTorneio {
     private final List<PartidaTorneio> partidasFaseGrupos;
     private final List<PartidaTorneio> partidasMataMata;
     private final SimuladorPartidaCpu simuladorPartidaCpu;
+    private final GerenciadorPenaltis gerenciadorPenaltis;
     private FaseTorneio faseAtual;
     private int rodadaAtual;
 
@@ -46,6 +49,7 @@ public class GerenciadorTorneio {
         this.partidasFaseGrupos = fabricaTorneio.montarCalendarioFaseGrupos(grupos);
         this.partidasMataMata = fabricaTorneio.montarChaveamentoMataMata();
         this.simuladorPartidaCpu = new SimuladorPartidaCpu();
+        this.gerenciadorPenaltis = new GerenciadorPenaltis();
         this.faseAtual = FaseTorneio.FASE_DE_GRUPOS;
         this.rodadaAtual = 1;
     }
@@ -61,8 +65,13 @@ public class GerenciadorTorneio {
     }
 
     public Optional<PartidaTorneio> getProximaPartidaBrasil() {
-        return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodadaAtual).equals(partida.getRodada()))
-                                .filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
+        if (faseAtual == FaseTorneio.FASE_DE_GRUPOS) {
+            return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodadaAtual).equals(partida.getRodada()))
+                                    .filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
+                                    .filter(this::envolveBrasil).findFirst();
+        }
+
+        return getPartidasFaseAtual().stream().filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
                                 .filter(this::envolveBrasil).findFirst();
     }
 
@@ -107,11 +116,29 @@ public class GerenciadorTorneio {
         return true;
     }
 
+    public boolean registrarResultadoBrasilMataMata(String idPartida, Partida partida, List<Jogador> batedoresEscolhidos) {
+        Time vencedorDesempate = null;
+
+        if (gerenciadorPenaltis.verificarNecessidadeDeDesempate(partida, true)) {
+            vencedorDesempate = gerenciadorPenaltis.disputarDecisaoPorPenaltis(partida, batedoresEscolhidos);
+        }
+
+        return registrarResultadoMataMata(idPartida, partida, vencedorDesempate);
+    }
+
     public boolean isFaseGruposConcluida() {
         return partidasFaseGrupos.stream().allMatch(partida -> partida.getStatus() == StatusPartidaTorneio.CONCLUIDA);
     }
 
     public List<PartidaTorneio> simularPartidasCpu() {
+        if (faseAtual == FaseTorneio.FASE_DE_GRUPOS) {
+            return simularPartidasCpuFaseDeGrupos();
+        }
+
+        return simularPartidasCpuMataMata();
+    }
+
+    private List<PartidaTorneio> simularPartidasCpuFaseDeGrupos() {
         int rodadaProcessada = rodadaAtual;
         List<PartidaTorneio> partidasSimuladas = new ArrayList<>();
 
@@ -123,6 +150,30 @@ public class GerenciadorTorneio {
             Partida partida = iniciarPartida(partidaTorneio.getId());
             simuladorPartidaCpu.simularPartida(partida);
             registrarResultado(partidaTorneio.getId(), partida);
+            partidasSimuladas.add(partidaTorneio);
+        }
+
+        return List.copyOf(partidasSimuladas);
+    }
+
+    private List<PartidaTorneio> simularPartidasCpuMataMata() {
+        List<PartidaTorneio> partidasDaFase = getPartidasFaseAtual();
+        List<PartidaTorneio> partidasSimuladas = new ArrayList<>();
+
+        for (PartidaTorneio partidaTorneio : partidasDaFase) {
+            if (envolveBrasil(partidaTorneio) || partidaTorneio.getStatus() != StatusPartidaTorneio.AGENDADA) {
+                continue;
+            }
+
+            Partida partida = iniciarPartida(partidaTorneio.getId());
+            simuladorPartidaCpu.simularPartida(partida);
+
+            Time vencedorDesempate = null;
+            if (gerenciadorPenaltis.verificarNecessidadeDeDesempate(partida, true)) {
+                vencedorDesempate = gerenciadorPenaltis.disputarDecisaoPorPenaltis(partida, List.of());
+            }
+
+            registrarResultadoMataMata(partidaTorneio.getId(), partida, vencedorDesempate);
             partidasSimuladas.add(partidaTorneio);
         }
 
@@ -292,5 +343,13 @@ public class GerenciadorTorneio {
 
     public int getRodadaAtual() {
         return rodadaAtual;
+    }
+
+    public Time getCampeao() {
+        return buscarPartidaMataMata("M32").getVencedor();
+    }
+
+    public Time getTerceiroColocado() {
+        return buscarPartidaMataMata("M31").getVencedor();
     }
 }
