@@ -8,7 +8,6 @@ import java.util.Random;
 
 /**
  * Entidade ProcessadorGols - Responsável por calcular as chances de gol a cada minuto
- * usando rolagem de dados (inteiros) e atualizar o placar.
  */
 public class ProcessadorGols implements ObserverMinuto {
 
@@ -32,7 +31,12 @@ public class ProcessadorGols implements ObserverMinuto {
         int forcaDefesa = defensor.calcularForcaDefesaAtual();
 
         int chanceBase = RegrasSimulacao.CHANCE_GOL.getValor();
-        int chanceFinal = (chanceBase * forcaAtaque) / (forcaAtaque + forcaDefesa);
+
+        //usamos o quadrado das forcas para a diferenca de qualidade entre os times pesar mais no resultado
+        //(so a proporcao direta deixava times bem mais fortes com uma chance quase igual a de times fracos)
+        int pesoAtaque = forcaAtaque * forcaAtaque;
+        int pesoDefesa = forcaDefesa * forcaDefesa;
+        int chanceFinal = (chanceBase * pesoAtaque) / (pesoAtaque + pesoDefesa);
 
         int rolagemGol = random.nextInt(1000) + 1;
 
