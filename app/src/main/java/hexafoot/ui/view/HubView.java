@@ -1,47 +1,31 @@
 package hexafoot.ui.view;
 
+import hexafoot.model.Formacao;
+import hexafoot.model.Jogador;
 import hexafoot.model.PartidaTorneio;
+import hexafoot.model.Time;
+import hexafoot.model.strategy.EstrategiaSimulacao;
+import hexafoot.model.strategy.TaticaOfensiva;
+import hexafoot.model.strategy.TaticaRetranca;
 import hexafoot.ui.GameNavigator;
-import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 public class HubView implements ScreenView {
-    private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM");
     private final BorderPane root;
-
-    private final VBox calendarContainer = new VBox(14);
-    private LocalDate dataSelecionada = LocalDate.of(2026, 6, 11);
-    private LocalDate dataFocoCalendario = LocalDate.of(2026, 6, 11);
-    private final Map<LocalDate, List<MapPartida>> partidasPorData = new java.util.HashMap<>();
 
     public HubView(GameNavigator navigator) {
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
-
-        carregarPartidasCalendario();
 
         VBox layout = new VBox(20);
         layout.setPadding(new Insets(24));
@@ -69,19 +53,16 @@ public class HubView implements ScreenView {
         HBox.setHgrow(heroCopy, Priority.ALWAYS);
 
         VBox nextStepsPanel = criarMenuProximosPassos(navigator);
-        VBox calendarPanel = criarPainelCalendario();
+        VBox elencoPanel = criarPainelElenco(navigator);
 
-        HBox content = new HBox(18, nextStepsPanel, calendarPanel);
+        HBox content = new HBox(18, nextStepsPanel, elencoPanel);
         content.setAlignment(Pos.TOP_LEFT);
-        HBox.setHgrow(calendarPanel, Priority.ALWAYS);
+        HBox.setHgrow(elencoPanel, Priority.ALWAYS);
 
         layout.getChildren().addAll(topBar, content);
         VBox.setVgrow(content, Priority.ALWAYS);
 
         root.setCenter(layout);
-
-        // Inicializar seleção no primeiro dia da Copa
-        selecionarData(LocalDate.of(2026, 6, 11));
     }
 
     private VBox criarMenuProximosPassos(GameNavigator navigator) {
@@ -101,7 +82,7 @@ public class HubView implements ScreenView {
 
         PartidaTorneio proximaPartidaBrasil = navigator.getSession().getGerenciadorTorneio().getProximaPartidaBrasil().orElse(null);
 
-        Button partidas = new Button("Ver partida e simulação");
+        Button partidas = new Button("Jogar próxima partida");
         partidas.getStyleClass().add("secondary-button");
         partidas.setDisable(proximaPartidaBrasil == null);
         partidas.setOnAction(event -> navigator.showSimulacaoPartida(proximaPartidaBrasil));
@@ -136,242 +117,107 @@ public class HubView implements ScreenView {
         return panel;
     }
 
-    private static class MapPartida {
-        final String rodada;
-        final String grupo;
-        final String mandante;
-        final String visitante;
+    private VBox criarPainelElenco(GameNavigator navigator) {
+        Time brasil = navigator.getSession().getElencoBrasil();
 
-        MapPartida(String rodada, String grupo, String mandante, String visitante) {
-            this.rodada = rodada;
-            this.grupo = grupo;
-            this.mandante = mandante;
-            this.visitante = visitante;
-        }
-    }
-
-    private void carregarPartidasCalendario() {
-        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(
-                getClass().getResourceAsStream("/data/info_torneio/calendario_fase_grupos.csv"), java.nio.charset.StandardCharsets.UTF_8))) {
-            
-            String linha;
-            br.readLine(); // pular cabeçalho
-            int matchIndex = 0;
-            
-            while ((linha = br.readLine()) != null) {
-                String[] campos = linha.split(",");
-                if (campos.length >= 4) {
-                    String rodada = campos[0];
-                    String grupo = campos[1];
-                    String mandante = campos[2];
-                    String visitante = campos[3];
-                    
-                    int diaOffset = matchIndex / 4;
-                    LocalDate dataPartida = LocalDate.of(2026, 6, 11).plusDays(diaOffset);
-                    
-                    MapPartida p = new MapPartida(rodada, grupo, mandante, visitante);
-                    partidasPorData.computeIfAbsent(dataPartida, k -> new ArrayList<>()).add(p);
-                    matchIndex++;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private VBox criarPainelCalendario() {
-        Label title = new Label("Calendário da Copa");
+        Label title = new Label("🇧🇷 Elenco da Seleção");
         title.getStyleClass().add("card-title");
 
-        Label subtitle = new Label("Acompanhe o cronograma de partidas, rodadas e fases eliminatórias de 11 de junho a 19 de julho de 2026.");
+        Label subtitle = new Label("Formação " + formatarFormacao(brasil.getFormacaoAtual()) + " · Postura " + formatarTatica(brasil.getTaticaAtual())
+                + ". Pra trocar a formação e a escalação, use \"Abrir escalação e tática\".");
         subtitle.getStyleClass().add("card-text");
         subtitle.setWrapText(true);
 
-        VBox panel = new VBox(12, title, subtitle, calendarContainer);
+        VBox listaJogadores = new VBox(8);
+        for (Jogador jogador : brasil.getTitulares()) {
+            listaJogadores.getChildren().add(criarLinhaJogador(jogador, "TITULAR"));
+        }
+        for (Jogador jogador : brasil.getReservas()) {
+            listaJogadores.getChildren().add(criarLinhaJogador(jogador, "BANCO"));
+        }
+
+        ScrollPane scroll = new ScrollPane(listaJogadores);
+        scroll.getStyleClass().add("championship-scroll");
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
+
+        VBox panel = new VBox(12, title, subtitle, scroll);
         panel.getStyleClass().add("info-card");
         panel.getStyleClass().add("championship-panel");
         panel.setPadding(new Insets(22));
-        VBox.setVgrow(calendarContainer, Priority.ALWAYS);
+        VBox.setVgrow(scroll, Priority.ALWAYS);
         return panel;
     }
 
-    private void selecionarData(LocalDate data) {
-        if (data.isBefore(LocalDate.of(2026, 6, 11)) || data.isAfter(LocalDate.of(2026, 7, 19))) {
-            return;
-        }
-        this.dataSelecionada = data;
-        
-        if (dataSelecionada.isBefore(dataFocoCalendario)) {
-            dataFocoCalendario = dataSelecionada;
-        } else if (dataSelecionada.isAfter(dataFocoCalendario.plusDays(6))) {
-            dataFocoCalendario = dataSelecionada.minusDays(6);
-        }
-        
-        atualizarCalendario();
-    }
+    private HBox criarLinhaJogador(Jogador jogador, String situacaoCampo) {
+        Label lblSituacao = new Label(situacaoCampo);
+        lblSituacao.getStyleClass().add("status-pill");
+        lblSituacao.setStyle("-fx-min-width: 70; -fx-alignment: center;");
 
-    private void atualizarCalendario() {
-        calendarContainer.getChildren().clear();
+        Label lblNome = new Label(jogador.getNome());
+        lblNome.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff;");
 
-        // 1. Barra de Navegação de Data
-        HBox navBar = new HBox(20);
-        navBar.setAlignment(Pos.CENTER);
-        navBar.setPadding(new Insets(10, 0, 10, 0));
+        Label lblPosicao = new Label(jogador.getPosicao());
+        lblPosicao.setStyle("-fx-font-size: 12px; -fx-text-fill: rgba(255, 255, 255, 0.6);");
 
-        Button btnLeft = new Button("◀");
-        btnLeft.getStyleClass().add("secondary-button");
-        btnLeft.setDisable(dataSelecionada.equals(LocalDate.of(2026, 6, 11)));
-        btnLeft.setOnAction(event -> selecionarData(dataSelecionada.minusDays(1)));
-
-        Locale localePtBr = Locale.forLanguageTag("pt-BR");
-        String textoDia = dataSelecionada.getDayOfWeek().getDisplayName(TextStyle.FULL, localePtBr) + ", " 
-                + dataSelecionada.getDayOfMonth() + " de " 
-                + dataSelecionada.getMonth().getDisplayName(TextStyle.FULL, localePtBr) + " de " 
-                + dataSelecionada.getYear();
-        Label lblData = new Label(textoDia.substring(0, 1).toUpperCase(localePtBr) + textoDia.substring(1));
-        lblData.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
-        lblData.setAlignment(Pos.CENTER);
-
-        Button btnRight = new Button("▶");
-        btnRight.getStyleClass().add("secondary-button");
-        btnRight.setDisable(dataSelecionada.equals(LocalDate.of(2026, 7, 19)));
-        btnRight.setOnAction(event -> selecionarData(dataSelecionada.plusDays(1)));
-
-        Region spacerL = new Region();
-        Region spacerR = new Region();
-        HBox.setHgrow(spacerL, Priority.ALWAYS);
-        HBox.setHgrow(spacerR, Priority.ALWAYS);
-
-        navBar.getChildren().addAll(btnLeft, spacerL, lblData, spacerR, btnRight);
-
-        // 2. Timeline Horizontal
-        HBox timeline = criarLinhaDiasCalendario();
-
-        // 3. Área de Partidas
-        VBox partidasBox = new VBox(10);
-        partidasBox.setPadding(new Insets(15, 0, 0, 0));
-
-        Label lblPartidasTitulo = new Label("Partidas Agendadas");
-        lblPartidasTitulo.getStyleClass().add("pitch-row-title");
-        lblPartidasTitulo.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        partidasBox.getChildren().add(lblPartidasTitulo);
-
-        List<MapPartida> partidasDoDia = partidasPorData.get(dataSelecionada);
-        if (partidasDoDia != null && !partidasDoDia.isEmpty()) {
-            for (MapPartida p : partidasDoDia) {
-                partidasBox.getChildren().add(criarCardPartida(p));
-            }
-        } else {
-            partidasBox.getChildren().add(criarCardMataMata(dataSelecionada));
-        }
-
-        ScrollPane partidasScroll = new ScrollPane(partidasBox);
-        partidasScroll.getStyleClass().add("pitch-scroll");
-        partidasScroll.setFitToWidth(true);
-        partidasScroll.setFitToHeight(true);
-        VBox.setVgrow(partidasScroll, Priority.ALWAYS);
-
-        calendarContainer.getChildren().addAll(navBar, timeline, partidasScroll);
-    }
-
-    private HBox criarLinhaDiasCalendario() {
-        HBox row = new HBox(10);
-        row.setAlignment(Pos.CENTER);
-        
-        for (int i = 0; i < 7; i++) {
-            LocalDate data = dataFocoCalendario.plusDays(i);
-            boolean isSelected = data.equals(dataSelecionada);
-            
-            VBox tile = criarDiaCalendarioGrande(data, isSelected);
-            row.getChildren().add(tile);
-            HBox.setHgrow(tile, Priority.ALWAYS);
-        }
-        
-        return row;
-    }
-
-    private VBox criarDiaCalendarioGrande(LocalDate data, boolean destaque) {
-        Locale localePtBr = Locale.forLanguageTag("pt-BR");
-        Label diaSemana = new Label(data.getDayOfWeek().getDisplayName(TextStyle.SHORT, localePtBr).toUpperCase(localePtBr));
-        diaSemana.getStyleClass().add("calendar-day-name");
-        diaSemana.setStyle("-fx-font-size: 11px;");
-
-        Label numero = new Label(String.valueOf(data.getDayOfMonth()));
-        numero.getStyleClass().add("calendar-day-number");
-        numero.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-
-        Label mes = new Label(data.getMonth().getDisplayName(TextStyle.SHORT, localePtBr).toUpperCase(localePtBr));
-        mes.setStyle("-fx-font-size: 9px; -fx-text-fill: rgba(255, 255, 255, 0.5);");
-
-        VBox tile = new VBox(4, diaSemana, numero, mes);
-        tile.setAlignment(Pos.CENTER);
-        tile.getStyleClass().add("calendar-tile");
-        tile.setStyle("-fx-padding: 8; -fx-min-width: 60; -fx-min-height: 70; -fx-cursor: hand;");
-        
-        if (destaque) {
-            tile.getStyleClass().add("calendar-tile-today");
-        }
-        
-        tile.setOnMouseClicked(event -> selecionarData(data));
-        return tile;
-    }
-
-    private HBox criarCardPartida(MapPartida p) {
-        Label lblGrupo = new Label("Grupo " + p.grupo);
-        lblGrupo.getStyleClass().add("status-pill");
-        lblGrupo.setStyle("-fx-min-width: 70; -fx-alignment: center;");
-
-        Label lblRodada = new Label("Rodada " + p.rodada);
-        lblRodada.setStyle("-fx-font-size: 13px; -fx-text-fill: rgba(255, 255, 255, 0.6);");
-
-        Label lblTimes = new Label(p.mandante + " vs " + p.visitante);
-        lblTimes.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff;");
+        Label lblStatus = new Label(jogador.getStatus());
+        lblStatus.setStyle("-fx-font-size: 12px; -fx-text-fill: rgba(255, 255, 255, 0.6);");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox card = new HBox(15, lblGrupo, lblTimes, spacer, lblRodada);
+        Label lblFisico = new Label(jogador.getFisico() + "%");
+        lblFisico.setStyle("-fx-font-size: 13px; -fx-font-weight: bold;" + corDoFisico(jogador.getFisico()));
+
+        HBox card = new HBox(15, lblSituacao, lblNome, lblPosicao, spacer, lblStatus, lblFisico);
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 12; -fx-padding: 12 18 12 18;");
+        card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 12; -fx-padding: 10 18 10 18;");
         return card;
     }
 
-    private HBox criarCardMataMata(LocalDate data) {
-        Label lblFase = new Label();
-        lblFase.getStyleClass().add("status-pill");
-        lblFase.setStyle("-fx-min-width: 100; -fx-alignment: center; -fx-background-color: rgba(139, 240, 161, 0.2); -fx-text-fill: #8bf0a1; -fx-border-color: rgba(139, 240, 161, 0.3);");
-
-        Label lblTimes = new Label();
-        lblTimes.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff;");
-
-        if (data.isEqual(LocalDate.of(2026, 6, 29)) || data.isEqual(LocalDate.of(2026, 6, 30)) ||
-            data.isEqual(LocalDate.of(2026, 7, 1)) || data.isEqual(LocalDate.of(2026, 7, 2))) {
-            lblFase.setText("OITAVAS");
-            lblTimes.setText("Confronto Eliminatório - Oitavas de Final");
-        } else if (data.isEqual(LocalDate.of(2026, 7, 4)) || data.isEqual(LocalDate.of(2026, 7, 5))) {
-            lblFase.setText("QUARTAS");
-            lblTimes.setText("Confronto Eliminatório - Quartas de Final");
-        } else if (data.isEqual(LocalDate.of(2026, 7, 8)) || data.isEqual(LocalDate.of(2026, 7, 9))) {
-            lblFase.setText("SEMIFINAL");
-            lblTimes.setText("Confronto Eliminatório - Semifinal");
-        } else if (data.isEqual(LocalDate.of(2026, 7, 18))) {
-            lblFase.setText("3º LUGAR");
-            lblTimes.setText("Disputa de Terceiro Lugar");
-        } else if (data.isEqual(LocalDate.of(2026, 7, 19))) {
-            lblFase.setText("FINAL");
-            lblTimes.setText("Grande Final da Copa do Mundo 2026");
-        } else {
-            lblFase.setText("FOLGA");
-            lblTimes.setText("Dia de Treinamento / Descanso de Atletas");
+    private String corDoFisico(int fisico) {
+        if (fisico >= 70) {
+            return " -fx-text-fill: #8bf0a1;";
         }
+        if (fisico >= 40) {
+            return " -fx-text-fill: #f0d58b;";
+        }
+        return " -fx-text-fill: #ff6b6b;";
+    }
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+    private String formatarFormacao(Formacao formacao) {
+        switch (formacao) {
+            case F_4_3_3:
+                return "4-3-3";
+            case F_3_4_3:
+                return "3-4-3";
+            case F_4_2_4:
+                return "4-2-4";
+            case F_4_4_2:
+                return "4-4-2";
+            case F_4_2_3_1:
+                return "4-2-3-1";
+            case F_3_5_2:
+                return "3-5-2";
+            case F_5_4_1:
+                return "5-4-1";
+            case F_5_3_2:
+                return "5-3-2";
+            case F_4_5_1:
+                return "4-5-1";
+            default:
+                return formacao.name();
+        }
+    }
 
-        HBox card = new HBox(15, lblFase, lblTimes, spacer);
-        card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 12; -fx-padding: 12 18 12 18;");
-        return card;
+    private String formatarTatica(EstrategiaSimulacao tatica) {
+        if (tatica instanceof TaticaOfensiva) {
+            return "Pressão";
+        }
+        if (tatica instanceof TaticaRetranca) {
+            return "Retranca";
+        }
+        return "Posse de bola";
     }
 
     private Label criarPill(String text) {
