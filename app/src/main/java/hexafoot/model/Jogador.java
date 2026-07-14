@@ -8,6 +8,8 @@ public class Jogador {
     private int ataque;
     private int defesa;
     private int fisico;
+    private int resistenciaFisica; //atributo fixo vindo do csv, define o quanto o jogador cansa mais rapido ou mais devagar
+    private float desgasteAcumulado; //guarda a fracao de desgaste que ainda nao completou 1 ponto inteiro
     private int estresse;
     private int cartoesAmarelos;
     private int rodadasAfastamento;
@@ -18,7 +20,9 @@ public class Jogador {
         this.posicao = posicao;
         this.ataque = ataque;
         this.defesa = defesa;
-        this.fisico = fisica;
+        this.fisico = 100; //fisico é o desgaste da partida, todo jogador comeca descansado
+        this.resistenciaFisica = fisica; //esse sim é o atributo do csv, usado no calculo do desgaste
+        this.desgasteAcumulado = 0;
         this.estresse = estresse;
         this.cartoesAmarelos = 0;
         this.rodadasAfastamento = 0;
@@ -53,7 +57,7 @@ public class Jogador {
         }
     }
     
-    //-----------------Método de consumo de energia-----------------
+    //-----------------Método de "consumo' de energia dos jogadores-----------------
     public void consumirEnergia(int minutosJogados, float multiplicadorTatico) {
         float desgaste = 0;
         
@@ -66,8 +70,13 @@ public class Jogador {
         } else if (this.posicao.equals("Goleiro")) {
             desgaste = 2;
         }
-        //o desgaste é proporcional ao tempo jogado e a um fator que vem da tática escolhida pelo técnico (ofensiva, equilibrada ou defensiva)
-       int perdaEnergia = (int) Math.round((desgaste * (minutosJogados / 90.0)) * multiplicadorTatico);
+        float perdaBruta = (desgaste * (minutosJogados / 90f)) * multiplicadorTatico;
+
+        float fatorResistencia = 1f - ((this.resistenciaFisica - 85) / 100f);
+        perdaBruta = perdaBruta * fatorResistencia;
+        this.desgasteAcumulado = this.desgasteAcumulado + perdaBruta;
+        int perdaEnergia = (int) this.desgasteAcumulado;
+        this.desgasteAcumulado = this.desgasteAcumulado - perdaEnergia;
 
         this.fisico = this.fisico - perdaEnergia;
         if (this.fisico < 0) {
