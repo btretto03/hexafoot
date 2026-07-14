@@ -11,10 +11,16 @@ import java.util.Random;
 public class ProcessadorLesoes implements ObserverMinuto {
     private Random random;
     private SorteadorJogador sorteador;
+    private Time timeSemAutoSubstituicao; //time do jogador humano: aqui quem escolhe o substituto e o proprio jogador
 
     public ProcessadorLesoes() {
+        this(null);
+    }
+
+    public ProcessadorLesoes(Time timeSemAutoSubstituicao) {
         this.random = new Random();
         this.sorteador = new SorteadorJogador();
+        this.timeSemAutoSubstituicao = timeSemAutoSubstituicao;
     }
 
     @Override
@@ -48,6 +54,12 @@ public class ProcessadorLesoes implements ObserverMinuto {
                 
                 jogador.sofrerLesao(afastamento);
                 partida.adicionarEvento(new EventoPartida(minutoAtual, "Lesao", jogador));
+
+                if (time == timeSemAutoSubstituicao) { //time do jogador: so tira o lesionado, quem substitui é o proprio jogador
+                    time.getTitulares().remove(i);
+                    i--;
+                    continue;
+                }
 
                 if (time == partida.getMandante()) { // Lógica de substituição ou saída definitiva
                     List<Jogador> reservas = partida.getReservasDisponiveisMandante();

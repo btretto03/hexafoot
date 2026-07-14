@@ -1,6 +1,7 @@
 package hexafoot.service.simulacao;
 
 import hexafoot.model.Partida;
+import hexafoot.model.Time;
 import java.util.ArrayList;
 
 /**
@@ -21,8 +22,13 @@ public class RelogioPartida {
 
     //-----------------Registro dos processadores-----------------
     public void adicionarProcessadoresPadrao() {
+        adicionarProcessadoresPadrao(null);
+    }
+
+    //time passado aqui não recebe substituição automática de lesão, quem decide é o jogador humano
+    public void adicionarProcessadoresPadrao(Time timeSemAutoSubstituicao) {
         this.adicionarProcessador(new ProcessadorFisico());
-        this.adicionarProcessador(new ProcessadorLesoes());
+        this.adicionarProcessador(new ProcessadorLesoes(timeSemAutoSubstituicao));
         this.adicionarProcessador(new ProcessadorCartoes());
         this.adicionarProcessador(new ProcessadorGols());
     }
