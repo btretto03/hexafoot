@@ -835,6 +835,51 @@ public class SimulacaoPartidaView implements ScreenView {
         String textoFim = "🏁 FIM DE JOGO! " + obterBandeira(partida.getMandante().getNome()) + " " + formatarNomePais(partida.getMandante().getNome()) + " " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " " + formatarNomePais(partida.getVisitante().getNome()) + " " + obterBandeira(partida.getVisitante().getNome());
         HBox fimCard = criarCardEventoPersonalizado(90, textoFim, "info");
         containerEventos.getChildren().add(0, fimCard);
+
+        GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
+        if (gerenciadorTorneio.campanhaBrasilEncerrada()) { //campanha do Brasil acabou (eliminado ou campeao): avisa na hora, nao so quando volta pro hub
+            containerEventos.getChildren().add(0, criarCardResultadoCampanha(gerenciadorTorneio.getResultadoFinalBrasil()));
+        }
+    }
+
+    // monta o aviso de fim de campanha (campeao, vice, terceiro/quarto lugar ou eliminado em alguma fase)
+    private HBox criarCardResultadoCampanha(String resultado) {
+        String texto;
+        String tipo;
+
+        switch (resultado) {
+            case "CAMPEAO":
+                texto = "🏆 CAMPEÃO DO MUNDO! O Brasil conquistou a Copa de 2026!";
+                tipo = "gol";
+                break;
+            case "VICE_CAMPEAO":
+                texto = "🥈 Vice-campeão! O Brasil perdeu a final, mas fez uma grande campanha.";
+                tipo = "info";
+                break;
+            case "TERCEIRO_LUGAR":
+                texto = "🥉 Terceiro lugar! O Brasil fecha a Copa no pódio.";
+                tipo = "info";
+                break;
+            case "QUARTO_LUGAR":
+                texto = "4º lugar. O Brasil não conseguiu o pódio dessa vez.";
+                tipo = "amarelo";
+                break;
+            default:
+                texto = "❌ Eliminado(a) " + nomeDaFaseEliminacao(resultado) + ". A campanha do Brasil na Copa termina por aqui.";
+                tipo = "perigo";
+                break;
+        }
+
+        return criarCardEventoPersonalizado(90, texto, tipo);
+    }
+
+    private String nomeDaFaseEliminacao(String resultado) {
+        if (resultado.equals("ELIMINADO_FASE_DE_GRUPOS")) return "na fase de grupos";
+        if (resultado.equals("ELIMINADO_DEZESSEIS_AVOS")) return "nos dezesseis-avos de final";
+        if (resultado.equals("ELIMINADO_OITAVAS")) return "nas oitavas de final";
+        if (resultado.equals("ELIMINADO_QUARTAS")) return "nas quartas de final";
+        if (resultado.equals("ELIMINADO_SEMIFINAL")) return "na semifinal";
+        return "no mata-mata";
     }
 
     //-----------------Disputa de penaltis, embutida na tela principal (sem popups)-----------------

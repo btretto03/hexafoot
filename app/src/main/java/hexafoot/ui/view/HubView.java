@@ -1,5 +1,6 @@
 package hexafoot.ui.view;
 
+import hexafoot.dados.GerenciadorSalvamento;
 import hexafoot.model.Formacao;
 import hexafoot.model.Jogador;
 import hexafoot.model.PartidaTorneio;
@@ -7,7 +8,9 @@ import hexafoot.model.Time;
 import hexafoot.model.strategy.EstrategiaSimulacao;
 import hexafoot.model.strategy.TaticaOfensiva;
 import hexafoot.model.strategy.TaticaRetranca;
+import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.GameNavigator;
+import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -19,6 +22,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
+import javafx.util.Duration;
+
+import java.io.IOException;
 
 public class HubView implements ScreenView {
     private final BorderPane root;
@@ -59,10 +65,61 @@ public class HubView implements ScreenView {
         content.setAlignment(Pos.TOP_LEFT);
         HBox.setHgrow(elencoPanel, Priority.ALWAYS);
 
-        layout.getChildren().addAll(topBar, content);
+        layout.getChildren().add(topBar);
+
+        GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
+        if (gerenciadorTorneio.campanhaBrasilEncerrada()) {
+            layout.getChildren().add(criarBannerResultado(gerenciadorTorneio.getResultadoFinalBrasil()));
+        }
+
+        layout.getChildren().add(content);
         VBox.setVgrow(content, Priority.ALWAYS);
 
         root.setCenter(layout);
+    }
+
+    // banner fixo mostrando o resultado final da campanha (campeao, vice, eliminado, etc.) quando a Copa acaba pro Brasil
+    private VBox criarBannerResultado(String resultado) {
+        String texto;
+        String corFundo;
+        String corBorda;
+
+        switch (resultado) {
+            case "CAMPEAO":
+                texto = "🏆 CAMPEÃO DO MUNDO! O Brasil conquistou a Copa de 2026!";
+                corFundo = "rgba(240, 213, 138, 0.15)";
+                corBorda = "rgba(240, 213, 138, 0.4)";
+                break;
+            case "VICE_CAMPEAO":
+                texto = "🥈 Vice-campeão! O Brasil perdeu a final, mas fez uma grande campanha.";
+                corFundo = "rgba(139, 240, 161, 0.1)";
+                corBorda = "rgba(139, 240, 161, 0.3)";
+                break;
+            case "TERCEIRO_LUGAR":
+                texto = "🥉 Terceiro lugar! O Brasil fecha a Copa no pódio.";
+                corFundo = "rgba(139, 240, 161, 0.1)";
+                corBorda = "rgba(139, 240, 161, 0.3)";
+                break;
+            case "QUARTO_LUGAR":
+                texto = "4º lugar. O Brasil não conseguiu o pódio dessa vez.";
+                corFundo = "rgba(240, 213, 138, 0.1)";
+                corBorda = "rgba(240, 213, 138, 0.3)";
+                break;
+            default:
+                texto = "❌ O Brasil foi eliminado da Copa de 2026. Confira o chaveamento completo em \"Consultar grupos e mata-mata\".";
+                corFundo = "rgba(255, 107, 107, 0.1)";
+                corBorda = "rgba(255, 107, 107, 0.3)";
+                break;
+        }
+
+        Label lblResultado = new Label(texto);
+        lblResultado.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
+        lblResultado.setWrapText(true);
+
+        VBox banner = new VBox(lblResultado);
+        banner.setPadding(new Insets(18));
+        banner.setStyle("-fx-background-color: " + corFundo + "; -fx-background-radius: 14; -fx-border-color: " + corBorda + "; -fx-border-radius: 14; -fx-border-width: 1;");
+        return banner;
     }
 
     private VBox criarMenuProximosPassos(GameNavigator navigator) {
@@ -93,9 +150,7 @@ public class HubView implements ScreenView {
 
         Button salvar = new Button("Salvar progresso");
         salvar.getStyleClass().add("secondary-button");
-        salvar.setOnAction(event -> navigator.showFeaturePlaceholder(
-                "Salvar jogo",
-                "A persistência visual será ligada ao repositório de saves e ao serializador do estado do jogo."));
+        salvar.setOnAction(event -> salvarProgresso(salvar, navigator));
 
         Button menu = new Button("Voltar ao menu");
         menu.getStyleClass().add("ghost-button");
@@ -115,6 +170,23 @@ public class HubView implements ScreenView {
         panel.setMinHeight(Region.USE_COMPUTED_SIZE);
         VBox.setVgrow(panel, Priority.ALWAYS);
         return panel;
+    }
+
+    // salva no slot unico de save; feedback aparece no proprio texto do botao por alguns segundos, sem popup
+    private void salvarProgresso(Button botao, GameNavigator navigator) {
+        GerenciadorSalvamento gerenciadorSalvamento = new GerenciadorSalvamento();
+        String textoOriginal = botao.getText();
+
+        try {
+            gerenciadorSalvamento.salvar(navigator.getSession().getGerenciadorTorneio());
+            botao.setText("Progresso salvo!");
+        } catch (IOException erro) {
+            botao.setText("Erro ao salvar");
+        }
+
+        PauseTransition pausa = new PauseTransition(Duration.seconds(2));
+        pausa.setOnFinished(event -> botao.setText(textoOriginal));
+        pausa.play();
     }
 
     private VBox criarPainelElenco(GameNavigator navigator) {
