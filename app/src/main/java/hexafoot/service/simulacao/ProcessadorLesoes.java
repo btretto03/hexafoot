@@ -55,9 +55,7 @@ public class ProcessadorLesoes implements ObserverMinuto {
                 jogador.sofrerLesao(afastamento);
                 partida.adicionarEvento(new EventoPartida(minutoAtual, "Lesao", jogador));
 
-                if (time == timeSemAutoSubstituicao) { //time do jogador: so tira o lesionado, quem substitui é o proprio jogador
-                    time.getTitulares().remove(i);
-                    i--;
+                if (time == timeSemAutoSubstituicao) { //time do jogador: o lesionado fica na lista ate o proprio jogador escolher o substituto
                     continue;
                 }
 
