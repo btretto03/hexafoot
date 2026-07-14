@@ -1,8 +1,11 @@
 package hexafoot.model;
+
+import java.io.Serializable;
+
 /**
  * Entidade Jogador - Representa cada atleta do time, com atributos como nome, posição, ataque, defesa, físico, estresse, cartões amarelos, rodadas de afastamento e status (ativo, suspenso ou lesionado).
  */
-public class Jogador {
+public class Jogador implements Serializable {
     private String nome;
     private String posicao;
     private int ataque;
@@ -28,7 +31,7 @@ public class Jogador {
         this.rodadasAfastamento = 0;
         this.status = "Ativo";
     }
-    
+
     //-----------------Métodos de disciplina e lesão-----------------
     public void aplicarCartaoAmarelo() {
         this.cartoesAmarelos ++;
@@ -39,7 +42,7 @@ public class Jogador {
     }
 
     public void aplicarCartaoVermelho() {
-        this.rodadasAfastamento = 1; 
+        this.rodadasAfastamento = 1;
         this.status = "Suspenso";
     }
 
@@ -56,11 +59,11 @@ public class Jogador {
             }
         }
     }
-    
-    //-----------------Método de "consumo' de energia dos jogadores-----------------
+
+    //-----------------Método de consumo de energia-----------------
     public void consumirEnergia(int minutosJogados, float multiplicadorTatico) {
         float desgaste = 0;
-        
+
         if (this.posicao.equals("Atacante")) {
             desgaste = 10;
         } else if (this.posicao.equals("Meio-campista")) {
@@ -70,10 +73,15 @@ public class Jogador {
         } else if (this.posicao.equals("Goleiro")) {
             desgaste = 2;
         }
+        //o desgaste é proporcional ao tempo jogado e a um fator que vem da tática escolhida pelo técnico (ofensiva, equilibrada ou defensiva)
         float perdaBruta = (desgaste * (minutosJogados / 90f)) * multiplicadorTatico;
 
+        //jogadores com resistencia fisica acima da media (85) cansam mais devagar, abaixo da media cansam mais rapido
         float fatorResistencia = 1f - ((this.resistenciaFisica - 85) / 100f);
         perdaBruta = perdaBruta * fatorResistencia;
+
+        //como o metodo é chamado minuto a minuto, o desgaste de cada chamada é pequeno demais pra virar um int sozinho,
+        //entao vamos acumulando a fracao e so tiramos do fisico quando ela completa 1 ponto inteiro
         this.desgasteAcumulado = this.desgasteAcumulado + perdaBruta;
         int perdaEnergia = (int) this.desgasteAcumulado;
         this.desgasteAcumulado = this.desgasteAcumulado - perdaEnergia;
@@ -86,7 +94,7 @@ public class Jogador {
 
     public void recuperarEnergiaPosJogo(boolean foiTitular) {
         if (foiTitular) {
-            this.fisico += 2; 
+            this.fisico += 2;
         } else {
             this.fisico += 10; //se ficou no banco recupera mais energia
         }
@@ -153,5 +161,17 @@ public class Jogador {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public boolean equals(Object outro) { // resolve o bug do jogador duplicado na convocação
+        if (this == outro) {
+            return true;
+        }
+        if (outro instanceof Jogador == false) {
+            return false;
+        }
+        Jogador jogadorOutro = (Jogador) outro;
+        return this.nome.equals(jogadorOutro.nome);
     }
 }

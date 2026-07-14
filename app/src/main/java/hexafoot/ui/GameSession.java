@@ -36,6 +36,9 @@ public class GameSession {
     }
 
     public Time getElencoBrasil() {
+        if (gerenciadorTorneio != null) {
+            return gerenciadorTorneio.getBrasil();
+        }
         return getGerenciadorConvocacao().getElencoOficial();
     }
 
