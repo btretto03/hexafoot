@@ -14,6 +14,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -23,6 +24,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.input.KeyCode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConvocacaoView implements ScreenView {
     private final GameNavigator navigator;
@@ -145,7 +149,7 @@ public class ConvocacaoView implements ScreenView {
         footer.getStyleClass().add("footer-panel");
         footer.setPadding(new Insets(24));
 
-        Label title = new Label("Convocação da Seleção Brasileira");
+        Label title = new Label("🇧🇷 Convocação da Seleção Brasileira");
         title.getStyleClass().add("page-title");
 
         Label subtitle = new Label("Selecione 26 jogadores. 11 entram como titulares e os demais formam o banco.");
@@ -179,6 +183,7 @@ public class ConvocacaoView implements ScreenView {
         tabela.setPlaceholder(new Label(placeholder));
         tabela.getStyleClass().add("player-table");
         tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        tabela.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         tabela.getColumns().add(criarColuna("Nome", "nome", 180));
         tabela.getColumns().add(criarColuna("Pos.", "posicao", 110));
@@ -199,23 +204,29 @@ public class ConvocacaoView implements ScreenView {
     }
 
     private void adicionarConvocado() {
-        Jogador selecionado = tabelaDisponiveis.getSelectionModel().getSelectedItem();
-        if (selecionado == null) {
+        List<Jogador> selecionados = new ArrayList<>(tabelaDisponiveis.getSelectionModel().getSelectedItems());
+        if (selecionados.isEmpty()) {
             return;
         }
 
-        navigator.getSession().getGerenciadorConvocacao().inserirNoElenco(selecionado);
+        for (Jogador jogador : selecionados) {
+            navigator.getSession().getGerenciadorConvocacao().inserirNoElenco(jogador);
+        }
+
         sincronizarListas();
         focarDisponiveis();
     }
 
     private void removerConvocado() {
-        Jogador selecionado = tabelaConvocados.getSelectionModel().getSelectedItem();
-        if (selecionado == null) {
+        List<Jogador> selecionados = new ArrayList<>(tabelaConvocados.getSelectionModel().getSelectedItems());
+        if (selecionados.isEmpty()) {
             return;
         }
 
-        navigator.getSession().getGerenciadorConvocacao().removerDoElenco(selecionado);
+        for (Jogador jogador : selecionados) {
+            navigator.getSession().getGerenciadorConvocacao().removerDoElenco(jogador);
+        }
+
         sincronizarListas();
         focarConvocados();
     }
