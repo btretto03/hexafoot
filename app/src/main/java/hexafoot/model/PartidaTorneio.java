@@ -1,9 +1,11 @@
 package hexafoot.model;
 
+import java.io.Serializable;
+
 /**
  * Metadados de uma partida agendada no calendário da Copa.
  */
-public class PartidaTorneio {
+public class PartidaTorneio implements Serializable {
     private final String id;
     private final FaseTorneio fase;
     private final Integer rodada;

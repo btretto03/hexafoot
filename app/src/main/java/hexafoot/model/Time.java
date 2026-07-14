@@ -2,13 +2,14 @@ package hexafoot.model;
 import hexafoot.model.strategy.EstrategiaSimulacao;
 import hexafoot.model.strategy.TaticaEquilibrada;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Entidade Time - Representa cada seleção do torneio, com atributos como nome, titulares e reservas, tática atual e estatísticas da tabela.
  */
-public class Time {
+public class Time implements Serializable {
     private String nome;
     private List<Jogador> titulares;
     private List<Jogador> reservas;

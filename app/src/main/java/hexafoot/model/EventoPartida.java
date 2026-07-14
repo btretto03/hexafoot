@@ -1,14 +1,16 @@
 package hexafoot.model;
+
+import java.io.Serializable;
+
 /**
  * Entidade EventoPartida - Representa cada evento que ocorre durante a partida, como gols, cartões e substituições.
  */
-public class EventoPartida {
+public class EventoPartida implements Serializable {
     private int minuto;
     private String tipo;
     private Jogador autor;
     private Jogador jogadorSubstituinte;
 
-   // Construtor para Gol, Cartão, Lesão
     public EventoPartida(int minuto, String tipo, Jogador autor) {
         this.minuto = minuto;
         this.tipo = tipo;
@@ -16,17 +18,12 @@ public class EventoPartida {
         this.jogadorSubstituinte = null;
     }
 
-    // Construtor para Substituição
     public EventoPartida(int minuto, String tipo, Jogador autor, Jogador jogadorSubstituinte) {
         this.minuto = minuto;
         this.tipo = tipo;
         this.autor = autor; // quem sai
         this.jogadorSubstituinte = jogadorSubstituinte; // quem entra
     }
-
-    //-----------------getters----------------- 
-    /**Essa classe não tem setters
-     *  por se tratar de eventos imutáveis */
 
     public int getMinuto() {
         return minuto;
@@ -68,7 +65,6 @@ public class EventoPartida {
             return "🔄 Substituição: Sai " + nomeAutor + ", entra " + nomeEntra + ".";
         } 
         else {
-            // Um fallback genérico caso apareça um evento novo no futuro
             return tipo + " - " + nomeAutor;
         }
     }

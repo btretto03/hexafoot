@@ -1,12 +1,13 @@
 package hexafoot.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Entidade Partida - Representa o confronto entre duas equipes, armazenando o placar e o histórico de eventos que ocorrem durante o jogo.
  */
-public class Partida {
+public class Partida implements Serializable {
     private int maxSubstituicoes;
 
     private Time mandante;
