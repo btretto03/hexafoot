@@ -43,6 +43,10 @@ public class GameSession {
         this.gerenciadorTorneio = new GerenciadorTorneio(getElencoBrasil(), getSelecoesInternacionais());
     }
 
+    public void carregarTorneio(GerenciadorTorneio gerenciadorTorneioSalvo) {
+        this.gerenciadorTorneio = gerenciadorTorneioSalvo;
+    }
+
     public GerenciadorTorneio getGerenciadorTorneio() {
         return gerenciadorTorneio;
     }

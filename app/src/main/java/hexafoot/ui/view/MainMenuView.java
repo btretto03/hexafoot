@@ -48,9 +48,7 @@ public class MainMenuView implements ScreenView {
 
         Button loadButton = new Button("Carregar jogo");
         loadButton.getStyleClass().addAll("secondary-button", "wide-button");
-        loadButton.setOnAction(event -> navigator.showFeaturePlaceholder(
-                "Carregar jogo salvo",
-                "Nesta etapa a interface exibirá a lista de arquivos de salvamento e restaurará o estado da campanha."));
+        loadButton.setOnAction(event -> navigator.showCarregarJogo());
 
         Button exitButton = new Button("Sair");
         exitButton.getStyleClass().addAll("ghost-button", "wide-button");

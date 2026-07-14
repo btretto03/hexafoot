@@ -2,6 +2,7 @@ package hexafoot.ui;
 
 import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
+import hexafoot.ui.view.CarregarJogoView;
 import hexafoot.ui.view.ConvocacaoView;
 import hexafoot.ui.view.EscalacaoTaticaView;
 import hexafoot.ui.view.FeaturePlaceholderView;
@@ -22,7 +23,7 @@ public class GameNavigator {
     public GameNavigator(Stage stage, GameSession session) {
         this.stage = stage;
         this.session = session;
-        this.stage.setFullScreenExitHint(""); 
+        this.stage.setFullScreenExitHint(""); //tira o aviso "pressione ESC" que o javafx mostra sozinho
     }
 
     public void showMainMenu() {
@@ -50,6 +51,10 @@ public class GameNavigator {
         applyScene(new hexafoot.ui.view.TabelasChaveamentoView(this));
     }
 
+    public void showCarregarJogo() {
+        applyScene(new CarregarJogoView(this));
+    }
+
     public void exitGame() {
         stage.close();
     }
@@ -62,7 +67,7 @@ public class GameNavigator {
         Scene scene = new Scene(view.getRoot(), WIDTH, HEIGHT);
         scene.getStylesheets().add(getClass().getResource("/styles/hexafoot.css").toExternalForm());
         stage.setScene(scene);
-        stage.setFullScreen(true); // pra garantir que sempre vai estaar em tela cheia
+        stage.setFullScreen(true); //garante tela cheia em toda troca de tela, mesmo que o jogador tenha saido do modo antes
     }
 
     public void showSimulacaoPartida(PartidaTorneio partidaTorneio) {
