@@ -120,7 +120,7 @@ public class HubView implements ScreenView {
     private VBox criarPainelElenco(GameNavigator navigator) {
         Time brasil = navigator.getSession().getElencoBrasil();
 
-        Label title = new Label("🇧🇷 Elenco da Seleção");
+        Label title = new Label("[BRA] Elenco da Seleção");
         title.getStyleClass().add("card-title");
 
         Label subtitle = new Label("Formação " + formatarFormacao(brasil.getFormacaoAtual()) + " · Postura " + formatarTatica(brasil.getTaticaAtual())
