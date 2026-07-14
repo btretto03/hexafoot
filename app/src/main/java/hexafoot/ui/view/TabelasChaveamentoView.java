@@ -96,7 +96,7 @@ public class TabelasChaveamentoView implements ScreenView {
         container.getStyleClass().add("groups-container");
 
         if (gerenciadorTorneio.getFaseAtual() == FaseTorneio.ENCERRADO) {
-            Label resultado = new Label("Campeão: " + gerenciadorTorneio.getCampeao().getNome() + " | Terceiro colocado: " + gerenciadorTorneio.getTerceiroColocado().getNome());
+            Label resultado = new Label("Campeão: " + nomeComBandeira(gerenciadorTorneio.getCampeao()) + " | Terceiro colocado: " + nomeComBandeira(gerenciadorTorneio.getTerceiroColocado()));
             resultado.getStyleClass().add("page-subtitle");
             container.getChildren().add(resultado);
         }
@@ -132,7 +132,7 @@ public class TabelasChaveamentoView implements ScreenView {
             detalhes = "Em andamento";
         } else if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
             Partida partida = partidaTorneio.getPartida();
-            detalhes = "Placar: " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " | Vencedor: " + partidaTorneio.getVencedor().getNome();
+            detalhes = "Placar: " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " | Vencedor: " + nomeComBandeira(partidaTorneio.getVencedor());
         }
 
         Label resultado = new Label(detalhes);
@@ -146,10 +146,97 @@ public class TabelasChaveamentoView implements ScreenView {
 
     private String nomeParticipante(Time time, String origem) {
         if (time != null) {
-            return time.getNome();
+            return nomeComBandeira(time);
         }
 
         return origem;
+    }
+
+    private String nomeComBandeira(Time time) {
+        return obterBandeira(time.getNome()) + " " + formatarNomePais(time.getNome());
+    }
+
+    private String obterBandeira(String nomeBruto) {
+        if (nomeBruto == null) return "";
+        String nome = nomeBruto.trim().toLowerCase();
+
+        if (nome.equals("africa_do_sul")) return "🇿🇦";
+        if (nome.equals("alemanha")) return "🇩🇪";
+        if (nome.equals("arabia_saudita")) return "🇸🇦";
+        if (nome.equals("argelia")) return "🇩🇿";
+        if (nome.equals("argentina")) return "🇦🇷";
+        if (nome.equals("australia")) return "🇦🇺";
+        if (nome.equals("austria")) return "🇦🇹";
+        if (nome.equals("belgica")) return "🇧🇪";
+        if (nome.equals("bosnia_e_herzegovina")) return "🇧🇦";
+        if (nome.equals("brasil")) return "🇧🇷";
+        if (nome.equals("cabo_verde")) return "🇨🇻";
+        if (nome.equals("camaroes")) return "🇨🇲";
+        if (nome.equals("canada")) return "🇨🇦";
+        if (nome.equals("catar")) return "🇶🇦";
+        if (nome.equals("colombia")) return "🇨🇴";
+        if (nome.equals("coreia_do_sul")) return "🇰🇷";
+        if (nome.equals("costa_do_marfim")) return "🇨🇮";
+        if (nome.equals("croacia")) return "🇭🇷";
+        if (nome.equals("curacau")) return "🇨🇼";
+        if (nome.equals("dinamarca")) return "🇩🇰";
+        if (nome.equals("egito")) return "🇪🇬";
+        if (nome.equals("equador")) return "🇪🇨";
+        if (nome.equals("escocia")) return "🏴";
+        if (nome.equals("espanha")) return "🇪🇸";
+        if (nome.equals("estados_unidos")) return "🇺🇸";
+        if (nome.equals("franca")) return "🇫🇷";
+        if (nome.equals("gana")) return "🇬🇭";
+        if (nome.equals("haiti")) return "🇭🇹";
+        if (nome.equals("holanda")) return "🇳🇱";
+        if (nome.equals("inglaterra")) return "🏴";
+        if (nome.equals("ira")) return "🇮🇷";
+        if (nome.equals("iraque")) return "🇮🇶";
+        if (nome.equals("japao")) return "🇯🇵";
+        if (nome.equals("jordania")) return "🇯🇴";
+        if (nome.equals("marrocos")) return "🇲🇦";
+        if (nome.equals("mexico")) return "🇲🇽";
+        if (nome.equals("noruega")) return "🇳🇴";
+        if (nome.equals("nova_zelandia")) return "🇳🇿";
+        if (nome.equals("panama")) return "🇵🇦";
+        if (nome.equals("paraguai")) return "🇵🇾";
+        if (nome.equals("portugal")) return "🇵🇹";
+        if (nome.equals("republica_democratica_do_congo")) return "🇨🇩";
+        if (nome.equals("republica_tcheca")) return "🇨🇿";
+        if (nome.equals("senegal")) return "🇸🇳";
+        if (nome.equals("suecia")) return "🇸🇪";
+        if (nome.equals("suica")) return "🇨🇭";
+        if (nome.equals("tunisia")) return "🇹🇳";
+        if (nome.equals("turquia")) return "🇹🇷";
+        if (nome.equals("uruguai")) return "🇺🇾";
+        if (nome.equals("uzbequistao")) return "🇺🇿";
+
+        return "🏳";
+    }
+
+    private String formatarNomePais(String nomeBruto) {
+        if (nomeBruto == null || nomeBruto.isEmpty()) return "";
+
+        if (nomeBruto.equalsIgnoreCase("africa_do_sul")) return "África do Sul";
+        if (nomeBruto.equalsIgnoreCase("coreia_do_sul")) return "Coreia do Sul";
+        if (nomeBruto.equalsIgnoreCase("arabia_saudita")) return "Arábia Saudita";
+        if (nomeBruto.equalsIgnoreCase("camaroes")) return "Camarões";
+        if (nomeBruto.equalsIgnoreCase("ira")) return "Irã";
+        if (nomeBruto.equalsIgnoreCase("japao")) return "Japão";
+
+        String[] partes = nomeBruto.replace("_", " ").split(" ");
+        StringBuilder sb = new StringBuilder();
+
+        for (String p : partes) {
+            if (p.length() > 0) {
+                if (p.equalsIgnoreCase("de") || p.equalsIgnoreCase("do") || p.equalsIgnoreCase("da") || p.equalsIgnoreCase("dos") || p.equalsIgnoreCase("das")) {
+                    sb.append(p.toLowerCase()).append(" ");
+                } else {
+                    sb.append(p.substring(0, 1).toUpperCase()).append(p.substring(1).toLowerCase()).append(" ");
+                }
+            }
+        }
+        return sb.toString().trim();
     }
 
     private String formatarFase(FaseTorneio fase) {
@@ -192,7 +279,7 @@ public class TabelasChaveamentoView implements ScreenView {
         tabela.setMinHeight(220);
         tabela.setMaxHeight(220);
 
-        tabela.getColumns().add(criarColunaTexto("Time", time -> time.getNome(), 1.6));
+        tabela.getColumns().add(criarColunaTexto("Time", this::nomeComBandeira, 1.8));
         tabela.getColumns().add(criarColunaInteiro("P", Time::getPontos, 0.6));
         tabela.getColumns().add(criarColunaInteiro("J", time -> time.getVitorias() + time.getEmpates() + time.getDerrotas(), 0.6));
         tabela.getColumns().add(criarColunaInteiro("V", Time::getVitorias, 0.6));
