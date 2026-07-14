@@ -14,6 +14,7 @@ import hexafoot.service.simulacao.GerenciadorPenaltis;
 import hexafoot.service.simulacao.RelogioPartida;
 import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.GameNavigator;
+import hexafoot.ui.TocadorDeSons;
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
@@ -42,8 +43,6 @@ import java.util.List;
 import java.util.Map;
 
 public class SimulacaoPartidaView implements ScreenView {
-    // velocidades do relogio da partida (multiplicador do Timeline). Normal virou o antigo "rapido",
-    // e o novo rapido e bem mais veloz que isso
     private static final double TAXA_LENTA = 0.5;
     private static final double TAXA_NORMAL = 3.0;
     private static final double TAXA_RAPIDA = 8.0;
@@ -63,6 +62,7 @@ public class SimulacaoPartidaView implements ScreenView {
     private boolean substituicaoObrigatoriaPendente = false;
     private boolean intervaloJaExibido = false;
     private StackPane overlayIntervalo;
+    private final TocadorDeSons tocadorDeSons = new TocadorDeSons();
 
     // Rastreamento visual de cartões
     private final Map<String, String> cartoesEmCampo = new HashMap<>();
@@ -71,7 +71,7 @@ public class SimulacaoPartidaView implements ScreenView {
     private Label lblTempo;
     private Label lblPlacarMandante;
     private Label lblPlacarVisitante;
-    
+
     private VBox containerEventos;
     private VBox containerElencoAoVivo;
 
@@ -128,7 +128,7 @@ public class SimulacaoPartidaView implements ScreenView {
         root.setCenter(centroLayout);
         root.setRight(criarPainelTecnicoLateral());
         root.setBottom(criarControlesInferiores());
-        
+
         BorderPane.setMargin(centroLayout, new Insets(24, 12, 12, 12));
 
         this.rootEmpilhado = new StackPane(root);
@@ -139,8 +139,9 @@ public class SimulacaoPartidaView implements ScreenView {
         renderizarElencoAoVivo();
 
         alterarVelocidade(TAXA_NORMAL); // a partida ja comeca rolando, no ritmo normal
+        tocadorDeSons.tocarComecoJogo();
     }
-    
+
     private VBox criarPlacar() {
         VBox painelPlacar = new VBox(10);
         painelPlacar.getStyleClass().add("hero-panel");
@@ -156,7 +157,7 @@ public class SimulacaoPartidaView implements ScreenView {
         Label lblMandante = new Label(obterBandeira(partida.getMandante().getNome()) + " " + formatarNomePais(partida.getMandante().getNome()));
         lblMandante.getStyleClass().add("display-title");
         lblMandante.setStyle("-fx-font-size: 32px;");
-        
+
         lblPlacarMandante = new Label("0");
         lblPlacarMandante.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: white;");
 
@@ -191,21 +192,21 @@ public class SimulacaoPartidaView implements ScreenView {
 
         Label titulo = new Label("Seu Time em Campo");
         titulo.getStyleClass().add("card-title");
-        
+
         Label subtitulo = new Label("Acompanhe o desgaste e cartões");
         subtitulo.getStyleClass().add("card-text");
         subtitulo.setStyle("-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.5);");
 
         containerElencoAoVivo = new VBox(6);
-        
+
         ScrollPane scrollElenco = new ScrollPane(containerElencoAoVivo);
         scrollElenco.getStyleClass().add("championship-scroll");
         scrollElenco.setFitToWidth(true);
         scrollElenco.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
-        
+
         VBox.setVgrow(scrollElenco, Priority.ALWAYS);
         painel.getChildren().addAll(titulo, subtitulo, scrollElenco);
-        
+
         return painel;
     }
 
@@ -218,15 +219,15 @@ public class SimulacaoPartidaView implements ScreenView {
         titulo.getStyleClass().add("card-title");
 
         containerEventos = new VBox(8);
-        
+
         ScrollPane scrollEventos = new ScrollPane(containerEventos);
         scrollEventos.getStyleClass().add("championship-scroll");
         scrollEventos.setFitToWidth(true);
         scrollEventos.setStyle("-fx-background-color: transparent; -fx-control-inner-background: transparent;");
-        
+
         VBox.setVgrow(scrollEventos, Priority.ALWAYS);
         painel.getChildren().addAll(titulo, scrollEventos);
-        
+
         return painel;
     }
 
@@ -239,7 +240,7 @@ public class SimulacaoPartidaView implements ScreenView {
 
         Label tituloPainel = new Label("Área do Técnico");
         tituloPainel.getStyleClass().add("card-title");
-        
+
         Label subTitulo = new Label("Disponível apenas com o jogo pausado.");
         subTitulo.getStyleClass().add("card-text");
         subTitulo.setStyle("-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.5);");
@@ -283,7 +284,7 @@ public class SimulacaoPartidaView implements ScreenView {
         VBox boxSubstituicao = new VBox(8, comboSai, comboEntra, btnConfirmarSub);
 
         painelTecnico.getChildren().addAll(tituloPainel, subTitulo, lblTaticaTitulo, boxBotoesTatica, lblSubTituloSecao, boxSubstituicao);
-        
+
         atualizarEstiloBotoesTatica();
         return painelTecnico;
     }
@@ -324,7 +325,7 @@ public class SimulacaoPartidaView implements ScreenView {
     }
 
     private void configurarTimeline() {
-        KeyFrame frame = new KeyFrame(Duration.millis(800), event -> avancarMinuto()); 
+        KeyFrame frame = new KeyFrame(Duration.millis(800), event -> avancarMinuto());
         timeline = new Timeline(frame);
         timeline.setCycleCount(Timeline.INDEFINITE);
     }
@@ -347,7 +348,7 @@ public class SimulacaoPartidaView implements ScreenView {
             timeline.play();
             jogoEmAndamento = true;
         }
-        
+
         atualizarEstadoBotoesTempo();
         atualizarEstadoPainelTecnico();
     }
@@ -386,21 +387,23 @@ public class SimulacaoPartidaView implements ScreenView {
                     jogadorMeuSaiuLesionado = true;
                 }
 
+                tocarSomDoEvento(ev);
+
                 String descricaoCrua = ev.toString();
-                
+
                 if (descricaoCrua.startsWith(ev.getMinuto() + "' - ")) {
                     descricaoCrua = descricaoCrua.substring((ev.getMinuto() + "' - ").length());
                 } else if (descricaoCrua.contains(" - ")) {
                     descricaoCrua = descricaoCrua.substring(descricaoCrua.indexOf(" - ") + 3);
                 }
-                
+
                 if (eventosDoMinuto.contains(descricaoCrua)) continue;
                 eventosDoMinuto.add(descricaoCrua);
 
                 String descLower = descricaoCrua.toLowerCase();
                 boolean ignorarEvento = false;
                 String tipo = "neutro";
-                
+
                 if (descLower.contains("gol")) tipo = "gol";
                 else if (descLower.contains("amarelo")) tipo = "amarelo";
                 else if (descLower.contains("vermelho") || descLower.contains("expulso") || descLower.contains("lesão") || descLower.contains("lesao") || descLower.contains("sentiu")) tipo = "perigo";
@@ -412,16 +415,16 @@ public class SimulacaoPartidaView implements ScreenView {
                         if (descLower.contains(nomeJ.toLowerCase())) {
                             if (descLower.contains("vermelho") || descLower.contains("expulso")) {
                                 if ("Vermelho".equals(cartoesEmCampo.get(nomeJ))) {
-                                    ignorarEvento = true; 
+                                    ignorarEvento = true;
                                 } else {
                                     cartoesEmCampo.put(nomeJ, "Vermelho");
                                     tipo = "perigo";
                                 }
                             } else if (descLower.contains("amarelo")) {
                                 if ("Vermelho".equals(cartoesEmCampo.get(nomeJ))) {
-                                    ignorarEvento = true; 
+                                    ignorarEvento = true;
                                 } else if ("Amarelo".equals(cartoesEmCampo.get(nomeJ))) {
-                                    cartoesEmCampo.put(nomeJ, "Vermelho"); 
+                                    cartoesEmCampo.put(nomeJ, "Vermelho");
                                     descricaoCrua = descricaoCrua.replaceAll("(?i)cartão amarelo.*", "Cartão Vermelho (2º Amarelo) para " + nomeJ + ".");
                                     tipo = "perigo";
                                 } else {
@@ -431,7 +434,7 @@ public class SimulacaoPartidaView implements ScreenView {
                         }
                     }
                 }
-                
+
                 if (ignorarEvento) continue;
 
                 descricaoCrua = descricaoCrua.replaceAll("(?i)" + partida.getVisitante().getNome(), formatarNomePais(partida.getVisitante().getNome()));
@@ -461,7 +464,8 @@ public class SimulacaoPartidaView implements ScreenView {
 
         minutoAtual++;
 
-        if (chegouIntervalo) {
+        // se tem substituicao obrigatoria travando o jogo, o intervalo espera a proxima chamada
+        if (chegouIntervalo && substituicaoObrigatoriaPendente == false) {
             intervaloJaExibido = true;
             timeline.pause();
             jogoEmAndamento = false;
@@ -482,6 +486,7 @@ public class SimulacaoPartidaView implements ScreenView {
         rootEmpilhado.getChildren().remove(overlayIntervalo);
         overlayIntervalo = null;
         alterarVelocidade(TAXA_NORMAL);
+        tocadorDeSons.tocarComecoJogo(); // apito do segundo tempo
     }
 
     private StackPane criarOverlayIntervalo() {
@@ -513,6 +518,21 @@ public class SimulacaoPartidaView implements ScreenView {
         overlay.setAlignment(Pos.CENTER);
         overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.72);");
         return overlay;
+    }
+
+    // decide qual efeito sonoro toca de acordo com o tipo do evento gerado pelo motor de simulacao
+    private void tocarSomDoEvento(EventoPartida ev) {
+        String tipo = ev.getTipo();
+
+        if ("GolMandante".equals(tipo)) {
+            if (brasilEhMandante) tocadorDeSons.tocarGol(); else tocadorDeSons.tocarGolAdversario();
+        } else if ("GolVisitante".equals(tipo)) {
+            if (brasilEhMandante) tocadorDeSons.tocarGolAdversario(); else tocadorDeSons.tocarGol();
+        } else if ("CartaoAmarelo".equals(tipo) || "SegundoAmarelo".equals(tipo) || "CartaoVermelho".equals(tipo)) {
+            tocadorDeSons.tocarCartao();
+        } else if ("Lesao".equals(tipo)) {
+            tocadorDeSons.tocarLesao();
+        }
     }
 
     private void renderizarElencoAoVivo() {
@@ -554,7 +574,7 @@ public class SimulacaoPartidaView implements ScreenView {
 
             String texto = "Substituição: Sai " + sai.getNome() + ", entra " + entra.getNome();
             containerEventos.getChildren().add(0, criarCardEventoPersonalizado(minutoAtual, texto, "neutro"));
-            
+
             renderizarElencoAoVivo();
             carregarDadosTreinador();
         } else {
@@ -583,7 +603,7 @@ public class SimulacaoPartidaView implements ScreenView {
         comboEntra.setItems(FXCollections.observableArrayList(reservasDoJogador));
 
         Label lblSub = (Label) painelTecnico.getChildren().get(4);
-        lblSub.setText("Substituções (" + substituicoesFeitas + "/5)");
+        lblSub.setText("Substituições (" + substituicoesFeitas + "/5)");
 
         if (!podeSubstituir) {
             btnConfirmarSub.setDisable(true);
@@ -596,7 +616,7 @@ public class SimulacaoPartidaView implements ScreenView {
     private void atualizarEstiloBotoesTatica() {
         Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
         EstrategiaSimulacao taticaAtual = timeDoJogador.getTaticaAtual();
-        
+
         btnTaticaOfensiva.getStyleClass().setAll("secondary-button");
         btnTaticaEquilibrada.getStyleClass().setAll("secondary-button");
         btnTaticaRetranca.getStyleClass().setAll("secondary-button");
@@ -632,41 +652,41 @@ public class SimulacaoPartidaView implements ScreenView {
 
         } else if ("Vermelho".equals(statusCartao)) {
             lblNome.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-strikethrough: true;");
-            
+
             Label lblCartao = new Label("▮");
             lblCartao.setStyle("-fx-font-size: 14px; -fx-text-fill: #ff6b6b;");
             layout.getChildren().add(lblCartao);
-            
+
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
             layout.getChildren().add(spacer);
-            
+
             Label lblEnergia = new Label("EXP");
             lblEnergia.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
             layout.getChildren().add(lblEnergia);
-            
+
         } else {
             if ("Amarelo".equals(statusCartao)) {
                 Label lblCartao = new Label("▮");
                 lblCartao.setStyle("-fx-font-size: 14px; -fx-text-fill: #f0d58b;");
                 layout.getChildren().add(lblCartao);
             }
-            
+
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
             layout.getChildren().add(spacer);
-            
+
             int energiaAtual = jogador.getFisico();
 
             Label lblEnergia = new Label(energiaAtual + "%");
             lblEnergia.setStyle("-fx-font-size: 13px; -fx-font-weight: bold;");
-            
+
             if (energiaAtual >= 70) {
-                lblEnergia.setStyle(lblEnergia.getStyle() + "-fx-text-fill: #8bf0a1;"); 
+                lblEnergia.setStyle(lblEnergia.getStyle() + "-fx-text-fill: #8bf0a1;");
             } else if (energiaAtual >= 40) {
-                lblEnergia.setStyle(lblEnergia.getStyle() + "-fx-text-fill: #f0d58b;"); 
+                lblEnergia.setStyle(lblEnergia.getStyle() + "-fx-text-fill: #f0d58b;");
             } else {
-                lblEnergia.setStyle(lblEnergia.getStyle() + "-fx-text-fill: #ff6b6b;"); 
+                lblEnergia.setStyle(lblEnergia.getStyle() + "-fx-text-fill: #ff6b6b;");
             }
             layout.getChildren().add(lblEnergia);
         }
@@ -676,14 +696,14 @@ public class SimulacaoPartidaView implements ScreenView {
 
     private HBox criarCardEventoPersonalizado(int minuto, String descricao, String tipoCard) {
         Label lblMinuto = new Label(minuto + "'");
-        
+
         Label lblDesc = new Label(descricao);
         lblDesc.setWrapText(true);
         lblDesc.setStyle("-fx-font-size: 13px; -fx-text-fill: #f8f9fa;");
 
         HBox card = new HBox(12, lblMinuto, lblDesc);
         card.setAlignment(Pos.CENTER_LEFT);
-        
+
         switch (tipoCard) {
             case "gol":
                 card.setStyle("-fx-background-color: rgba(34, 197, 94, 0.15); -fx-padding: 10; -fx-background-radius: 8; -fx-border-color: rgba(34, 197, 94, 0.3); -fx-border-radius: 8;");
@@ -727,22 +747,22 @@ public class SimulacaoPartidaView implements ScreenView {
                 } else {
                     setText(null);
                     HBox layout = criarCardJogadorVisual(item);
-                    
+
                     Label icone = new Label(isReserva ? "▲" : "▼");
                     icone.setStyle(isReserva ? "-fx-text-fill: #8bf0a1; -fx-font-size: 10px;" : "-fx-text-fill: #ff6b6b; -fx-font-size: 10px;");
                     layout.getChildren().add(0, icone);
                     setGraphic(layout);
-                    
+
                     // Altera o fundo do item dentro da lista aberta para grafite
                     setStyle("-fx-background-color: #111c14; -fx-padding: 6px 12px; -fx-border-color: rgba(255,255,255,0.05); -fx-border-width: 0 0 1 0;");
-                    
+
                     // Transições dinâmicas ao passar o rato (hover) para realçar a seleção
                     setOnMouseEntered(e -> setStyle("-fx-background-color: #1e3a27; -fx-padding: 6px 12px; -fx-border-color: rgba(255,255,255,0.05); -fx-border-width: 0 0 1 0; -fx-cursor: hand;"));
                     setOnMouseExited(e -> setStyle("-fx-background-color: #111c14; -fx-padding: 6px 12px; -fx-border-color: rgba(255,255,255,0.05); -fx-border-width: 0 0 1 0;"));
                 }
             }
         });
-        
+
         // Célula customizada para quando o seletor estiver fechado (Botão principal do painel)
         combo.setButtonCell(new ListCell<Jogador>() {
             @Override
@@ -764,10 +784,10 @@ public class SimulacaoPartidaView implements ScreenView {
             }
         });
     }
-    
+
     private String formatarNomePais(String nomeBruto) {
         if (nomeBruto == null || nomeBruto.isEmpty()) return "";
-        
+
         if (nomeBruto.equalsIgnoreCase("africa_do_sul")) return "África do Sul";
         if (nomeBruto.equalsIgnoreCase("coreia_do_sul")) return "Coreia do Sul";
         if (nomeBruto.equalsIgnoreCase("coreia_do_norte")) return "Coreia do Norte";
@@ -779,7 +799,7 @@ public class SimulacaoPartidaView implements ScreenView {
 
         String[] partes = nomeBruto.replace("_", " ").split(" ");
         StringBuilder sb = new StringBuilder();
-        
+
         for (String p : partes) {
             if (p.length() > 0) {
                 if (p.equalsIgnoreCase("de") || p.equalsIgnoreCase("do") || p.equalsIgnoreCase("da") || p.equalsIgnoreCase("dos") || p.equalsIgnoreCase("das")) {
@@ -890,6 +910,7 @@ public class SimulacaoPartidaView implements ScreenView {
     }
 
     private void exibirResultadoFinal() {
+        tocadorDeSons.tocarFimDeJogo();
         lblTempo.setText("FIM");
         atualizarEstadoBotoesTempo();
         btnPausar.setText("Encerrada");
@@ -911,7 +932,7 @@ public class SimulacaoPartidaView implements ScreenView {
         }
     }
 
-    // monta o aviso de fim de jogo (eliminado/campeão...) 
+    // monta o aviso de fim de jogo (eliminado/campeão...)
     private HBox criarCardResultadoCampanha(String resultado) {
         String texto;
         String tipo;
@@ -1033,6 +1054,10 @@ public class SimulacaoPartidaView implements ScreenView {
                     elegiveis.add(jogador);
                 }
             }
+        }
+
+        if (elegiveis.isEmpty()) { //caso extremo: ninguem ativo, poe o primeiro titular mesmo assim pra nao travar
+            elegiveis.add(timeBrasil.getTitulares().get(0));
         }
 
         lblStatusPenaltis.setText("Escolha quem vai bater:");
