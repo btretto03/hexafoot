@@ -22,7 +22,7 @@ public class GameNavigator {
     public GameNavigator(Stage stage, GameSession session) {
         this.stage = stage;
         this.session = session;
-        this.stage.setMaximized(true); //abre o jogo ja ocupando a tela toda
+        this.stage.setFullScreenExitHint(""); 
     }
 
     public void showMainMenu() {
@@ -62,6 +62,7 @@ public class GameNavigator {
         Scene scene = new Scene(view.getRoot(), WIDTH, HEIGHT);
         scene.getStylesheets().add(getClass().getResource("/styles/hexafoot.css").toExternalForm());
         stage.setScene(scene);
+        stage.setFullScreen(true); // pra garantir que sempre vai estaar em tela cheia
     }
 
     public void showSimulacaoPartida(PartidaTorneio partidaTorneio) {
