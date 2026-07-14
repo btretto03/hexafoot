@@ -22,6 +22,7 @@ public class GameNavigator {
     public GameNavigator(Stage stage, GameSession session) {
         this.stage = stage;
         this.session = session;
+        this.stage.setMaximized(true); //abre o jogo ja ocupando a tela toda
     }
 
     public void showMainMenu() {
