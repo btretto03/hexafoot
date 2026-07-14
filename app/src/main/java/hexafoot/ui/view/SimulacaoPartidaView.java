@@ -10,10 +10,12 @@ import hexafoot.model.strategy.EstrategiaSimulacao;
 import hexafoot.model.strategy.TaticaEquilibrada;
 import hexafoot.model.strategy.TaticaOfensiva;
 import hexafoot.model.strategy.TaticaRetranca;
+import hexafoot.service.simulacao.GerenciadorPenaltis;
 import hexafoot.service.simulacao.RelogioPartida;
 import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.GameNavigator;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -22,7 +24,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -38,7 +39,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class SimulacaoPartidaView implements ScreenView {
     private final BorderPane root;
@@ -77,6 +77,21 @@ public class SimulacaoPartidaView implements ScreenView {
     private Button btnTaticaOfensiva;
     private Button btnTaticaEquilibrada;
     private Button btnTaticaRetranca;
+
+    // Disputa de penaltis (embutida na propria tela, sem popups)
+    private Label lblPlacarPenaltis;
+    private Label lblStatusPenaltis;
+    private VBox boxEscolhaBatedores;
+    private GerenciadorPenaltis gerenciadorPenaltisView;
+    private Jogador goleiroMandantePenaltis;
+    private Jogador goleiroVisitantePenaltis;
+    private List<Jogador> ordemBatedoresCpuPenaltis;
+    private final List<Jogador> batedoresJaUsadosMandante = new ArrayList<>();
+    private final List<Jogador> batedoresJaUsadosVisitante = new ArrayList<>();
+    private int placarPenaltisMandante = 0;
+    private int placarPenaltisVisitante = 0;
+    private int cobrancasMandante = 0;
+    private int cobrancasVisitante = 0;
 
     public SimulacaoPartidaView(GameNavigator navigator, PartidaTorneio partidaTorneio, Partida partida) {
         this.navigator = navigator;
@@ -141,7 +156,13 @@ public class SimulacaoPartidaView implements ScreenView {
         lblVisitante.setStyle("-fx-font-size: 32px;");
 
         timesBox.getChildren().addAll(lblMandante, lblPlacarMandante, lblX, lblPlacarVisitante, lblVisitante);
-        painelPlacar.getChildren().addAll(lblTempo, timesBox);
+
+        lblPlacarPenaltis = new Label("");
+        lblPlacarPenaltis.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #f0d58b;");
+        lblPlacarPenaltis.setManaged(false);
+        lblPlacarPenaltis.setVisible(false);
+
+        painelPlacar.getChildren().addAll(lblTempo, timesBox, lblPlacarPenaltis);
 
         return painelPlacar;
     }
@@ -492,7 +513,7 @@ public class SimulacaoPartidaView implements ScreenView {
         comboEntra.setItems(FXCollections.observableArrayList(reservasDoJogador));
 
         Label lblSub = (Label) painelTecnico.getChildren().get(4);
-        lblSub.setText("Substituições (" + substituicoesFeitas + "/5)");
+        lblSub.setText("Substituções (" + substituicoesFeitas + "/5)");
 
         if (!podeSubstituir) {
             btnConfirmarSub.setDisable(true);
@@ -782,22 +803,24 @@ public class SimulacaoPartidaView implements ScreenView {
                 gerenciadorTorneio.iniciarMataMata();
                 gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
             }
-        } else {
-            List<Jogador> batedoresEscolhidos = List.of();
 
-            if (partida.getGolsMandante() == partida.getGolsVisitante()) {
-                batedoresEscolhidos = escolherBatedoresPenaltis(gerenciadorTorneio.getBrasil());
-
-                if (batedoresEscolhidos.isEmpty()) {
-                    prepararNovaEscolhaDeBatedores();
-                    return;
-                }
-            }
-
-            gerenciadorTorneio.registrarResultadoBrasilMataMata(partidaTorneio.getId(), partida, batedoresEscolhidos);
-            gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
+            exibirResultadoFinal();
+            return;
         }
-        
+
+        if (partida.getGolsMandante() == partida.getGolsVisitante()) {
+            iniciarDisputaPenaltis(); //empatou, o jogo so termina de verdade quando a disputa acabar
+            return;
+        }
+
+        Time vencedor = partida.getGolsMandante() > partida.getGolsVisitante() ? partida.getMandante() : partida.getVisitante();
+        gerenciadorTorneio.registrarResultadoMataMata(partidaTorneio.getId(), partida, vencedor);
+        gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
+
+        exibirResultadoFinal();
+    }
+
+    private void exibirResultadoFinal() {
         lblTempo.setText("FIM");
         atualizarEstadoBotoesTempo();
         btnPausar.setText("Encerrada");
@@ -806,66 +829,185 @@ public class SimulacaoPartidaView implements ScreenView {
         btnVelNormal.setDisable(true);
         btnVelRapida.setDisable(true);
         btnVoltar.setDisable(false);
-        
+
         painelTecnico.setDisable(true);
-        
+
         String textoFim = "🏁 FIM DE JOGO! " + obterBandeira(partida.getMandante().getNome()) + " " + formatarNomePais(partida.getMandante().getNome()) + " " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " " + formatarNomePais(partida.getVisitante().getNome()) + " " + obterBandeira(partida.getVisitante().getNome());
         HBox fimCard = criarCardEventoPersonalizado(90, textoFim, "info");
         containerEventos.getChildren().add(0, fimCard);
     }
 
-    private List<Jogador> escolherBatedoresPenaltis(Time brasil) {
-        List<Jogador> disponiveis = new ArrayList<>();
-        List<Jogador> escolhidos = new ArrayList<>();
+    //-----------------Disputa de penaltis, embutida na tela principal (sem popups)-----------------
 
-        for (Jogador jogador : brasil.getTitulares()) {
-            if ("Ativo".equals(jogador.getStatus())) {
-                disponiveis.add(jogador);
-            }
-        }
+    private void iniciarDisputaPenaltis() {
+        gerenciadorPenaltisView = new GerenciadorPenaltis();
+        goleiroMandantePenaltis = gerenciadorPenaltisView.obterGoleiro(partida.getMandante());
+        goleiroVisitantePenaltis = gerenciadorPenaltisView.obterGoleiro(partida.getVisitante());
 
-        if (disponiveis.isEmpty()) {
-            Alert alerta = new Alert(Alert.AlertType.ERROR, "O Brasil não tem nenhum titular ativo para disputar os pênaltis.");
-            alerta.initOwner(root.getScene().getWindow());
-            alerta.showAndWait();
-            return List.of();
-        }
+        Time oponente = brasilEhMandante ? partida.getVisitante() : partida.getMandante();
+        ordemBatedoresCpuPenaltis = gerenciadorPenaltisView.definirOrdemDosBatedores(oponente);
 
-        int quantidadeDeCobrancas = Math.min(5, disponiveis.size()); //se sobrou menos de 5 jogadores em campo, eles revezam as cobrancas
+        placarPenaltisMandante = 0;
+        placarPenaltisVisitante = 0;
+        cobrancasMandante = 0;
+        cobrancasVisitante = 0;
+        batedoresJaUsadosMandante.clear();
+        batedoresJaUsadosVisitante.clear();
 
-        for (int cobranca = 1; cobranca <= quantidadeDeCobrancas; cobranca++) {
-            List<String> nomes = new ArrayList<>();
-            for (Jogador jogador : disponiveis) {
-                nomes.add(jogador.getNome() + " - " + jogador.getPosicao());
-            }
-
-            ChoiceDialog<String> dialog = new ChoiceDialog<>(nomes.get(0), nomes);
-            dialog.initOwner(root.getScene().getWindow());
-            dialog.setTitle("Decisão por pênaltis");
-            dialog.setHeaderText("Escolha o batedor da " + cobranca + "ª cobrança");
-            dialog.setContentText("Jogador:");
-
-            Optional<String> escolha = dialog.showAndWait();
-            if (escolha.isEmpty()) {
-                return List.of();
-            }
-
-            int indiceEscolhido = nomes.indexOf(escolha.get());
-            escolhidos.add(disponiveis.remove(indiceEscolhido));
-        }
-
-        return List.copyOf(escolhidos);
-    }
-
-    private void prepararNovaEscolhaDeBatedores() {
         lblTempo.setText("PÊNALTIS");
-        btnPausar.setText("Escolher batedores");
-        btnPausar.setDisable(false);
-        btnPausar.setOnAction(event -> finalizarPartida());
+        lblPlacarPenaltis.setManaged(true);
+        lblPlacarPenaltis.setVisible(true);
+        atualizarPlacarPenaltis();
+
+        btnPausar.setText("Pênaltis em andamento");
+        btnPausar.setDisable(true);
         btnVelLenta.setDisable(true);
         btnVelNormal.setDisable(true);
         btnVelRapida.setDisable(true);
-        painelTecnico.setDisable(true);
+
+        containerEventos.getChildren().add(0, criarCardEventoPersonalizado(120, "⚖ Empate no tempo normal! A decisão vai para os pênaltis.", "info"));
+
+        montarPainelPenaltis();
+        prepararProximaCobranca();
+    }
+
+    private void montarPainelPenaltis() {
+        Label titulo = new Label("Disputa de Pênaltis");
+        titulo.getStyleClass().add("card-title");
+
+        lblStatusPenaltis = new Label("Preparando a disputa...");
+        lblStatusPenaltis.getStyleClass().add("card-text");
+        lblStatusPenaltis.setWrapText(true);
+
+        boxEscolhaBatedores = new VBox(8);
+
+        painelTecnico.setDisable(false);
+        painelTecnico.getChildren().setAll(titulo, lblStatusPenaltis, boxEscolhaBatedores);
+    }
+
+    private void prepararProximaCobranca() {
+        boolean turnoMandante = cobrancasMandante == cobrancasVisitante;
+        boolean turnoBrasil = turnoMandante == brasilEhMandante;
+
+        boxEscolhaBatedores.getChildren().clear();
+
+        if (turnoBrasil) {
+            exibirEscolhaDeBatedor(turnoMandante);
+        } else {
+            int indiceCobranca = turnoMandante ? cobrancasMandante : cobrancasVisitante;
+            Jogador batedor = ordemBatedoresCpuPenaltis.get(indiceCobranca % ordemBatedoresCpuPenaltis.size());
+            lblStatusPenaltis.setText("Vez do adversário cobrar...");
+            executarCobranca(batedor, turnoMandante);
+        }
+    }
+
+    private void exibirEscolhaDeBatedor(boolean turnoMandante) {
+        Time timeBrasil = turnoMandante ? partida.getMandante() : partida.getVisitante();
+        List<Jogador> jaUsados = turnoMandante ? batedoresJaUsadosMandante : batedoresJaUsadosVisitante;
+
+        List<Jogador> elegiveis = new ArrayList<>();
+        for (Jogador jogador : timeBrasil.getTitulares()) {
+            if ("Ativo".equals(jogador.getStatus()) && jaUsados.contains(jogador) == false) {
+                elegiveis.add(jogador);
+            }
+        }
+
+        if (elegiveis.isEmpty()) { //todo mundo elegivel ja bateu nessa serie, libera geral de novo pra rodada seguinte
+            jaUsados.clear();
+            for (Jogador jogador : timeBrasil.getTitulares()) {
+                if ("Ativo".equals(jogador.getStatus())) {
+                    elegiveis.add(jogador);
+                }
+            }
+        }
+
+        if (elegiveis.isEmpty()) { //caso extremo: ninguem ativo, poe o primeiro titular mesmo assim pra nao travar
+            elegiveis.add(timeBrasil.getTitulares().get(0));
+        }
+
+        lblStatusPenaltis.setText("Escolha quem vai bater:");
+
+        for (Jogador jogador : elegiveis) {
+            Button botao = new Button(jogador.getNome() + " (" + jogador.getPosicao() + ")");
+            botao.getStyleClass().add("secondary-button");
+            botao.setMaxWidth(Double.MAX_VALUE);
+            botao.setOnAction(e -> executarCobranca(jogador, turnoMandante));
+            boxEscolhaBatedores.getChildren().add(botao);
+        }
+    }
+
+    private void executarCobranca(Jogador batedor, boolean turnoMandante) {
+        boxEscolhaBatedores.getChildren().clear();
+        lblStatusPenaltis.setText("🎯 " + batedor.getNome() + " vai cobrar...");
+
+        if (turnoMandante) {
+            batedoresJaUsadosMandante.add(batedor);
+        } else {
+            batedoresJaUsadosVisitante.add(batedor);
+        }
+
+        PauseTransition tensao = new PauseTransition(Duration.millis(1100)); //contador de tensao antes de revelar o resultado
+        tensao.setOnFinished(evento -> revelarResultadoCobranca(batedor, turnoMandante));
+        tensao.play();
+    }
+
+    private void revelarResultadoCobranca(Jogador batedor, boolean turnoMandante) {
+        Jogador goleiroAdversario = turnoMandante ? goleiroVisitantePenaltis : goleiroMandantePenaltis;
+        String lado = turnoMandante ? "Mandante" : "Visitante";
+        boolean convertido = gerenciadorPenaltisView.realizarCobranca(batedor, goleiroAdversario, partida, lado);
+
+        if (turnoMandante) {
+            cobrancasMandante++;
+            if (convertido) placarPenaltisMandante++;
+        } else {
+            cobrancasVisitante++;
+            if (convertido) placarPenaltisVisitante++;
+        }
+
+        Time timeQueBateu = turnoMandante ? partida.getMandante() : partida.getVisitante();
+        String texto = (convertido ? "⚽ GOL! " : "❌ Perdeu! ") + batedor.getNome() + " (" + formatarNomePais(timeQueBateu.getNome()) + ")";
+        containerEventos.getChildren().add(0, criarCardEventoPersonalizado(120, texto, convertido ? "gol" : "perigo"));
+
+        lblStatusPenaltis.setText(convertido ? "⚽ Gol de " + batedor.getNome() + "!" : "❌ " + batedor.getNome() + " perdeu a cobrança.");
+        atualizarPlacarPenaltis();
+
+        PauseTransition proxima = new PauseTransition(Duration.millis(700));
+        if (penaltisDecidido()) {
+            proxima.setOnFinished(evento -> finalizarDisputaPenaltis());
+        } else {
+            proxima.setOnFinished(evento -> prepararProximaCobranca());
+        }
+        proxima.play();
+    }
+
+    private boolean penaltisDecidido() {
+        if (cobrancasMandante < 5 || cobrancasVisitante < 5) {
+            int restantesMandante = 5 - cobrancasMandante;
+            int restantesVisitante = 5 - cobrancasVisitante;
+            return gerenciadorPenaltisView.matematicamenteDecidido(placarPenaltisMandante, placarPenaltisVisitante, restantesMandante, restantesVisitante);
+        }
+
+        //fase de morte subita: so decide quando os dois ja bateram na rodada e o placar mudou
+        return cobrancasMandante == cobrancasVisitante && placarPenaltisMandante != placarPenaltisVisitante;
+    }
+
+    private void atualizarPlacarPenaltis() {
+        String nomeMandante = formatarNomePais(partida.getMandante().getNome());
+        String nomeVisitante = formatarNomePais(partida.getVisitante().getNome());
+        lblPlacarPenaltis.setText("Pênaltis: " + nomeMandante + " " + placarPenaltisMandante + " x " + placarPenaltisVisitante + " " + nomeVisitante);
+    }
+
+    private void finalizarDisputaPenaltis() {
+        Time vencedor = placarPenaltisMandante > placarPenaltisVisitante ? partida.getMandante() : partida.getVisitante();
+
+        lblStatusPenaltis.setText("🏆 " + formatarNomePais(vencedor.getNome()) + " venceu nos pênaltis!");
+        boxEscolhaBatedores.getChildren().clear();
+
+        GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
+        gerenciadorTorneio.registrarResultadoMataMata(partidaTorneio.getId(), partida, vencedor);
+        gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
+
+        exibirResultadoFinal();
     }
 
     @Override
