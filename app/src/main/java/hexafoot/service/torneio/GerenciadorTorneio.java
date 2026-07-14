@@ -326,7 +326,7 @@ public class GerenciadorTorneio {
         }
     }
 
-    //-----------------Consequencias pos-jogo -----------------
+    //-----------------Consequencias pos-jogo (desgaste, recuperacao, lesao e suspensao)-----------------
     private void aplicarConsequenciasPosJogo(Partida partida) {
         Time mandante = partida.getMandante();
         Time visitante = partida.getVisitante();
