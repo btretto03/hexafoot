@@ -106,7 +106,7 @@ public class EscalacaoTaticaView implements ScreenView {
     }
 
     private VBox criarCabecalho() {
-        Label title = new Label("Escalação e tática");
+        Label title = new Label("🇧🇷 Escalação e tática");
         title.getStyleClass().add("page-title");
 
         Label subtitle = new Label("Escolha os jogadores que ficarão no campo e no banco, ajuste a formação e altere o estilo de jogo.");
