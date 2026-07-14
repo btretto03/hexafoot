@@ -5,6 +5,7 @@ import hexafoot.model.Time;
 import hexafoot.service.simulacao.GerenciadorConvocacao;
 import hexafoot.ui.GameNavigator;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
@@ -16,7 +17,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
@@ -171,7 +174,21 @@ public class ConvocacaoView implements ScreenView {
         Label label = new Label(titulo);
         label.getStyleClass().add("card-title");
 
-        VBox panel = new VBox(12, label, tabela);
+        Label dicaSelecao = new Label("Clique nos jogadores pra selecionar vários de uma vez");
+        dicaSelecao.getStyleClass().add("card-text");
+        dicaSelecao.setStyle("-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.55);");
+        dicaSelecao.setWrapText(true);
+
+        tabela.getSelectionModel().getSelectedItems().addListener((ListChangeListener<Jogador>) mudanca -> {
+            int quantidade = tabela.getSelectionModel().getSelectedItems().size();
+            if (quantidade == 0) {
+                dicaSelecao.setText("Clique nos jogadores pra selecionar vários de uma vez");
+            } else {
+                dicaSelecao.setText(quantidade + " jogador(es) selecionado(s)");
+            }
+        });
+
+        VBox panel = new VBox(10, label, dicaSelecao, tabela);
         panel.getStyleClass().add("table-card");
         panel.setPadding(new Insets(18));
         VBox.setVgrow(tabela, Priority.ALWAYS);
@@ -184,22 +201,100 @@ public class ConvocacaoView implements ScreenView {
         tabela.getStyleClass().add("player-table");
         tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         tabela.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        ativarSelecaoPorClique(tabela);
 
         tabela.getColumns().add(criarColuna("Nome", "nome", 180));
         tabela.getColumns().add(criarColuna("Pos.", "posicao", 110));
         tabela.getColumns().add(criarColuna("Ataque", "ataque", 75));
         tabela.getColumns().add(criarColuna("Defesa", "defesa", 75));
-        tabela.getColumns().add(criarColuna("Físico", "fisico", 75));
+        tabela.getColumns().add(criarColunaFisico());
         tabela.getColumns().add(criarColuna("Estresse", "estresse", 80));
-        tabela.getColumns().add(criarColuna("Status", "status", 95));
+        tabela.getColumns().add(criarColunaStatus());
 
         return tabela;
+    }
+
+    // clicar numa linha liga/desliga ela da seleção, sem precisar do Ctrl que o javafx exige por padrão
+    private void ativarSelecaoPorClique(TableView<Jogador> tabela) {
+        tabela.setRowFactory(tv -> {
+            TableRow<Jogador> linha = new TableRow<>();
+            linha.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
+                if (linha.isEmpty()) {
+                    return;
+                }
+
+                int indice = linha.getIndex();
+                if (tabela.getSelectionModel().isSelected(indice)) {
+                    tabela.getSelectionModel().clearSelection(indice);
+                } else {
+                    tabela.getSelectionModel().select(indice);
+                }
+                event.consume();
+            });
+            return linha;
+        });
     }
 
     private TableColumn<Jogador, ?> criarColuna(String titulo, String propriedade, double largura) {
         TableColumn<Jogador, Object> coluna = new TableColumn<>(titulo);
         coluna.setCellValueFactory(new PropertyValueFactory<>(propriedade));
         coluna.setPrefWidth(largura);
+        return coluna;
+    }
+
+    // colore o físico igual o resto do jogo: verde descansado, amarelo cansando, vermelho no limite
+    private TableColumn<Jogador, Integer> criarColunaFisico() {
+        TableColumn<Jogador, Integer> coluna = new TableColumn<>("Físico");
+        coluna.setCellValueFactory(new PropertyValueFactory<>("fisico"));
+        coluna.setPrefWidth(75);
+        coluna.setCellFactory(col -> new TableCell<Jogador, Integer>() {
+            @Override
+            protected void updateItem(Integer valor, boolean empty) {
+                super.updateItem(valor, empty);
+                if (empty || valor == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+
+                setText(valor + "%");
+                if (valor >= 70) {
+                    setStyle("-fx-text-fill: #8bf0a1; -fx-font-weight: bold;");
+                } else if (valor >= 40) {
+                    setStyle("-fx-text-fill: #f0d58b; -fx-font-weight: bold;");
+                } else {
+                    setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold;");
+                }
+            }
+        });
+        return coluna;
+    }
+
+    // colore o status: ativo em verde, lesionado em vermelho, suspenso em amarelo
+    private TableColumn<Jogador, String> criarColunaStatus() {
+        TableColumn<Jogador, String> coluna = new TableColumn<>("Status");
+        coluna.setCellValueFactory(new PropertyValueFactory<>("status"));
+        coluna.setPrefWidth(95);
+        coluna.setCellFactory(col -> new TableCell<Jogador, String>() {
+            @Override
+            protected void updateItem(String valor, boolean empty) {
+                super.updateItem(valor, empty);
+                if (empty || valor == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+
+                setText(valor);
+                if ("Ativo".equals(valor)) {
+                    setStyle("-fx-text-fill: #8bf0a1; -fx-font-weight: bold;");
+                } else if ("Lesionado".equals(valor)) {
+                    setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold;");
+                } else {
+                    setStyle("-fx-text-fill: #f0d58b; -fx-font-weight: bold;");
+                }
+            }
+        });
         return coluna;
     }
 
