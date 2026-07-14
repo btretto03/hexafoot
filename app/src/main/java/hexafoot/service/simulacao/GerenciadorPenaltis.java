@@ -147,7 +147,7 @@ public class GerenciadorPenaltis {
         return batedores.get(indice % batedores.size());
     }
 
-    private boolean realizarCobranca(Jogador batedor, Jogador goleiro, Partida partida, String lado) {
+    public boolean realizarCobranca(Jogador batedor, Jogador goleiro, Partida partida, String lado) {
         int ataque = batedor.getAtaque();
         int defesa = goleiro.getDefesa();
         int chanceSucesso = 75 + (ataque / 5) - (defesa / 5);
@@ -178,7 +178,7 @@ public class GerenciadorPenaltis {
         return convertido;
     }
 
-    private Jogador obterGoleiro(Time time) {
+    public Jogador obterGoleiro(Time time) {
         for (Jogador jogador : time.getTitulares()) {
             if ("Goleiro".equals(jogador.getPosicao())) {
                 return jogador;
@@ -187,7 +187,7 @@ public class GerenciadorPenaltis {
         return time.getTitulares().get(0);
     }
 
-    private boolean matematicamenteDecidido(int golsA, int golsB, int restantesA, int restantesB) {
+    public boolean matematicamenteDecidido(int golsA, int golsB, int restantesA, int restantesB) {
         if (golsA > (golsB + restantesB)) {
             return true;
         }
