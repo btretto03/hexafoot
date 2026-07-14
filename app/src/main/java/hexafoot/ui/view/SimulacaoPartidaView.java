@@ -32,6 +32,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
@@ -41,7 +42,15 @@ import java.util.List;
 import java.util.Map;
 
 public class SimulacaoPartidaView implements ScreenView {
+    // velocidades do relogio da partida (multiplicador do Timeline). Normal virou o antigo "rapido",
+    // e o novo rapido e bem mais veloz que isso
+    private static final double TAXA_LENTA = 0.5;
+    private static final double TAXA_NORMAL = 3.0;
+    private static final double TAXA_RAPIDA = 8.0;
+    private static final int MINUTO_INTERVALO = 45;
+
     private final BorderPane root;
+    private final StackPane rootEmpilhado;
     private final GameNavigator navigator;
     private final PartidaTorneio partidaTorneio;
     private final Partida partida;
@@ -52,6 +61,8 @@ public class SimulacaoPartidaView implements ScreenView {
     private Timeline timeline;
     private boolean jogoEmAndamento = false;
     private boolean substituicaoObrigatoriaPendente = false;
+    private boolean intervaloJaExibido = false;
+    private StackPane overlayIntervalo;
 
     // Rastreamento visual de cartões
     private final Map<String, String> cartoesEmCampo = new HashMap<>();
@@ -119,11 +130,15 @@ public class SimulacaoPartidaView implements ScreenView {
         root.setBottom(criarControlesInferiores());
         
         BorderPane.setMargin(centroLayout, new Insets(24, 12, 12, 12));
-        
+
+        this.rootEmpilhado = new StackPane(root);
+
         configurarTimeline();
         atualizarEstadoBotoesTempo();
         atualizarEstadoPainelTecnico();
         renderizarElencoAoVivo();
+
+        alterarVelocidade(TAXA_NORMAL); // a partida ja comeca rolando, no ritmo normal
     }
     
     private VBox criarPlacar() {
@@ -284,14 +299,14 @@ public class SimulacaoPartidaView implements ScreenView {
         btnPausar = new Button("⏸ Pausar");
         btnPausar.setOnAction(e -> alterarVelocidade(0));
 
-        btnVelLenta = new Button("⏪ Lento");
-        btnVelLenta.setOnAction(e -> alterarVelocidade(0.5));
+        btnVelLenta = new Button("Lento");
+        btnVelLenta.setOnAction(e -> alterarVelocidade(TAXA_LENTA));
 
         btnVelNormal = new Button("▶ Normal");
-        btnVelNormal.setOnAction(e -> alterarVelocidade(1.0));
+        btnVelNormal.setOnAction(e -> alterarVelocidade(TAXA_NORMAL));
 
-        btnVelRapida = new Button("⏩ Rápido");
-        btnVelRapida.setOnAction(e -> alterarVelocidade(3.0));
+        btnVelRapida = new Button("Rápido");
+        btnVelRapida.setOnAction(e -> alterarVelocidade(TAXA_RAPIDA));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -339,9 +354,9 @@ public class SimulacaoPartidaView implements ScreenView {
 
     private void atualizarEstadoBotoesTempo() {
         btnPausar.getStyleClass().setAll(jogoEmAndamento ? "secondary-button" : "primary-button");
-        btnVelLenta.getStyleClass().setAll(timeline.getRate() == 0.5 && jogoEmAndamento ? "primary-button" : "secondary-button");
-        btnVelNormal.getStyleClass().setAll(timeline.getRate() == 1.0 && jogoEmAndamento ? "primary-button" : "secondary-button");
-        btnVelRapida.getStyleClass().setAll(timeline.getRate() == 3.0 && jogoEmAndamento ? "primary-button" : "secondary-button");
+        btnVelLenta.getStyleClass().setAll(timeline.getRate() == TAXA_LENTA && jogoEmAndamento ? "primary-button" : "secondary-button");
+        btnVelNormal.getStyleClass().setAll(timeline.getRate() == TAXA_NORMAL && jogoEmAndamento ? "primary-button" : "secondary-button");
+        btnVelRapida.getStyleClass().setAll(timeline.getRate() == TAXA_RAPIDA && jogoEmAndamento ? "primary-button" : "secondary-button");
     }
 
     private void avancarMinuto() {
@@ -428,6 +443,8 @@ public class SimulacaoPartidaView implements ScreenView {
 
         renderizarElencoAoVivo();
 
+        boolean chegouIntervalo = (minutoAtual == MINUTO_INTERVALO && intervaloJaExibido == false);
+
         if (jogadorMeuSaiuLesionado) {
             boolean podeSubstituir = brasilEhMandante ? partida.mandantePodeSubstituir() : partida.visitantePodeSubstituir();
             List<Jogador> reservas = brasilEhMandante ? partida.getReservasDisponiveisMandante() : partida.getReservasDisponiveisVisitante();
@@ -443,6 +460,59 @@ public class SimulacaoPartidaView implements ScreenView {
         }
 
         minutoAtual++;
+
+        if (chegouIntervalo) {
+            intervaloJaExibido = true;
+            timeline.pause();
+            jogoEmAndamento = false;
+            atualizarEstadoBotoesTempo();
+            atualizarEstadoPainelTecnico();
+            mostrarIntervalo();
+        }
+    }
+
+    //-----------------Intervalo (aos 45 min)-----------------
+
+    private void mostrarIntervalo() {
+        overlayIntervalo = criarOverlayIntervalo();
+        rootEmpilhado.getChildren().add(overlayIntervalo);
+    }
+
+    private void fecharIntervalo() {
+        rootEmpilhado.getChildren().remove(overlayIntervalo);
+        overlayIntervalo = null;
+        alterarVelocidade(TAXA_NORMAL);
+    }
+
+    private StackPane criarOverlayIntervalo() {
+        Label titulo = new Label("Intervalo");
+        titulo.getStyleClass().add("display-title");
+
+        Label placar = new Label(obterBandeira(partida.getMandante().getNome()) + " " + formatarNomePais(partida.getMandante().getNome())
+                + "  " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + "  "
+                + formatarNomePais(partida.getVisitante().getNome()) + " " + obterBandeira(partida.getVisitante().getNome()));
+        placar.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #f8fbff;");
+
+        Label dica = new Label("Aproveite para ajustar a tática ou fazer substituições antes do segundo tempo.");
+        dica.getStyleClass().add("card-text");
+        dica.setWrapText(true);
+        dica.setStyle("-fx-text-alignment: center;");
+
+        Button continuarButton = new Button("Continuar");
+        continuarButton.getStyleClass().add("primary-button");
+        continuarButton.setOnAction(e -> fecharIntervalo());
+
+        VBox cartao = new VBox(14, titulo, placar, dica, continuarButton);
+        cartao.getStyleClass().add("hero-panel");
+        cartao.setAlignment(Pos.CENTER);
+        cartao.setPadding(new Insets(36));
+        cartao.setMaxWidth(420);
+        cartao.setMaxHeight(VBox.USE_PREF_SIZE);
+
+        StackPane overlay = new StackPane(cartao);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.72);");
+        return overlay;
     }
 
     private void renderizarElencoAoVivo() {
@@ -723,7 +793,6 @@ public class SimulacaoPartidaView implements ScreenView {
     }
 
     private String obterBandeira(String nomeBruto) {
-        //javaFX nao renderiza direito o emoji de bandeira (vira quadradinho), entao usamos a sigla do pais como selo
         if (nomeBruto == null) return "";
         String nome = nomeBruto.trim().toLowerCase();
 
@@ -837,12 +906,12 @@ public class SimulacaoPartidaView implements ScreenView {
         containerEventos.getChildren().add(0, fimCard);
 
         GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
-        if (gerenciadorTorneio.campanhaBrasilEncerrada()) { //campanha do Brasil acabou (eliminado ou campeao): avisa na hora, nao so quando volta pro hub
+        if (gerenciadorTorneio.campanhaBrasilEncerrada()) { //campanha do Brasil acabou (eliminado ou campeao)
             containerEventos.getChildren().add(0, criarCardResultadoCampanha(gerenciadorTorneio.getResultadoFinalBrasil()));
         }
     }
 
-    // monta o aviso de fim de campanha (campeao, vice, terceiro/quarto lugar ou eliminado em alguma fase)
+    // monta o aviso de fim de jogo (eliminado/campeão...) 
     private HBox criarCardResultadoCampanha(String resultado) {
         String texto;
         String tipo;
@@ -882,7 +951,7 @@ public class SimulacaoPartidaView implements ScreenView {
         return "no mata-mata";
     }
 
-    //-----------------Disputa de penaltis, embutida na tela principal (sem popups)-----------------
+    //-----------------Disputa de penaltis, embutida na tela principal -----------------
 
     private void iniciarDisputaPenaltis() {
         gerenciadorPenaltisView = new GerenciadorPenaltis();
@@ -957,17 +1026,13 @@ public class SimulacaoPartidaView implements ScreenView {
             }
         }
 
-        if (elegiveis.isEmpty()) { //todo mundo elegivel ja bateu nessa serie, libera geral de novo pra rodada seguinte
+        if (elegiveis.isEmpty()) { //todo mundo elegivel ja bateu nessa serie, libera todos de novo pra rodada seguinte
             jaUsados.clear();
             for (Jogador jogador : timeBrasil.getTitulares()) {
                 if ("Ativo".equals(jogador.getStatus())) {
                     elegiveis.add(jogador);
                 }
             }
-        }
-
-        if (elegiveis.isEmpty()) { //caso extremo: ninguem ativo, poe o primeiro titular mesmo assim pra nao travar
-            elegiveis.add(timeBrasil.getTitulares().get(0));
         }
 
         lblStatusPenaltis.setText("Escolha quem vai bater:");
@@ -1057,6 +1122,6 @@ public class SimulacaoPartidaView implements ScreenView {
 
     @Override
     public Parent getRoot() {
-        return root;
+        return rootEmpilhado;
     }
 }
