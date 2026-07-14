@@ -47,16 +47,14 @@ public class SimulacaoPartidaView implements ScreenView {
     private final Partida partida;
     private final RelogioPartida relogio;
     private final boolean brasilEhMandante;
+    private final List<Jogador> elencoDoJogador = new ArrayList<>();
     private int minutoAtual = 1;
     private Timeline timeline;
     private boolean jogoEmAndamento = false;
+    private boolean substituicaoObrigatoriaPendente = false;
 
     // Rastreamento visual de cartões
     private final Map<String, String> cartoesEmCampo = new HashMap<>();
-    
-    // Rastreamento Independente de Energia (Bypass do Bug de Status do Backend)
-    private final Map<String, Integer> energiaInicial = new HashMap<>();
-    private final Map<String, Float> energiaVisualAtual = new HashMap<>();
 
     // Componentes Visuais Principais
     private Label lblTempo;
@@ -86,12 +84,13 @@ public class SimulacaoPartidaView implements ScreenView {
         this.partida = partida;
         this.brasilEhMandante = (partida.getMandante() == navigator.getSession().getGerenciadorTorneio().getBrasil());
 
+        Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
+        elencoDoJogador.addAll(timeDoJogador.getTitulares());
+        elencoDoJogador.addAll(timeDoJogador.getReservas());
+
         this.relogio = new RelogioPartida();
-        this.relogio.adicionarProcessadoresPadrao();
-        
-        registrarEnergiaInicial(partida.getMandante());
-        registrarEnergiaInicial(partida.getVisitante());
-        
+        this.relogio.adicionarProcessadoresPadrao(timeDoJogador);
+
         this.root = new BorderPane();
         this.root.getStyleClass().add("screen-root");
 
@@ -112,17 +111,6 @@ public class SimulacaoPartidaView implements ScreenView {
         renderizarElencoAoVivo();
     }
     
-    private void registrarEnergiaInicial(Time time) {
-        for (Jogador j : time.getTitulares()) {
-            energiaInicial.putIfAbsent(j.getNome(), j.getFisico());
-            energiaVisualAtual.putIfAbsent(j.getNome(), (float) j.getFisico());
-        }
-        for (Jogador j : time.getReservas()) {
-            energiaInicial.putIfAbsent(j.getNome(), j.getFisico());
-            energiaVisualAtual.putIfAbsent(j.getNome(), (float) j.getFisico());
-        }
-    }
-
     private VBox criarPlacar() {
         VBox painelPlacar = new VBox(10);
         painelPlacar.getStyleClass().add("hero-panel");
@@ -135,7 +123,7 @@ public class SimulacaoPartidaView implements ScreenView {
         HBox timesBox = new HBox(30);
         timesBox.setAlignment(Pos.CENTER);
 
-        Label lblMandante = new Label(formatarNomePais(partida.getMandante().getNome()));
+        Label lblMandante = new Label(obterBandeira(partida.getMandante().getNome()) + " " + formatarNomePais(partida.getMandante().getNome()));
         lblMandante.getStyleClass().add("display-title");
         lblMandante.setStyle("-fx-font-size: 32px;");
         
@@ -148,7 +136,7 @@ public class SimulacaoPartidaView implements ScreenView {
         lblPlacarVisitante = new Label("0");
         lblPlacarVisitante.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        Label lblVisitante = new Label(formatarNomePais(partida.getVisitante().getNome()));
+        Label lblVisitante = new Label(obterBandeira(partida.getVisitante().getNome()) + " " + formatarNomePais(partida.getVisitante().getNome()));
         lblVisitante.getStyleClass().add("display-title");
         lblVisitante.setStyle("-fx-font-size: 32px;");
 
@@ -308,6 +296,13 @@ public class SimulacaoPartidaView implements ScreenView {
     private void alterarVelocidade(double taxa) {
         if (minutoAtual > 90) return;
 
+        if (taxa != 0 && substituicaoObrigatoriaPendente) {
+            Alert alerta = new Alert(Alert.AlertType.WARNING, "Você precisa substituir o jogador lesionado antes de continuar a partida.");
+            alerta.initOwner(root.getScene().getWindow());
+            alerta.showAndWait();
+            return;
+        }
+
         if (taxa == 0) {
             timeline.pause();
             jogoEmAndamento = false;
@@ -338,28 +333,23 @@ public class SimulacaoPartidaView implements ScreenView {
 
         int qtdEventosAntes = partida.getEventos().size();
         relogio.processarMinutoIsolado(minutoAtual, partida);
-        
-        Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
-        float multDoJogador = (float) timeDoJogador.getTaticaAtual().getMultiplicadorDesgaste();
-        for (Jogador j : timeDoJogador.getTitulares()) {
-            String nomeJ = j.getNome().trim();
-            if (!"Vermelho".equals(cartoesEmCampo.get(nomeJ))) {
-                float energiaCalculada = energiaVisualAtual.getOrDefault(nomeJ, (float) j.getFisico());
-                energiaCalculada -= (0.4f * multDoJogador);
-                energiaVisualAtual.put(nomeJ, Math.max(15f, energiaCalculada));
-            }
-        }
 
         lblTempo.setText(minutoAtual + "'");
         lblPlacarMandante.setText(String.valueOf(partida.getGolsMandante()));
         lblPlacarVisitante.setText(String.valueOf(partida.getGolsVisitante()));
 
         int qtdEventosDepois = partida.getEventos().size();
+        boolean jogadorMeuSaiuLesionado = false;
         if (qtdEventosDepois > qtdEventosAntes) {
             List<String> eventosDoMinuto = new ArrayList<>();
-            
+
             for (int i = qtdEventosAntes; i < qtdEventosDepois; i++) {
                 EventoPartida ev = partida.getEventos().get(i);
+
+                if ("Lesao".equals(ev.getTipo()) && elencoDoJogador.contains(ev.getAutor())) {
+                    jogadorMeuSaiuLesionado = true;
+                }
+
                 String descricaoCrua = ev.toString();
                 
                 if (descricaoCrua.startsWith(ev.getMinuto() + "' - ")) {
@@ -416,9 +406,24 @@ public class SimulacaoPartidaView implements ScreenView {
         }
 
         renderizarElencoAoVivo();
+
+        if (jogadorMeuSaiuLesionado) {
+            boolean podeSubstituir = brasilEhMandante ? partida.mandantePodeSubstituir() : partida.visitantePodeSubstituir();
+            List<Jogador> reservas = brasilEhMandante ? partida.getReservasDisponiveisMandante() : partida.getReservasDisponiveisVisitante();
+
+            if (podeSubstituir && reservas.isEmpty() == false) {
+                substituicaoObrigatoriaPendente = true;
+                timeline.pause();
+                jogoEmAndamento = false;
+                containerEventos.getChildren().add(0, criarCardEventoPersonalizado(minutoAtual, "⏸ Faça a substituição do jogador lesionado para continuar.", "info"));
+                atualizarEstadoBotoesTempo();
+                atualizarEstadoPainelTecnico();
+            }
+        }
+
         minutoAtual++;
     }
-    
+
     private void renderizarElencoAoVivo() {
         containerElencoAoVivo.getChildren().clear();
         Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
@@ -454,12 +459,8 @@ public class SimulacaoPartidaView implements ScreenView {
         if (sucesso) {
             EventoPartida evSub = new EventoPartida(minutoAtual, "Substituicao", sai, entra);
             partida.adicionarEvento(evSub);
-            
-            if (!energiaVisualAtual.containsKey(entra.getNome())) {
-                energiaInicial.putIfAbsent(entra.getNome(), entra.getFisico());
-                energiaVisualAtual.put(entra.getNome(), (float) entra.getFisico());
-            }
-            
+            substituicaoObrigatoriaPendente = false;
+
             String texto = "Substituição: Sai " + sai.getNome() + ", entra " + entra.getNome();
             containerEventos.getChildren().add(0, criarCardEventoPersonalizado(minutoAtual, texto, "neutro"));
             
@@ -553,10 +554,9 @@ public class SimulacaoPartidaView implements ScreenView {
             HBox.setHgrow(spacer, Priority.ALWAYS);
             layout.getChildren().add(spacer);
             
-            int energiaAtual = Math.round(energiaVisualAtual.getOrDefault(jogador.getNome(), (float) jogador.getFisico()));
-            int energiaMax = energiaInicial.getOrDefault(jogador.getNome(), 100);
-            
-            Label lblEnergia = new Label(energiaAtual + "/" + energiaMax + "%");
+            int energiaAtual = jogador.getFisico();
+
+            Label lblEnergia = new Label(energiaAtual + "%");
             lblEnergia.setStyle("-fx-font-size: 13px; -fx-font-weight: bold;");
             
             if (energiaAtual >= 70) {
@@ -690,6 +690,64 @@ public class SimulacaoPartidaView implements ScreenView {
         return sb.toString().trim();
     }
 
+    private String obterBandeira(String nomeBruto) {
+        if (nomeBruto == null) return "";
+        String nome = nomeBruto.trim().toLowerCase();
+
+        if (nome.equals("africa_do_sul")) return "🇿🇦";
+        if (nome.equals("alemanha")) return "🇩🇪";
+        if (nome.equals("arabia_saudita")) return "🇸🇦";
+        if (nome.equals("argelia")) return "🇩🇿";
+        if (nome.equals("argentina")) return "🇦🇷";
+        if (nome.equals("australia")) return "🇦🇺";
+        if (nome.equals("austria")) return "🇦🇹";
+        if (nome.equals("belgica")) return "🇧🇪";
+        if (nome.equals("bosnia_e_herzegovina")) return "🇧🇦";
+        if (nome.equals("brasil")) return "🇧🇷";
+        if (nome.equals("cabo_verde")) return "🇨🇻";
+        if (nome.equals("camaroes")) return "🇨🇲";
+        if (nome.equals("canada")) return "🇨🇦";
+        if (nome.equals("catar")) return "🇶🇦";
+        if (nome.equals("colombia")) return "🇨🇴";
+        if (nome.equals("coreia_do_sul")) return "🇰🇷";
+        if (nome.equals("costa_do_marfim")) return "🇨🇮";
+        if (nome.equals("croacia")) return "🇭🇷";
+        if (nome.equals("curacau")) return "🇨🇼";
+        if (nome.equals("dinamarca")) return "🇩🇰";
+        if (nome.equals("egito")) return "🇪🇬";
+        if (nome.equals("equador")) return "🇪🇨";
+        if (nome.equals("escocia")) return "🏴";
+        if (nome.equals("espanha")) return "🇪🇸";
+        if (nome.equals("estados_unidos")) return "🇺🇸";
+        if (nome.equals("franca")) return "🇫🇷";
+        if (nome.equals("gana")) return "🇬🇭";
+        if (nome.equals("haiti")) return "🇭🇹";
+        if (nome.equals("holanda")) return "🇳🇱";
+        if (nome.equals("inglaterra")) return "🏴";
+        if (nome.equals("ira")) return "🇮🇷";
+        if (nome.equals("iraque")) return "🇮🇶";
+        if (nome.equals("japao")) return "🇯🇵";
+        if (nome.equals("jordania")) return "🇯🇴";
+        if (nome.equals("marrocos")) return "🇲🇦";
+        if (nome.equals("mexico")) return "🇲🇽";
+        if (nome.equals("noruega")) return "🇳🇴";
+        if (nome.equals("nova_zelandia")) return "🇳🇿";
+        if (nome.equals("panama")) return "🇵🇦";
+        if (nome.equals("paraguai")) return "🇵🇾";
+        if (nome.equals("portugal")) return "🇵🇹";
+        if (nome.equals("republica_democratica_do_congo")) return "🇨🇩";
+        if (nome.equals("republica_tcheca")) return "🇨🇿";
+        if (nome.equals("senegal")) return "🇸🇳";
+        if (nome.equals("suecia")) return "🇸🇪";
+        if (nome.equals("suica")) return "🇨🇭";
+        if (nome.equals("tunisia")) return "🇹🇳";
+        if (nome.equals("turquia")) return "🇹🇷";
+        if (nome.equals("uruguai")) return "🇺🇾";
+        if (nome.equals("uzbequistao")) return "🇺🇿";
+
+        return "🏳";
+    }
+
     private String obterNomeCurto(String nomeCompleto) {
         if (nomeCompleto == null) return "";
         String[] partes = nomeCompleto.split(" ");
@@ -739,7 +797,7 @@ public class SimulacaoPartidaView implements ScreenView {
         
         painelTecnico.setDisable(true);
         
-        String textoFim = "🏁 FIM DE JOGO! " + formatarNomePais(partida.getMandante().getNome()) + " " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " " + formatarNomePais(partida.getVisitante().getNome());
+        String textoFim = "🏁 FIM DE JOGO! " + obterBandeira(partida.getMandante().getNome()) + " " + formatarNomePais(partida.getMandante().getNome()) + " " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " " + formatarNomePais(partida.getVisitante().getNome()) + " " + obterBandeira(partida.getVisitante().getNome());
         HBox fimCard = criarCardEventoPersonalizado(90, textoFim, "info");
         containerEventos.getChildren().add(0, fimCard);
     }
