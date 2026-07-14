@@ -46,6 +46,7 @@ public class SimulacaoPartidaView implements ScreenView {
     private final PartidaTorneio partidaTorneio;
     private final Partida partida;
     private final RelogioPartida relogio;
+    private final boolean brasilEhMandante;
     private int minutoAtual = 1;
     private Timeline timeline;
     private boolean jogoEmAndamento = false;
@@ -83,7 +84,8 @@ public class SimulacaoPartidaView implements ScreenView {
         this.navigator = navigator;
         this.partidaTorneio = partidaTorneio;
         this.partida = partida;
-        
+        this.brasilEhMandante = (partida.getMandante() == navigator.getSession().getGerenciadorTorneio().getBrasil());
+
         this.relogio = new RelogioPartida();
         this.relogio.adicionarProcessadoresPadrao();
         
@@ -235,7 +237,8 @@ public class SimulacaoPartidaView implements ScreenView {
 
         VBox boxBotoesTatica = new VBox(8, btnTaticaOfensiva, btnTaticaEquilibrada, btnTaticaRetranca);
 
-        Label lblSubTituloSecao = new Label("Substituições (" + partida.getSubstituicoesMandante() + "/5)");
+        int substituicoesFeitas = brasilEhMandante ? partida.getSubstituicoesMandante() : partida.getSubstituicoesVisitante();
+        Label lblSubTituloSecao = new Label("Substituições (" + substituicoesFeitas + "/5)");
         lblSubTituloSecao.getStyleClass().add("pitch-row-title");
 
         comboSai = new ComboBox<>();
@@ -336,12 +339,13 @@ public class SimulacaoPartidaView implements ScreenView {
         int qtdEventosAntes = partida.getEventos().size();
         relogio.processarMinutoIsolado(minutoAtual, partida);
         
-        float multMandante = (float) partida.getMandante().getTaticaAtual().getMultiplicadorDesgaste();
-        for (Jogador j : partida.getMandante().getTitulares()) {
+        Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
+        float multDoJogador = (float) timeDoJogador.getTaticaAtual().getMultiplicadorDesgaste();
+        for (Jogador j : timeDoJogador.getTitulares()) {
             String nomeJ = j.getNome().trim();
             if (!"Vermelho".equals(cartoesEmCampo.get(nomeJ))) {
                 float energiaCalculada = energiaVisualAtual.getOrDefault(nomeJ, (float) j.getFisico());
-                energiaCalculada -= (0.4f * multMandante);
+                energiaCalculada -= (0.4f * multDoJogador);
                 energiaVisualAtual.put(nomeJ, Math.max(15f, energiaCalculada));
             }
         }
@@ -417,13 +421,14 @@ public class SimulacaoPartidaView implements ScreenView {
     
     private void renderizarElencoAoVivo() {
         containerElencoAoVivo.getChildren().clear();
-        for (Jogador j : partida.getMandante().getTitulares()) {
+        Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
+        for (Jogador j : timeDoJogador.getTitulares()) {
             containerElencoAoVivo.getChildren().add(criarCardJogadorVisual(j));
         }
     }
 
     private void alterarPosturaTatica(String tipo) {
-        Time brasil = partida.getMandante();
+        Time brasil = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
         if (tipo.equals("ofensiva")) brasil.setTaticaAtual(new TaticaOfensiva());
         else if (tipo.equals("equilibrada")) brasil.setTaticaAtual(new TaticaEquilibrada());
         else if (tipo.equals("retranca")) brasil.setTaticaAtual(new TaticaRetranca());
@@ -438,11 +443,13 @@ public class SimulacaoPartidaView implements ScreenView {
         Jogador entra = comboEntra.getSelectionModel().getSelectedItem();
 
         if (sai == null || entra == null) {
-            new Alert(Alert.AlertType.WARNING, "Selecione o jogador que vai sair e o que vai entrar.").showAndWait();
+            Alert alerta = new Alert(Alert.AlertType.WARNING, "Selecione o jogador que vai sair e o que vai entrar.");
+            alerta.initOwner(root.getScene().getWindow());
+            alerta.showAndWait();
             return;
         }
 
-        boolean sucesso = partida.substituirMandante(sai, entra);
+        boolean sucesso = brasilEhMandante ? partida.substituirMandante(sai, entra) : partida.substituirVisitante(sai, entra);
 
         if (sucesso) {
             EventoPartida evSub = new EventoPartida(minutoAtual, "Substituicao", sai, entra);
@@ -459,7 +466,9 @@ public class SimulacaoPartidaView implements ScreenView {
             renderizarElencoAoVivo();
             carregarDadosTreinador();
         } else {
-            new Alert(Alert.AlertType.ERROR, "Substituição inválida! Verifique o limite de trocas ou a integridade física do atleta.").showAndWait();
+            Alert alerta = new Alert(Alert.AlertType.ERROR, "Substituição inválida! Verifique o limite de trocas ou a integridade física do atleta.");
+            alerta.initOwner(root.getScene().getWindow());
+            alerta.showAndWait();
         }
     }
 
@@ -473,13 +482,18 @@ public class SimulacaoPartidaView implements ScreenView {
     }
 
     private void carregarDadosTreinador() {
-        comboSai.setItems(FXCollections.observableArrayList(partida.getMandante().getTitulares()));
-        comboEntra.setItems(FXCollections.observableArrayList(partida.getReservasDisponiveisMandante()));
-        
+        Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
+        List<Jogador> reservasDoJogador = brasilEhMandante ? partida.getReservasDisponiveisMandante() : partida.getReservasDisponiveisVisitante();
+        int substituicoesFeitas = brasilEhMandante ? partida.getSubstituicoesMandante() : partida.getSubstituicoesVisitante();
+        boolean podeSubstituir = brasilEhMandante ? partida.mandantePodeSubstituir() : partida.visitantePodeSubstituir();
+
+        comboSai.setItems(FXCollections.observableArrayList(timeDoJogador.getTitulares()));
+        comboEntra.setItems(FXCollections.observableArrayList(reservasDoJogador));
+
         Label lblSub = (Label) painelTecnico.getChildren().get(4);
-        lblSub.setText("Substituções (" + partida.getSubstituicoesMandante() + "/5)");
-        
-        if (!partida.mandantePodeSubstituir()) {
+        lblSub.setText("Substituições (" + substituicoesFeitas + "/5)");
+
+        if (!podeSubstituir) {
             btnConfirmarSub.setDisable(true);
             btnConfirmarSub.setText("Limite de Trocas Atingido");
             comboSai.setDisable(true);
@@ -488,7 +502,8 @@ public class SimulacaoPartidaView implements ScreenView {
     }
 
     private void atualizarEstiloBotoesTatica() {
-        EstrategiaSimulacao taticaAtual = partida.getMandante().getTaticaAtual();
+        Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
+        EstrategiaSimulacao taticaAtual = timeDoJogador.getTaticaAtual();
         
         btnTaticaOfensiva.getStyleClass().setAll("secondary-button");
         btnTaticaEquilibrada.getStyleClass().setAll("secondary-button");
@@ -739,18 +754,23 @@ public class SimulacaoPartidaView implements ScreenView {
             }
         }
 
-        if (disponiveis.size() < 5) {
-            new Alert(Alert.AlertType.ERROR, "O Brasil precisa ter pelo menos cinco titulares ativos para disputar os pênaltis.").showAndWait();
+        if (disponiveis.isEmpty()) {
+            Alert alerta = new Alert(Alert.AlertType.ERROR, "O Brasil não tem nenhum titular ativo para disputar os pênaltis.");
+            alerta.initOwner(root.getScene().getWindow());
+            alerta.showAndWait();
             return List.of();
         }
 
-        for (int cobranca = 1; cobranca <= 5; cobranca++) {
+        int quantidadeDeCobrancas = Math.min(5, disponiveis.size()); //se sobrou menos de 5 jogadores em campo, eles revezam as cobrancas
+
+        for (int cobranca = 1; cobranca <= quantidadeDeCobrancas; cobranca++) {
             List<String> nomes = new ArrayList<>();
             for (Jogador jogador : disponiveis) {
                 nomes.add(jogador.getNome() + " - " + jogador.getPosicao());
             }
 
             ChoiceDialog<String> dialog = new ChoiceDialog<>(nomes.get(0), nomes);
+            dialog.initOwner(root.getScene().getWindow());
             dialog.setTitle("Decisão por pênaltis");
             dialog.setHeaderText("Escolha o batedor da " + cobranca + "ª cobrança");
             dialog.setContentText("Jogador:");
