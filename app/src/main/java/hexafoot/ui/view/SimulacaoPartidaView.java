@@ -527,8 +527,19 @@ public class SimulacaoPartidaView implements ScreenView {
         layout.setAlignment(Pos.CENTER_LEFT);
 
         String statusCartao = cartoesEmCampo.get(jogador.getNome().trim());
-        
-        if ("Vermelho".equals(statusCartao)) {
+
+        if ("Lesionado".equals(jogador.getStatus())) {
+            lblNome.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-strikethrough: true;");
+
+            Region spacerLesao = new Region();
+            HBox.setHgrow(spacerLesao, Priority.ALWAYS);
+            layout.getChildren().add(spacerLesao);
+
+            Label lblLesao = new Label("LES");
+            lblLesao.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
+            layout.getChildren().add(lblLesao);
+
+        } else if ("Vermelho".equals(statusCartao)) {
             lblNome.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #64748b; -fx-strikethrough: true;");
             
             Label lblCartao = new Label("▮");
@@ -691,61 +702,62 @@ public class SimulacaoPartidaView implements ScreenView {
     }
 
     private String obterBandeira(String nomeBruto) {
+        //javaFX nao renderiza direito o emoji de bandeira (vira quadradinho), entao usamos a sigla do pais como selo
         if (nomeBruto == null) return "";
         String nome = nomeBruto.trim().toLowerCase();
 
-        if (nome.equals("africa_do_sul")) return "🇿🇦";
-        if (nome.equals("alemanha")) return "🇩🇪";
-        if (nome.equals("arabia_saudita")) return "🇸🇦";
-        if (nome.equals("argelia")) return "🇩🇿";
-        if (nome.equals("argentina")) return "🇦🇷";
-        if (nome.equals("australia")) return "🇦🇺";
-        if (nome.equals("austria")) return "🇦🇹";
-        if (nome.equals("belgica")) return "🇧🇪";
-        if (nome.equals("bosnia_e_herzegovina")) return "🇧🇦";
-        if (nome.equals("brasil")) return "🇧🇷";
-        if (nome.equals("cabo_verde")) return "🇨🇻";
-        if (nome.equals("camaroes")) return "🇨🇲";
-        if (nome.equals("canada")) return "🇨🇦";
-        if (nome.equals("catar")) return "🇶🇦";
-        if (nome.equals("colombia")) return "🇨🇴";
-        if (nome.equals("coreia_do_sul")) return "🇰🇷";
-        if (nome.equals("costa_do_marfim")) return "🇨🇮";
-        if (nome.equals("croacia")) return "🇭🇷";
-        if (nome.equals("curacau")) return "🇨🇼";
-        if (nome.equals("dinamarca")) return "🇩🇰";
-        if (nome.equals("egito")) return "🇪🇬";
-        if (nome.equals("equador")) return "🇪🇨";
-        if (nome.equals("escocia")) return "🏴";
-        if (nome.equals("espanha")) return "🇪🇸";
-        if (nome.equals("estados_unidos")) return "🇺🇸";
-        if (nome.equals("franca")) return "🇫🇷";
-        if (nome.equals("gana")) return "🇬🇭";
-        if (nome.equals("haiti")) return "🇭🇹";
-        if (nome.equals("holanda")) return "🇳🇱";
-        if (nome.equals("inglaterra")) return "🏴";
-        if (nome.equals("ira")) return "🇮🇷";
-        if (nome.equals("iraque")) return "🇮🇶";
-        if (nome.equals("japao")) return "🇯🇵";
-        if (nome.equals("jordania")) return "🇯🇴";
-        if (nome.equals("marrocos")) return "🇲🇦";
-        if (nome.equals("mexico")) return "🇲🇽";
-        if (nome.equals("noruega")) return "🇳🇴";
-        if (nome.equals("nova_zelandia")) return "🇳🇿";
-        if (nome.equals("panama")) return "🇵🇦";
-        if (nome.equals("paraguai")) return "🇵🇾";
-        if (nome.equals("portugal")) return "🇵🇹";
-        if (nome.equals("republica_democratica_do_congo")) return "🇨🇩";
-        if (nome.equals("republica_tcheca")) return "🇨🇿";
-        if (nome.equals("senegal")) return "🇸🇳";
-        if (nome.equals("suecia")) return "🇸🇪";
-        if (nome.equals("suica")) return "🇨🇭";
-        if (nome.equals("tunisia")) return "🇹🇳";
-        if (nome.equals("turquia")) return "🇹🇷";
-        if (nome.equals("uruguai")) return "🇺🇾";
-        if (nome.equals("uzbequistao")) return "🇺🇿";
+        if (nome.equals("africa_do_sul")) return "[RSA]";
+        if (nome.equals("alemanha")) return "[GER]";
+        if (nome.equals("arabia_saudita")) return "[KSA]";
+        if (nome.equals("argelia")) return "[ALG]";
+        if (nome.equals("argentina")) return "[ARG]";
+        if (nome.equals("australia")) return "[AUS]";
+        if (nome.equals("austria")) return "[AUT]";
+        if (nome.equals("belgica")) return "[BEL]";
+        if (nome.equals("bosnia_e_herzegovina")) return "[BIH]";
+        if (nome.equals("brasil")) return "[BRA]";
+        if (nome.equals("cabo_verde")) return "[CPV]";
+        if (nome.equals("camaroes")) return "[CMR]";
+        if (nome.equals("canada")) return "[CAN]";
+        if (nome.equals("catar")) return "[QAT]";
+        if (nome.equals("colombia")) return "[COL]";
+        if (nome.equals("coreia_do_sul")) return "[KOR]";
+        if (nome.equals("costa_do_marfim")) return "[CIV]";
+        if (nome.equals("croacia")) return "[CRO]";
+        if (nome.equals("curacau")) return "[CUW]";
+        if (nome.equals("dinamarca")) return "[DEN]";
+        if (nome.equals("egito")) return "[EGY]";
+        if (nome.equals("equador")) return "[ECU]";
+        if (nome.equals("escocia")) return "[SCO]";
+        if (nome.equals("espanha")) return "[ESP]";
+        if (nome.equals("estados_unidos")) return "[USA]";
+        if (nome.equals("franca")) return "[FRA]";
+        if (nome.equals("gana")) return "[GHA]";
+        if (nome.equals("haiti")) return "[HAI]";
+        if (nome.equals("holanda")) return "[NED]";
+        if (nome.equals("inglaterra")) return "[ENG]";
+        if (nome.equals("ira")) return "[IRN]";
+        if (nome.equals("iraque")) return "[IRQ]";
+        if (nome.equals("japao")) return "[JPN]";
+        if (nome.equals("jordania")) return "[JOR]";
+        if (nome.equals("marrocos")) return "[MAR]";
+        if (nome.equals("mexico")) return "[MEX]";
+        if (nome.equals("noruega")) return "[NOR]";
+        if (nome.equals("nova_zelandia")) return "[NZL]";
+        if (nome.equals("panama")) return "[PAN]";
+        if (nome.equals("paraguai")) return "[PAR]";
+        if (nome.equals("portugal")) return "[POR]";
+        if (nome.equals("republica_democratica_do_congo")) return "[COD]";
+        if (nome.equals("republica_tcheca")) return "[CZE]";
+        if (nome.equals("senegal")) return "[SEN]";
+        if (nome.equals("suecia")) return "[SWE]";
+        if (nome.equals("suica")) return "[SUI]";
+        if (nome.equals("tunisia")) return "[TUN]";
+        if (nome.equals("turquia")) return "[TUR]";
+        if (nome.equals("uruguai")) return "[URU]";
+        if (nome.equals("uzbequistao")) return "[UZB]";
 
-        return "🏳";
+        return "[INT]";
     }
 
     private String obterNomeCurto(String nomeCompleto) {
