@@ -9,6 +9,7 @@ import hexafoot.model.PartidaTorneio;
 import hexafoot.model.StatusPartidaTorneio;
 import hexafoot.model.Time;
 import hexafoot.service.simulacao.GerenciadorPenaltis;
+import hexafoot.service.simulacao.GerenciadorPosJogo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +38,7 @@ public class GerenciadorTorneio {
     private final List<PartidaTorneio> partidasMataMata;
     private final SimuladorPartidaCpu simuladorPartidaCpu;
     private final GerenciadorPenaltis gerenciadorPenaltis;
+    private final GerenciadorPosJogo gerenciadorPosJogo;
     private FaseTorneio faseAtual;
     private int rodadaAtual;
 
@@ -50,6 +52,7 @@ public class GerenciadorTorneio {
         this.partidasMataMata = fabricaTorneio.montarChaveamentoMataMata();
         this.simuladorPartidaCpu = new SimuladorPartidaCpu();
         this.gerenciadorPenaltis = new GerenciadorPenaltis();
+        this.gerenciadorPosJogo = new GerenciadorPosJogo();
         this.faseAtual = FaseTorneio.FASE_DE_GRUPOS;
         this.rodadaAtual = 1;
     }
@@ -88,6 +91,7 @@ public class GerenciadorTorneio {
         }
 
         partida.aplicarResultadoNaTabela();
+        aplicarConsequenciasPosJogo(partida);
         partidaTorneio.concluir();
         atualizarRodadaAtual();
         return true;
@@ -110,6 +114,7 @@ public class GerenciadorTorneio {
             vencedor = vencedorDesempate;
         }
 
+        aplicarConsequenciasPosJogo(partida);
         partidaTorneio.concluir(vencedor);
         propagarResultado(partidaTorneio);
         atualizarFaseMataMata();
@@ -311,12 +316,42 @@ public class GerenciadorTorneio {
             faseAtual = FaseTorneio.QUARTAS;
         } else if (faseAtual == FaseTorneio.QUARTAS) {
             faseAtual = FaseTorneio.SEMIFINAL;
+            limparCartoesDaFase(faseAtual); //na copa os cartoes amarelos zeram ao chegar na semifinal
         } else if (faseAtual == FaseTorneio.SEMIFINAL) {
             faseAtual = FaseTorneio.TERCEIRO_LUGAR;
         } else if (faseAtual == FaseTorneio.TERCEIRO_LUGAR) {
             faseAtual = FaseTorneio.FINAL;
         } else if (faseAtual == FaseTorneio.FINAL) {
             faseAtual = FaseTorneio.ENCERRADO;
+        }
+    }
+
+    //-----------------Consequencias pos-jogo -----------------
+    private void aplicarConsequenciasPosJogo(Partida partida) {
+        Time mandante = partida.getMandante();
+        Time visitante = partida.getVisitante();
+
+        gerenciadorPosJogo.processarCartoesAcumulados(mandante, partida);
+        gerenciadorPosJogo.processarCartoesAcumulados(visitante, partida);
+
+        gerenciadorPosJogo.atualizarStatusLesao(mandante);
+        gerenciadorPosJogo.atualizarStatusLesao(visitante);
+
+        gerenciadorPosJogo.regenerarFisicoElenco(mandante);
+        gerenciadorPosJogo.regenerarFisicoElenco(visitante);
+    }
+
+    private void limparCartoesDaFase(FaseTorneio fase) {
+        for (PartidaTorneio partida : partidasMataMata) {
+            if (partida.getFase() != fase) {
+                continue;
+            }
+            if (partida.getMandante() != null) {
+                gerenciadorPosJogo.limparCartoesFaseAvancada(partida.getMandante());
+            }
+            if (partida.getVisitante() != null) {
+                gerenciadorPosJogo.limparCartoesFaseAvancada(partida.getVisitante());
+            }
         }
     }
 
