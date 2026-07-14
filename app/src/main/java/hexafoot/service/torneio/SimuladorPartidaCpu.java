@@ -3,11 +3,12 @@ package hexafoot.service.torneio;
 import hexafoot.model.Partida;
 import hexafoot.service.simulacao.RelogioPartida;
 
+import java.io.Serializable;
 
 /**
  * Executa partidas controladas pelo computador sem depender da interface gráfica.
  */
-public class SimuladorPartidaCpu {
+public class SimuladorPartidaCpu implements Serializable {
     private final RelogioPartida relogio;
 
     public SimuladorPartidaCpu() {

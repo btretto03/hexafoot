@@ -3,7 +3,6 @@ package hexafoot.service.torneio;
 import hexafoot.dados.FabricaTorneio;
 import hexafoot.model.FaseTorneio;
 import hexafoot.model.Grupo;
-import hexafoot.model.Jogador;
 import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
 import hexafoot.model.StatusPartidaTorneio;
@@ -11,6 +10,7 @@ import hexafoot.model.Time;
 import hexafoot.service.simulacao.GerenciadorPenaltis;
 import hexafoot.service.simulacao.GerenciadorPosJogo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,7 +22,7 @@ import java.util.Optional;
 /**
  * Coordena o estado e as consultas gerais da Copa.
  */
-public class GerenciadorTorneio {
+public class GerenciadorTorneio implements Serializable {
 
     //A classificação dos times é pelo critérios Mais Pontos -> Maior Saldo de Gols -> Mais Gols pró -> Ordem alfabética (Último caso)
     private static final Comparator<Time> COMPARADOR_CLASSIFICACAO = Comparator.comparingInt(Time::getPontos)
@@ -119,16 +119,6 @@ public class GerenciadorTorneio {
         propagarResultado(partidaTorneio);
         atualizarFaseMataMata();
         return true;
-    }
-
-    public boolean registrarResultadoBrasilMataMata(String idPartida, Partida partida, List<Jogador> batedoresEscolhidos) {
-        Time vencedorDesempate = null;
-
-        if (gerenciadorPenaltis.verificarNecessidadeDeDesempate(partida, true)) {
-            vencedorDesempate = gerenciadorPenaltis.disputarDecisaoPorPenaltis(partida, batedoresEscolhidos);
-        }
-
-        return registrarResultadoMataMata(idPartida, partida, vencedorDesempate);
     }
 
     public boolean isFaseGruposConcluida() {
@@ -396,5 +386,38 @@ public class GerenciadorTorneio {
 
     public Time getTerceiroColocado() {
         return buscarPartidaMataMata("M31").getVencedor();
+    }
+
+    //-----------------Resultado final da campanha do Brasil-----------------
+    public boolean campanhaBrasilEncerrada() {
+        return faseAtual == FaseTorneio.ENCERRADO;
+    }
+
+    public String getResultadoFinalBrasil() {
+        if (getCampeao() == brasil) {
+            return "CAMPEAO";
+        }
+
+        PartidaTorneio finalDaCopa = buscarPartidaMataMata("M32");
+        if (finalDaCopa.getPerdedor() == brasil) {
+            return "VICE_CAMPEAO";
+        }
+
+        if (getTerceiroColocado() == brasil) {
+            return "TERCEIRO_LUGAR";
+        }
+
+        PartidaTorneio disputaTerceiroLugar = buscarPartidaMataMata("M31");
+        if (disputaTerceiroLugar.getPerdedor() == brasil) {
+            return "QUARTO_LUGAR";
+        }
+
+        for (PartidaTorneio partida : partidasMataMata) {
+            if (partida.getPerdedor() == brasil) {
+                return "ELIMINADO_" + partida.getFase().name();
+            }
+        }
+
+        return "ELIMINADO_FASE_DE_GRUPOS"; //nao se classificou para o mata-mata
     }
 }

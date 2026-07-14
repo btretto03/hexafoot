@@ -5,11 +5,13 @@ import hexafoot.model.Jogador;
 import hexafoot.model.Partida;
 import hexafoot.model.Time;
 
+import java.io.Serializable;
+
 /**
  * Entidade GerenciadorPosJogo, ela é responsável por aplicar as consequências após cada partida:
  * desgaste, recuperação, suspensões por cartões e evolução de lesões.
  */
-public class GerenciadorPosJogo {
+public class GerenciadorPosJogo implements Serializable {
 
 //-----------------Desgaste e recuperação física-----------------
 

@@ -2,6 +2,7 @@ package hexafoot.service.simulacao;
 
 import hexafoot.model.Jogador;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +12,7 @@ import java.util.Random;
  * em listas, aplicando pesos baseados em seus atributos.
  */
 
-public class SorteadorJogador {
+public class SorteadorJogador implements Serializable {
     private Random random;
 
     public SorteadorJogador() {

@@ -2,14 +2,15 @@ package hexafoot.service.simulacao;
 
 import hexafoot.model.Partida;
 import hexafoot.model.Time;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Entidade RelogioPartida - Motor central de tempo da simulação, 
+ * Entidade RelogioPartida - Motor central de tempo da simulação,
  * responsável por avançar os minutos do jogo e notificar todos os processadores seguindo o padrão Observer.
  * Adaptado para suportar simulação passo a passo (JavaFX).
  */
-public class RelogioPartida {
+public class RelogioPartida implements Serializable {
     private ArrayList<ObserverMinuto> processadores;
 
     public RelogioPartida() {

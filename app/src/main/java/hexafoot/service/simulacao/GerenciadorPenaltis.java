@@ -5,11 +5,12 @@ import hexafoot.model.Jogador;
 import hexafoot.model.Partida;
 import hexafoot.model.Time;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GerenciadorPenaltis {
+public class GerenciadorPenaltis implements Serializable {
     private Random random;
 
     public GerenciadorPenaltis() {
