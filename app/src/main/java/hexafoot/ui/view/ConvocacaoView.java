@@ -149,7 +149,7 @@ public class ConvocacaoView implements ScreenView {
         footer.getStyleClass().add("footer-panel");
         footer.setPadding(new Insets(24));
 
-        Label title = new Label("🇧🇷 Convocação da Seleção Brasileira");
+        Label title = new Label("[BRA] Convocação da Seleção Brasileira");
         title.getStyleClass().add("page-title");
 
         Label subtitle = new Label("Selecione 26 jogadores. 11 entram como titulares e os demais formam o banco.");
