@@ -34,6 +34,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Exibe o estado da campanha ativa e conduz o usuário à próxima partida ou aos ajustes do elenco.
+ */
 public class HubView extends TelaBase {
     private final BorderPane root;
     private Button btnPartidaSimulacao;
@@ -115,7 +118,12 @@ public class HubView extends TelaBase {
         atualizarControleSimulacao();
     }
 
-    // banner fixo mostrando o resultado final da campanha (campeao, vice, eliminado, etc.) quando a Copa acaba pro Brasil
+    /**
+     * Traduz o código final da campanha em um aviso persistente no hub.
+     *
+     * @param resultado código de colocação; valores não premiados são tratados como eliminação
+     * @return banner correspondente ao resultado
+     */
     private VBox criarBannerResultado(String resultado) {
         String texto;
         String corFundo;
@@ -209,7 +217,12 @@ public class HubView extends TelaBase {
         return panel;
     }
 
-    // salva no slot unico de save; feedback aparece no proprio texto do botao por alguns segundos, sem popup
+    /**
+     * Sobrescreve o slot único de salvamento e mostra o resultado temporariamente no botão.
+     *
+     * @param botao botão usado para o retorno visual da operação
+     * @param navigator navegador cuja sessão contém o torneio a salvar
+     */
     private void salvarProgresso(Button botao, GameNavigator navigator) {
         GerenciadorSalvamento gerenciadorSalvamento = new GerenciadorSalvamento();
         String textoOriginal = botao.getText();
@@ -258,6 +271,13 @@ public class HubView extends TelaBase {
         return panel;
     }
 
+    /**
+     * Representa um atleta com sua condição atual no elenco e seu desgaste.
+     *
+     * @param jogador atleta exibido
+     * @param situacaoCampo rótulo de vínculo, como {@code TITULAR} ou {@code BANCO}
+     * @return linha visual do atleta
+     */
     private HBox criarLinhaJogador(Jogador jogador, String situacaoCampo) {
         Label lblSituacao = new Label(situacaoCampo);
         lblSituacao.getStyleClass().add("status-pill");

@@ -3,7 +3,8 @@ package hexafoot.model;
 import java.io.Serializable;
 
 /**
- * Entidade EventoPartida - Representa cada evento que ocorre durante a partida, como gols, cartões e substituições.
+ * Ocorrência registrada no histórico de uma partida, como gol, cartão, lesão ou
+ * substituição.
  */
 public class EventoPartida implements Serializable {
     private int minuto;
@@ -11,6 +12,12 @@ public class EventoPartida implements Serializable {
     private Jogador autor;
     private Jogador jogadorSubstituinte;
 
+    /**
+     * Cria um evento associado a um único jogador.
+     *
+     * @param tipo identificador textual usado pelos processadores e pela formatação
+     *             da interface
+     */
     public EventoPartida(int minuto, String tipo, Jogador autor) {
         this.minuto = minuto;
         this.tipo = tipo;
@@ -18,6 +25,12 @@ public class EventoPartida implements Serializable {
         this.jogadorSubstituinte = null;
     }
 
+    /**
+     * Cria um evento com dois jogadores, usado para substituições.
+     *
+     * @param autor jogador que deixa o campo
+     * @param jogadorSubstituinte jogador que entra em campo
+     */
     public EventoPartida(int minuto, String tipo, Jogador autor, Jogador jogadorSubstituinte) {
         this.minuto = minuto;
         this.tipo = tipo;
@@ -39,6 +52,10 @@ public class EventoPartida implements Serializable {
     }
 
     //-----------------Formatação para a Interface Gráfica-----------------
+    /**
+     * Formata tipos conhecidos por palavras-chave, sem distinção entre maiúsculas e
+     * minúsculas; tipos desconhecidos usam a representação genérica.
+     */
     @Override
     public String toString() {
         // Garantimos que o nome do jogador seja pego corretamente

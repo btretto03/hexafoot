@@ -11,9 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
-/**
- * Tela de carregamento de jogo salvo.
- */
+/** Carrega o único slot de campanha disponível e o instala na sessão atual. */
 public class CarregarJogoView extends TelaBase {
     private final BorderPane root;
     private final GerenciadorSalvamento gerenciadorSalvamento;

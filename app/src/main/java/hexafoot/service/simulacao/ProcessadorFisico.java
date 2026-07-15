@@ -4,12 +4,16 @@ import hexafoot.model.Jogador;
 import hexafoot.model.Partida;
 
 /**
- * Entidade ProcessadorFisico - Especialista responsável por aplicar o desgaste de energia
- * em todos os jogadores titulares em campo a cada minuto da simulação.
+ * Aplica, minuto a minuto, o desgaste físico definido pela posição, resistência
+ * e tática de cada equipe.
  */
 
 public class ProcessadorFisico implements ObserverMinuto {
 
+    /**
+     * Consome um minuto de energia de cada titular ativo das duas equipes.
+     * Jogadores inativos não sofrem desgaste.
+     */
     @Override
     public void atualizarMinuto(int minutoAtual, Partida partida) {
 

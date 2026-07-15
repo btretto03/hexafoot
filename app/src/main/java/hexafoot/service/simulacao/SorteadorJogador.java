@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Entidade SorteadorJogador - Ferramenta que é responsável por selecionar jogadores
- * em listas, aplicando pesos baseados em seus atributos.
+ * Seleciona jogadores aleatoriamente com pesos derivados de seus atributos.
  */
 
 public class SorteadorJogador implements Serializable {
@@ -19,7 +18,12 @@ public class SorteadorJogador implements Serializable {
         this.random = new Random();
     }
 
-    // Sorteio por ataque jogadores com mais ataque tem mais chance de ser escolhido
+    /**
+     * Sorteia com probabilidade proporcional ao ataque de cada jogador.
+     *
+     * @return um dos candidatos com peso de ataque positivo
+     * @throws IllegalArgumentException se nenhum candidato tiver ataque positivo
+     */
     public Jogador sortearPorAtaque(List<Jogador> jogadores) {
         List<Jogador> lista = new ArrayList<>();
 
@@ -33,7 +37,12 @@ public class SorteadorJogador implements Serializable {
         return lista.get(alvo);
     }
 
-    //Sorteio para cartoes/lesao (mesma lógica do ataque)
+    /**
+     * Sorteia com peso {@code estresse + (100 - físico)}, combinando tensão e fadiga.
+     *
+     * @return um dos candidatos com peso positivo
+     * @throws IllegalArgumentException se nenhum candidato tiver peso positivo
+     */
     public Jogador sortearPorEstresse(List<Jogador> jogadores) {
         List<Jogador> lista = new ArrayList<>();
 

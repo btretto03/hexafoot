@@ -3,6 +3,9 @@ import hexafoot.model.Jogador;
 import hexafoot.model.exception.JogadorIndisponivelException;
 import hexafoot.model.Time;
 
+/**
+ * Valida a quantidade e a disponibilidade dos titulares de uma equipe.
+ */
 public class ValidadorEscalacao extends ValidadorRegraBase {
     private Time time;
 
@@ -10,6 +13,11 @@ public class ValidadorEscalacao extends ValidadorRegraBase {
         this.time = time;
     }
 
+    /**
+     * Exige exatamente 11 titulares e status {@code "Ativo"} para cada um.
+     *
+     * @throws JogadorIndisponivelException na primeira regra violada
+     */
     @Override
     public void validar() throws JogadorIndisponivelException {
         if (time.getTitulares().size() != 11) {

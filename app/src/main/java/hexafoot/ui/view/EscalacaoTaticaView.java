@@ -38,6 +38,9 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
+/**
+ * Edita diretamente titulares, reservas, formação e tática do Brasil por clique ou arraste.
+ */
 public class EscalacaoTaticaView extends TelaBase {
     private enum Origem {
         CAMPO,
@@ -67,6 +70,11 @@ public class EscalacaoTaticaView extends TelaBase {
         jogadorSelecionado = null;
     }
 
+    /**
+     * Prepara a tela corrigindo duplicidades e ordenando os titulares pela formação vigente.
+     *
+     * @param navigator navegador cuja sessão fornece o elenco que será alterado
+     */
     public EscalacaoTaticaView(GameNavigator navigator) {
         super(navigator);
         this.time = navigator.getSession().getElencoBrasil();
@@ -216,6 +224,9 @@ public class EscalacaoTaticaView extends TelaBase {
         return botao;
     }
 
+    /**
+     * Relê o elenco do modelo, limpa a seleção corrente e reconstrói os controles dependentes.
+     */
     private void atualizarTela() {
         limparSelecao();
         titulares.setAll(time.getTitulares());
@@ -279,6 +290,15 @@ public class EscalacaoTaticaView extends TelaBase {
         return panel;
     }
 
+    /**
+     * Monta uma linha mantendo em cada slot o índice correspondente na lista de titulares.
+     *
+     * @param nomeLinha nome usado também para determinar a quantidade esperada de posições
+     * @param sigla identificador visual da linha
+     * @param jogadores recorte de titulares exibido na linha
+     * @param indiceBase índice do primeiro jogador na lista completa de titulares
+     * @return linha visual do campo
+     */
     private VBox criarLinhaCampo(String nomeLinha, String sigla, List<Jogador> jogadores, int indiceBase) {
         Label titulo = new Label(nomeLinha);
         titulo.getStyleClass().add("pitch-row-title");
@@ -322,6 +342,16 @@ public class EscalacaoTaticaView extends TelaBase {
         return panel;
     }
 
+    /**
+     * Cria um slot associado à posição real do atleta para suportar clique e arraste.
+     *
+     * @param jogador atleta exibido; {@code null} representa uma posição vazia
+     * @param origem lista à qual o índice pertence
+     * @param indice posição do atleta em titulares ou reservas
+     * @param sigla marcador visual da zona do campo
+     * @param campo {@code true} para aparência de titular; {@code false} para banco
+     * @return botão configurado para o atleta
+     */
     private Button criarSlotJogador(Jogador jogador, Origem origem, int indice, String sigla, boolean campo) {
         Button botao = new Button();
 
@@ -362,6 +392,13 @@ public class EscalacaoTaticaView extends TelaBase {
         return botao;
     }
 
+    /**
+     * Seleciona o primeiro slot e, no segundo clique, tenta trocar os dois atletas.
+     *
+     * @param origem lista do slot clicado
+     * @param indice posição do atleta nessa lista
+     * @param botao botão que receberá o destaque quando for a primeira seleção
+     */
     private void tratarSelecaoClique(Origem origem, int indice, Button botao) {
         Jogador jogadorClicado = (origem == Origem.CAMPO) ? titulares.get(indice) : reservas.get(indice);
 
@@ -394,6 +431,9 @@ public class EscalacaoTaticaView extends TelaBase {
         atualizarPainelComparacao();
     }
 
+    /**
+     * Mostra um atleta isolado ou compara o selecionado com aquele sob o ponteiro.
+     */
     private void atualizarPainelComparacao() {
         painelComparacao.getChildren().clear();
 
@@ -516,6 +556,16 @@ public class EscalacaoTaticaView extends TelaBase {
         return nomeCompleto;
     }
 
+    /**
+     * Adiciona uma comparação e colore a diferença conforme o sentido favorável do atributo.
+     *
+     * @param grid grade que receberá a linha
+     * @param row índice visual da linha
+     * @param atributo rótulo do atributo comparado
+     * @param val1 valor do atleta selecionado
+     * @param val2 valor do atleta sob o ponteiro
+     * @param menorMelhor {@code true} quando uma redução representa melhora, como no estresse
+     */
     private void adicionarLinhaGrid(GridPane grid, int row, String atributo, int val1, int val2, boolean menorMelhor) {
         Label labelAtrib = new Label(atributo);
         labelAtrib.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #eff5ff;");
@@ -559,6 +609,13 @@ public class EscalacaoTaticaView extends TelaBase {
         grid.add(labelVal, 1, row);
     }
 
+    /**
+     * Publica no dragboard a origem no formato interno {@code ORIGEM:indice}.
+     *
+     * @param botao slot que iniciará o arraste
+     * @param origem lista de origem do atleta
+     * @param indice posição do atleta na lista de origem
+     */
     private void registrarArraste(Button botao, Origem origem, int indice) {
         botao.setOnDragDetected(event -> {
             Dragboard dragboard = botao.startDragAndDrop(TransferMode.MOVE);
@@ -569,6 +626,13 @@ public class EscalacaoTaticaView extends TelaBase {
         });
     }
 
+    /**
+     * Registra um slot como destino e aplica a troca codificada no dragboard.
+     *
+     * @param botao slot que receberá a soltura
+     * @param destino lista associada ao destino
+     * @param indiceDestino posição que receberá o atleta arrastado
+     */
     private void registrarAlvo(Button botao, Origem destino, int indiceDestino) {
         botao.setOnDragOver(event -> {
             Dragboard dragboard = event.getDragboard();
@@ -600,6 +664,15 @@ public class EscalacaoTaticaView extends TelaBase {
         });
     }
 
+    /**
+     * Troca atletas dentro de uma lista ou entre titulares e reservas, sem criar cópias.
+     *
+     * @param origem lista que contém o primeiro atleta
+     * @param indiceOrigem posição do primeiro atleta
+     * @param destino lista que contém o segundo atleta
+     * @param indiceDestino posição do segundo atleta
+     * @return {@code true} se os índices eram válidos e a troca foi realizada
+     */
     private boolean moverJogador(Origem origem, int indiceOrigem, Origem destino, int indiceDestino) {
         if (origem == destino && indiceOrigem == indiceDestino) {
             return false;
@@ -655,6 +728,9 @@ public class EscalacaoTaticaView extends TelaBase {
         return false;
     }
 
+    /**
+     * Reordena os titulares por linhas da formação, preenchendo faltas com os atletas restantes.
+     */
     private void reorganizarTitularesConformeFormacao() {
         List<Jogador> base = new ArrayList<>(time.getTitulares());
         List<Jogador> reorganizados = new ArrayList<>();
@@ -676,6 +752,9 @@ public class EscalacaoTaticaView extends TelaBase {
         time.getTitulares().addAll(reorganizados);
     }
 
+    /**
+     * Remove repetições entre campo e banco e promove reservas até completar 11 titulares.
+     */
     private void removerJogadoresDuplicados() {
         List<Jogador> titularesSemRepeticao = new ArrayList<>();
         List<Jogador> reservasSemRepeticao = new ArrayList<>();
@@ -702,6 +781,14 @@ public class EscalacaoTaticaView extends TelaBase {
         time.getReservas().addAll(reservasSemRepeticao);
     }
 
+    /**
+     * Retira da lista os atletas de uma linha, usando os primeiros restantes quando necessário.
+     *
+     * @param origem lista mutável de candidatos; os escolhidos são removidos dela
+     * @param posicao posição normalizada procurada primeiro
+     * @param quantidade número de atletas desejado
+     * @return atletas escolhidos para a linha
+     */
     private List<Jogador> preencherLinha(List<Jogador> origem, String posicao, int quantidade) {
         List<Jogador> selecionados = new ArrayList<>();
         List<Jogador> copia = new ArrayList<>(origem);
@@ -723,6 +810,14 @@ public class EscalacaoTaticaView extends TelaBase {
         return selecionados;
     }
 
+    /**
+     * Obtém um recorte de tamanho fixo, completando índices ausentes com {@code null}.
+     *
+     * @param lista lista de origem
+     * @param inicio primeiro índice do recorte
+     * @param quantidade tamanho exato do resultado
+     * @return recorte preenchido até o tamanho solicitado
+     */
     private List<Jogador> slice(List<Jogador> lista, int inicio, int quantidade) {
         List<Jogador> resultado = new ArrayList<>();
         for (int i = 0; i < quantidade; i++) {
@@ -736,6 +831,12 @@ public class EscalacaoTaticaView extends TelaBase {
         return resultado;
     }
 
+    /**
+     * Converte o nome visual da linha em sua quantidade na formação atual.
+     *
+     * @param linha {@code Ataque}, {@code Meio-campo} ou {@code Defesa}; outros valores representam o goleiro
+     * @return quantidade de slots esperada
+     */
     private int quantidadeEsperada(String linha) {
         if ("Ataque".equals(linha)) {
             return quantidadeAtacantes(time.getFormacaoAtual());
@@ -807,6 +908,12 @@ public class EscalacaoTaticaView extends TelaBase {
         }
     }
 
+    /**
+     * Agrupa descrições livres nas quatro linhas táticas; valores desconhecidos viram atacante.
+     *
+     * @param posicao descrição de posição do atleta
+     * @return categoria usada na ordenação da formação
+     */
     private String normalizarPosicao(String posicao) {
         String limpa = posicao == null ? "" : posicao.trim().toLowerCase();
         if (limpa.contains("gole")) {
@@ -922,6 +1029,14 @@ public class EscalacaoTaticaView extends TelaBase {
             heightProperty().addListener((obs, oldVal, newVal) -> redimensionar());
         }
 
+        /**
+         * Aplica o traço comum das marcações e, quando solicitado, remove o preenchimento.
+         *
+         * @param shape forma a configurar
+         * @param strokeWebColor cor CSS do contorno
+         * @param width espessura do contorno
+         * @param transparentFill {@code true} para tornar o interior transparente
+         */
         private void setupShape(Shape shape, String strokeWebColor, double width, boolean transparentFill) {
             shape.setStroke(javafx.scene.paint.Color.web(strokeWebColor));
             shape.setStrokeWidth(width);

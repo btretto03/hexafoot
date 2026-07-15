@@ -3,9 +3,8 @@ package hexafoot.model.strategy;
 import java.io.Serializable;
 
 /**
- * Interface que define a estratégia de simulação para o jogo, utilizaresmo o padrao Strategy que vai
- * permitir diferentes táticas (ofensiva, defensiva, equilibrada) que influenciam o resultado da simumulação
- *  com multiplicadores de ataque, defesa e desgaste.
+ * Estratégia que fornece fatores multiplicativos para ataque, defesa e desgaste;
+ * o valor {@code 1} representa efeito neutro.
  */
 
 public interface EstrategiaSimulacao extends Serializable {
