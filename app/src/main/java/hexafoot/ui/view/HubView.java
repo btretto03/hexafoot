@@ -26,10 +26,11 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
-public class HubView implements ScreenView {
+public class HubView extends TelaBase {
     private final BorderPane root;
 
     public HubView(GameNavigator navigator) {
+        super(navigator);
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
 

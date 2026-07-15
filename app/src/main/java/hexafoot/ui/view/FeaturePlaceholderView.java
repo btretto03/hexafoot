@@ -9,10 +9,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 
-public class FeaturePlaceholderView implements ScreenView {
+public class FeaturePlaceholderView extends TelaBase {
     private final BorderPane root;
 
     public FeaturePlaceholderView(GameNavigator navigator, String title, String description) {
+        super(navigator);
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
 

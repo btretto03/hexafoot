@@ -31,8 +31,7 @@ import javafx.scene.input.KeyCode;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConvocacaoView implements ScreenView {
-    private final GameNavigator navigator;
+public class ConvocacaoView extends TelaBase {
     private final BorderPane root;
     private final ObservableList<Jogador> disponiveis;
     private final FilteredList<Jogador> disponiveisFiltrados;
@@ -45,7 +44,7 @@ public class ConvocacaoView implements ScreenView {
     private final Button avancarButton;
 
     public ConvocacaoView(GameNavigator navigator) {
-        this.navigator = navigator;
+        super(navigator);
         this.root = new BorderPane();
         this.root.getStyleClass().add("screen-root");
 

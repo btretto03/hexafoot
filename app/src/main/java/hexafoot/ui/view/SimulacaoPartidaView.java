@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SimulacaoPartidaView implements ScreenView {
+public class SimulacaoPartidaView extends TelaBase {
     private static final double TAXA_LENTA = 0.5;
     private static final double TAXA_NORMAL = 3.0;
     private static final double TAXA_RAPIDA = 8.0;
@@ -50,7 +50,6 @@ public class SimulacaoPartidaView implements ScreenView {
 
     private final BorderPane root;
     private final StackPane rootEmpilhado;
-    private final GameNavigator navigator;
     private final PartidaTorneio partidaTorneio;
     private final Partida partida;
     private final RelogioPartida relogio;
@@ -107,7 +106,7 @@ public class SimulacaoPartidaView implements ScreenView {
     private int cobrancasVisitante = 0;
 
     public SimulacaoPartidaView(GameNavigator navigator, PartidaTorneio partidaTorneio, Partida partida) {
-        this.navigator = navigator;
+        super(navigator);
         this.partidaTorneio = partidaTorneio;
         this.partida = partida;
         this.brasilEhMandante = (partida.getMandante() == navigator.getSession().getGerenciadorTorneio().getBrasil());
