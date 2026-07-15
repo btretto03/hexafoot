@@ -934,13 +934,6 @@ public class SimulacaoPartidaView extends TelaBase {
 
         if (partidaTorneio.getFase() == FaseTorneio.FASE_DE_GRUPOS) {
             gerenciadorTorneio.registrarResultado(partidaTorneio.getId(), partida);
-            gerenciadorTorneio.simularPartidasCpu();
-
-            if (gerenciadorTorneio.isFaseGruposConcluida()) {
-                gerenciadorTorneio.iniciarMataMata();
-                gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
-            }
-
             exibirResultadoFinal();
             return;
         }
@@ -952,8 +945,6 @@ public class SimulacaoPartidaView extends TelaBase {
 
         Time vencedor = partida.getGolsMandante() > partida.getGolsVisitante() ? partida.getMandante() : partida.getVisitante();
         gerenciadorTorneio.registrarResultadoMataMata(partidaTorneio.getId(), partida, vencedor);
-        gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
-
         exibirResultadoFinal();
     }
 
@@ -1188,7 +1179,6 @@ public class SimulacaoPartidaView extends TelaBase {
 
         GerenciadorTorneio gerenciadorTorneio = navigator.getSession().getGerenciadorTorneio();
         gerenciadorTorneio.registrarResultadoMataMata(partidaTorneio.getId(), partida, vencedor);
-        gerenciadorTorneio.simularAteProximaPartidaBrasilOuFim();
 
         exibirResultadoFinal();
     }

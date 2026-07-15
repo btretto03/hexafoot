@@ -22,6 +22,11 @@ public class Partida implements Serializable {
     private List<Jogador> mandanteJaSaidos; //preciso guardar os nomes porque eles nao podem voltar ao jogo
     private List<Jogador> visitanteJaSaidos;
 
+    private List<Jogador> titularesOriginaisMandante;
+    private List<Jogador> reservasOriginaisMandante;
+    private List<Jogador> titularesOriginaisVisitante;
+    private List<Jogador> reservasOriginaisVisitante;
+
     public Partida(Time mandante, Time visitante) {
         this.mandante = mandante;
         this.visitante = visitante;
@@ -35,6 +40,11 @@ public class Partida implements Serializable {
         this.substituicoesVisitante = 0;
         this.mandanteJaSaidos = new ArrayList<>();
         this.visitanteJaSaidos = new ArrayList<>();
+
+        this.titularesOriginaisMandante = new ArrayList<>(mandante.getTitulares());
+        this.reservasOriginaisMandante = new ArrayList<>(mandante.getReservas());
+        this.titularesOriginaisVisitante = new ArrayList<>(visitante.getTitulares());
+        this.reservasOriginaisVisitante = new ArrayList<>(visitante.getReservas());
     }
 
     //-----------------Métodos de ação do jogo-----------------
@@ -194,5 +204,46 @@ public class Partida implements Serializable {
 
     public List<EventoPartida> getEventos() {
         return eventos;
+    }
+
+    public void restaurarElencos() {
+        restaurarTime(mandante, titularesOriginaisMandante, reservasOriginaisMandante);
+        restaurarTime(visitante, titularesOriginaisVisitante, reservasOriginaisVisitante);
+    }
+
+    private void restaurarTime(Time time, List<Jogador> titularesOriginais, List<Jogador> reservasOriginais) {
+        time.getTitulares().clear();
+        time.getTitulares().addAll(titularesOriginais);
+        time.getReservas().clear();
+        time.getReservas().addAll(reservasOriginais);
+
+        for (int i = 0; i < time.getTitulares().size(); i++) {
+            Jogador j = time.getTitulares().get(i);
+            if (!"Ativo".equals(j.getStatus())) {
+                time.removerTitular(j);
+                time.adicionarReserva(j);
+                i--;
+
+                Jogador substituto = null;
+                for (Jogador r : time.getReservas()) {
+                    if ("Ativo".equals(r.getStatus()) && r.getPosicao().equalsIgnoreCase(j.getPosicao())) {
+                        substituto = r;
+                        break;
+                    }
+                }
+                if (substituto == null) {
+                    for (Jogador r : time.getReservas()) {
+                        if ("Ativo".equals(r.getStatus())) {
+                            substituto = r;
+                            break;
+                        }
+                    }
+                }
+                if (substituto != null) {
+                    time.removerReserva(substituto);
+                    time.adicionarTitular(substituto);
+                }
+            }
+        }
     }
 }
