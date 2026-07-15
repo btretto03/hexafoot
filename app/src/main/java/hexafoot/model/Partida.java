@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entidade Partida - Representa o confronto entre duas equipes, armazenando o placar e o histórico de eventos que ocorrem durante o jogo.
+ * Confronto mutável entre duas equipes, com placar, eventos e substituições.
  */
 public class Partida implements Serializable {
     private int maxSubstituicoes;
@@ -22,6 +22,9 @@ public class Partida implements Serializable {
     private List<Jogador> mandanteJaSaidos; //preciso guardar os nomes porque eles nao podem voltar ao jogo
     private List<Jogador> visitanteJaSaidos;
 
+    /**
+     * Inicia um confronto em 0 a 0, com limite de cinco substituições por equipe.
+     */
     public Partida(Time mandante, Time visitante) {
         this.mandante = mandante;
         this.visitante = visitante;
@@ -67,6 +70,10 @@ public class Partida implements Serializable {
         return substituicoesVisitante < maxSubstituicoes;
     }
 
+    /**
+     * Lista reservas ativas do mandante que ainda não deixaram o campo nesta partida.
+     * A lista retornada é independente da lista mantida pelo time.
+     */
     public List<Jogador> getReservasDisponiveisMandante() {
         List<Jogador> disponiveis = new ArrayList<>();
         for (Jogador reserva : mandante.getReservas()) {
@@ -79,6 +86,10 @@ public class Partida implements Serializable {
         return disponiveis;
     }
 
+    /**
+     * Lista reservas ativas do visitante que ainda não deixaram o campo nesta partida.
+     * A lista retornada é independente da lista mantida pelo time.
+     */
     public List<Jogador> getReservasDisponiveisVisitante() {
         List<Jogador> disponiveis = new ArrayList<>();
         for (Jogador reserva : visitante.getReservas()) {
@@ -91,6 +102,14 @@ public class Partida implements Serializable {
         return disponiveis;
     }
 
+    /**
+     * Troca um titular por uma reserva do mandante, movendo ambos entre as listas do
+     * time e impedindo o retorno de quem saiu.
+     *
+     * @param sai titular que deixa o campo
+     * @param entra reserva ativa que entra em campo
+     * @return {@code false} sem alterações se o limite ou algum requisito não for atendido
+     */
     public boolean substituirMandante(Jogador sai, Jogador entra) {
         boolean pode = mandantePodeSubstituir();
         if (pode == false) {
@@ -125,6 +144,14 @@ public class Partida implements Serializable {
         return true;
     }
 
+    /**
+     * Troca um titular por uma reserva do visitante, movendo ambos entre as listas do
+     * time e impedindo o retorno de quem saiu.
+     *
+     * @param sai titular que deixa o campo
+     * @param entra reserva ativa que entra em campo
+     * @return {@code false} sem alterações se o limite ou algum requisito não for atendido
+     */
     public boolean substituirVisitante(Jogador sai, Jogador entra) {
         boolean pode = visitantePodeSubstituir();
         if (pode == false) {
@@ -157,6 +184,10 @@ public class Partida implements Serializable {
     }
 
     //-----------------Aplicação do resultado na tabela-----------------
+    /**
+     * Acumula placar, vitória, empate ou derrota nas estatísticas dos dois times.
+     * Deve ser chamado uma única vez para cada partida.
+     */
     public void aplicarResultadoNaTabela() {
         mandante.setGolsMarcados(mandante.getGolsMarcados() + golsMandante);
         mandante.setGolsSofridos(mandante.getGolsSofridos() + golsVisitante);

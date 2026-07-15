@@ -5,6 +5,9 @@ import hexafoot.ui.GameSession;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
+/**
+ * Ponto de entrada alternativo que inicia a janela com dimensões mínimas.
+ */
 public class App extends Application {
 
     @Override

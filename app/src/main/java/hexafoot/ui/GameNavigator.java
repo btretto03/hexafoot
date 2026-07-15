@@ -13,6 +13,9 @@ import hexafoot.ui.view.SimulacaoPartidaView;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Centraliza as trocas de tela e mantém todas elas ligadas à mesma sessão de jogo.
+ */
 public class GameNavigator {
     private static final double WIDTH = 1280;
     private static final double HEIGHT = 720;
@@ -20,6 +23,12 @@ public class GameNavigator {
     private final Stage stage;
     private final GameSession session;
 
+    /**
+     * Associa o palco principal à sessão que será compartilhada entre as telas.
+     *
+     * @param stage palco principal da aplicação
+     * @param session estado de campanha compartilhado durante a navegação
+     */
     public GameNavigator(Stage stage, GameSession session) {
         this.stage = stage;
         this.session = session;
@@ -30,6 +39,9 @@ public class GameNavigator {
         applyScene(new MainMenuView(this));
     }
 
+    /**
+     * Descarta a campanha corrente e abre o fluxo de convocação de um novo jogo.
+     */
     public void startNewCampaign() {
         session.iniciarNovoJogo();
         applyScene(new ConvocacaoView(this));
@@ -63,6 +75,11 @@ public class GameNavigator {
         return session;
     }
 
+    /**
+     * Instala a raiz da tela, o tema global e restaura o modo de tela cheia.
+     *
+     * @param view tela que substituirá integralmente a cena atual
+     */
     private void applyScene(ScreenView view) {
         Scene scene = new Scene(view.getRoot(), WIDTH, HEIGHT);
         scene.getStylesheets().add(getClass().getResource("/styles/hexafoot.css").toExternalForm());
@@ -70,6 +87,11 @@ public class GameNavigator {
         stage.setFullScreen(true); //garante tela cheia em toda troca de tela, mesmo que o jogador tenha saido do modo antes
     }
 
+    /**
+     * Inicia a partida agendada no gerenciador do torneio antes de abrir sua simulação.
+     *
+     * @param partidaTorneio confronto agendado que passará ao estado em andamento
+     */
     public void showSimulacaoPartida(PartidaTorneio partidaTorneio) {
         Partida partida = session.getGerenciadorTorneio().iniciarPartida(partidaTorneio.getId());
         applyScene(new SimulacaoPartidaView(this, partidaTorneio, partida));

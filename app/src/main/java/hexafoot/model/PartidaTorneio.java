@@ -3,7 +3,9 @@ package hexafoot.model;
 import java.io.Serializable;
 
 /**
- * Metadados de uma partida agendada no calendário da Copa.
+ * Partida do calendário da Copa, incluindo suas origens e seu estado de execução.
+ * Em eliminatórias, os participantes podem permanecer indefinidos até a resolução
+ * das partidas ou posições indicadas como origem.
  */
 public class PartidaTorneio implements Serializable {
     private final String id;
@@ -36,24 +38,51 @@ public class PartidaTorneio implements Serializable {
         this.perdedor = null;
     }
 
+    /**
+     * Cria uma partida de grupo com participantes já definidos.
+     */
     public static PartidaTorneio criarFaseDeGrupos(String id, int rodada, Grupo grupo, Time mandante, Time visitante) {
         return new PartidaTorneio(id, FaseTorneio.FASE_DE_GRUPOS, rodada, grupo, mandante.getNome(), visitante.getNome(), mandante, visitante);
     }
 
+    /**
+     * Cria uma eliminatória ainda sem participantes.
+     *
+     * @param identificadorOrigemMandante chave de classificação ou resultado que
+     *                                     fornecerá o mandante
+     * @param identificadorOrigemVisitante chave de classificação ou resultado que
+     *                                      fornecerá o visitante
+     */
     public static PartidaTorneio criarEliminatoria(String id, FaseTorneio fase, String identificadorOrigemMandante, String identificadorOrigemVisitante) {
         return new PartidaTorneio(id, fase, null, null, identificadorOrigemMandante, identificadorOrigemVisitante, null, null);
     }
 
+    /**
+     * Cria uma nova partida para os participantes atuais e marca o agendamento como
+     * em andamento.
+     *
+     * @return a nova partida associada a este agendamento
+     */
     public Partida iniciar() {
         this.partida = new Partida(mandante, visitante);
         this.status = StatusPartidaTorneio.EM_ANDAMENTO;
         return partida;
     }
 
+    /**
+     * Marca como concluída uma partida que não precisa registrar vencedor.
+     */
     public void concluir() {
         this.status = StatusPartidaTorneio.CONCLUIDA;
     }
 
+    /**
+     * Registra o resultado de uma eliminatória e marca a partida como concluída.
+     * O perdedor é inferido comparando o vencedor por identidade com o mandante.
+     *
+     * @param vencedor participante vencedor; deve ser a mesma instância usada como
+     *                 mandante ou visitante
+     */
     public void concluir(Time vencedor) {
         this.vencedor = vencedor;
 
@@ -66,6 +95,10 @@ public class PartidaTorneio implements Serializable {
         this.status = StatusPartidaTorneio.CONCLUIDA;
     }
 
+    /**
+     * Atualiza os participantes já resolvidos do chaveamento. Um dos valores pode
+     * permanecer {@code null} enquanto sua partida de origem não for concluída.
+     */
     public void definirParticipantes(Time mandante, Time visitante) {
         this.mandante = mandante;
         this.visitante = visitante;

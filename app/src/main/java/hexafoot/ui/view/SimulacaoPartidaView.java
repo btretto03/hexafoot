@@ -42,6 +42,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Coordena a simulação minuto a minuto, as decisões do técnico e a conclusão da rodada do torneio.
+ */
 public class SimulacaoPartidaView extends TelaBase {
     private static final double TAXA_LENTA = 0.5;
     private static final double TAXA_NORMAL = 3.0;
@@ -103,6 +106,13 @@ public class SimulacaoPartidaView extends TelaBase {
     private int cobrancasMandante = 0;
     private int cobrancasVisitante = 0;
 
+    /**
+     * Vincula a partida iniciada ao confronto do torneio e começa a simulação na velocidade normal.
+     *
+     * @param navigator acesso à sessão e ao retorno para o hub
+     * @param partidaTorneio confronto cujo resultado será registrado ao término
+     * @param partida partida já iniciada e processada pelo relógio desta tela
+     */
     public SimulacaoPartidaView(GameNavigator navigator, PartidaTorneio partidaTorneio, Partida partida) {
         super(navigator);
         this.partidaTorneio = partidaTorneio;
@@ -323,12 +333,20 @@ public class SimulacaoPartidaView extends TelaBase {
         return controles;
     }
 
+    /**
+     * Configura um pulso-base de 800 ms; a velocidade escolhida altera a taxa dessa timeline.
+     */
     private void configurarTimeline() {
         KeyFrame frame = new KeyFrame(Duration.millis(800), event -> avancarMinuto());
         timeline = new Timeline(frame);
         timeline.setCycleCount(Timeline.INDEFINITE);
     }
 
+    /**
+     * Pausa ou retoma o relógio, impedindo avanço enquanto houver lesão aguardando substituição.
+     *
+     * @param taxa {@code 0} para pausar ou taxa positiva de reprodução da timeline
+     */
     private void alterarVelocidade(double taxa) {
         if (minutoAtual > 90) return;
 
@@ -359,6 +377,10 @@ public class SimulacaoPartidaView extends TelaBase {
         btnVelRapida.getStyleClass().setAll(timeline.getRate() == TAXA_RAPIDA && jogoEmAndamento ? "primary-button" : "secondary-button");
     }
 
+    /**
+     * Processa um minuto, incorpora novos eventos e interrompe o relógio no intervalo, em lesões
+     * obrigatórias ou ao fim do tempo regulamentar.
+     */
     private void avancarMinuto() {
         if (minutoAtual > 90) {
             timeline.stop();
@@ -481,6 +503,9 @@ public class SimulacaoPartidaView extends TelaBase {
         rootEmpilhado.getChildren().add(overlayIntervalo);
     }
 
+    /**
+     * Remove o bloqueio do intervalo e inicia o segundo tempo na velocidade normal.
+     */
     private void fecharIntervalo() {
         rootEmpilhado.getChildren().remove(overlayIntervalo);
         overlayIntervalo = null;
@@ -519,7 +544,11 @@ public class SimulacaoPartidaView extends TelaBase {
         return overlay;
     }
 
-    // decide qual efeito sonoro toca de acordo com o tipo do evento gerado pelo motor de simulacao
+    /**
+     * Reproduz o efeito correspondente ao tipo interno do evento e ao lado controlado pelo usuário.
+     *
+     * @param ev evento recém-gerado pelo motor de simulação
+     */
     private void tocarSomDoEvento(EventoPartida ev) {
         String tipo = ev.getTipo();
 
@@ -542,6 +571,11 @@ public class SimulacaoPartidaView extends TelaBase {
         }
     }
 
+    /**
+     * Substitui a estratégia do Brasil durante uma pausa e registra a decisão no painel de eventos.
+     *
+     * @param tipo {@code ofensiva}, {@code equilibrada} ou {@code retranca}
+     */
     private void alterarPosturaTatica(String tipo) {
         Time brasil = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
         if (tipo.equals("ofensiva")) brasil.setTaticaAtual(new TaticaOfensiva());
@@ -553,6 +587,9 @@ public class SimulacaoPartidaView extends TelaBase {
         containerEventos.getChildren().add(0, avisoCard);
     }
 
+    /**
+     * Efetiva a troca selecionada, registra o evento e libera eventual bloqueio causado por lesão.
+     */
     private void executarSubstituicaoManual() {
         Jogador sai = comboSai.getSelectionModel().getSelectedItem();
         Jogador entra = comboEntra.getSelectionModel().getSelectedItem();
@@ -583,6 +620,9 @@ public class SimulacaoPartidaView extends TelaBase {
         }
     }
 
+    /**
+     * Habilita decisões apenas durante pausas anteriores ao encerramento da partida.
+     */
     private void atualizarEstadoPainelTecnico() {
         boolean desativar = jogoEmAndamento || minutoAtual > 90;
         painelTecnico.setDisable(desativar);
@@ -592,6 +632,9 @@ public class SimulacaoPartidaView extends TelaBase {
         }
     }
 
+    /**
+     * Recarrega titulares e reservas elegíveis e bloqueia novas trocas quando o limite é atingido.
+     */
     private void carregarDadosTreinador() {
         Time timeDoJogador = brasilEhMandante ? partida.getMandante() : partida.getVisitante();
         List<Jogador> reservasDoJogador = brasilEhMandante ? partida.getReservasDisponiveisMandante() : partida.getReservasDisponiveisVisitante();
@@ -693,6 +736,14 @@ public class SimulacaoPartidaView extends TelaBase {
         return layout;
     }
 
+    /**
+     * Cria uma entrada da narração com a semântica visual indicada.
+     *
+     * @param minuto minuto exibido no evento
+     * @param descricao texto da ocorrência
+     * @param tipoCard {@code gol}, {@code amarelo}, {@code perigo}, {@code info} ou outro valor para estilo neutro
+     * @return cartão pronto para inserção no painel de eventos
+     */
     private HBox criarCardEventoPersonalizado(int minuto, String descricao, String tipoCard) {
         Label lblMinuto = new Label(minuto + "'");
 
@@ -733,7 +784,12 @@ public class SimulacaoPartidaView extends TelaBase {
         return card;
     }
 
-    // INTERCEPTADOR VISUAL DO MENU COMBOBOX: Força o tema escuro na listagem e efeito hover
+    /**
+     * Formata as células do seletor e indica visualmente se o atleta entra ou sai.
+     *
+     * @param combo seletor a personalizar
+     * @param isReserva {@code true} para reservas que entram; {@code false} para titulares que saem
+     */
     private void configurarFormatacaoCombo(ComboBox<Jogador> combo, boolean isReserva) {
         combo.setCellFactory(lv -> new ListCell<Jogador>() {
             @Override
@@ -878,6 +934,9 @@ public class SimulacaoPartidaView extends TelaBase {
         return partes[0];
     }
 
+    /**
+     * Registra o resultado, avança as partidas da CPU e desvia empates eliminatórios aos pênaltis.
+     */
     private void finalizarPartida() {
         timeline.stop();
         jogoEmAndamento = false;
@@ -908,6 +967,9 @@ public class SimulacaoPartidaView extends TelaBase {
         exibirResultadoFinal();
     }
 
+    /**
+     * Encerra os controles da simulação e libera o retorno ao hub após o torneio ser atualizado.
+     */
     private void exibirResultadoFinal() {
         tocadorDeSons.tocarFimDeJogo();
         lblTempo.setText("FIM");
@@ -931,7 +993,12 @@ public class SimulacaoPartidaView extends TelaBase {
         }
     }
 
-    // monta o aviso de fim de jogo (eliminado/campeão...)
+    /**
+     * Traduz o código final da campanha em uma entrada de destaque na narração.
+     *
+     * @param resultado código de colocação ou fase de eliminação do Brasil
+     * @return cartão com a mensagem de campanha
+     */
     private HBox criarCardResultadoCampanha(String resultado) {
         String texto;
         String tipo;
@@ -962,6 +1029,12 @@ public class SimulacaoPartidaView extends TelaBase {
         return criarCardEventoPersonalizado(90, texto, tipo);
     }
 
+    /**
+     * Converte o código de eliminação no complemento textual da mensagem final.
+     *
+     * @param resultado código produzido pelo gerenciador do torneio
+     * @return descrição da fase; códigos desconhecidos usam a forma genérica do mata-mata
+     */
     private String nomeDaFaseEliminacao(String resultado) {
         if (resultado.equals("ELIMINADO_FASE_DE_GRUPOS")) return "na fase de grupos";
         if (resultado.equals("ELIMINADO_DEZESSEIS_AVOS")) return "nos dezesseis-avos de final";
@@ -973,6 +1046,9 @@ public class SimulacaoPartidaView extends TelaBase {
 
     //-----------------Disputa de penaltis, embutida na tela principal -----------------
 
+    /**
+     * Inicializa goleiros, ordem da CPU e placar da disputa, substituindo o painel técnico.
+     */
     private void iniciarDisputaPenaltis() {
         gerenciadorPenaltisView = new GerenciadorPenaltis();
         goleiroMandantePenaltis = gerenciadorPenaltisView.obterGoleiro(partida.getMandante());
@@ -1019,6 +1095,9 @@ public class SimulacaoPartidaView extends TelaBase {
         painelTecnico.getChildren().setAll(titulo, lblStatusPenaltis, boxEscolhaBatedores);
     }
 
+    /**
+     * Alterna mandante e visitante, oferecendo a escolha ao usuário e automatizando a cobrança da CPU.
+     */
     private void prepararProximaCobranca() {
         boolean turnoMandante = cobrancasMandante == cobrancasVisitante;
         boolean turnoBrasil = turnoMandante == brasilEhMandante;
@@ -1035,6 +1114,11 @@ public class SimulacaoPartidaView extends TelaBase {
         }
     }
 
+    /**
+     * Oferece os titulares ativos ainda não usados e reinicia a ordem quando todos já cobraram.
+     *
+     * @param turnoMandante {@code true} quando a cobrança atual pertence ao mandante
+     */
     private void exibirEscolhaDeBatedor(boolean turnoMandante) {
         Time timeBrasil = turnoMandante ? partida.getMandante() : partida.getVisitante();
         List<Jogador> jaUsados = turnoMandante ? batedoresJaUsadosMandante : batedoresJaUsadosVisitante;
@@ -1070,6 +1154,12 @@ public class SimulacaoPartidaView extends TelaBase {
         }
     }
 
+    /**
+     * Registra o batedor da rodada e aguarda a animação de tensão antes do resultado.
+     *
+     * @param batedor atleta escolhido para a cobrança
+     * @param turnoMandante {@code true} se o batedor pertence ao mandante
+     */
     private void executarCobranca(Jogador batedor, boolean turnoMandante) {
         boxEscolhaBatedores.getChildren().clear();
         lblStatusPenaltis.setText("🎯 " + batedor.getNome() + " vai cobrar...");
@@ -1085,6 +1175,12 @@ public class SimulacaoPartidaView extends TelaBase {
         tensao.play();
     }
 
+    /**
+     * Simula a cobrança contra o goleiro adversário, atualiza o placar e agenda a próxima etapa.
+     *
+     * @param batedor atleta que executa a cobrança
+     * @param turnoMandante {@code true} se a cobrança pertence ao mandante
+     */
     private void revelarResultadoCobranca(Jogador batedor, boolean turnoMandante) {
         Jogador goleiroAdversario = turnoMandante ? goleiroVisitantePenaltis : goleiroMandantePenaltis;
         String lado = turnoMandante ? "Mandante" : "Visitante";
@@ -1114,6 +1210,12 @@ public class SimulacaoPartidaView extends TelaBase {
         proxima.play();
     }
 
+    /**
+     * Verifica vantagem inalcançável nas cinco cobranças iniciais ou diferença após uma rodada
+     * completa de morte súbita.
+     *
+     * @return {@code true} quando já existe vencedor da disputa
+     */
     private boolean penaltisDecidido() {
         if (cobrancasMandante < 5 || cobrancasVisitante < 5) {
             int restantesMandante = 5 - cobrancasMandante;
@@ -1131,6 +1233,9 @@ public class SimulacaoPartidaView extends TelaBase {
         lblPlacarPenaltis.setText("Pênaltis: " + nomeMandante + " " + placarPenaltisMandante + " x " + placarPenaltisVisitante + " " + nomeVisitante);
     }
 
+    /**
+     * Registra o vencedor dos pênaltis e simula o torneio até a próxima decisão do Brasil.
+     */
     private void finalizarDisputaPenaltis() {
         Time vencedor = placarPenaltisMandante > placarPenaltisVisitante ? partida.getMandante() : partida.getVisitante();
 

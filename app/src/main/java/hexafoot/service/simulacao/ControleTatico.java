@@ -6,8 +6,7 @@ import hexafoot.model.strategy.EstrategiaSimulacao;
 
 
 /**
- * Entidadde que organiza a escalação pré-jogo: titulares, reservas,
- * formação, postura estratégica e especialistas (capitão, batedor de falta/pênalti).
+ * Organiza a escalação e as escolhas táticas de uma seleção antes da partida.
  */
 public class ControleTatico {
     private Time time;
@@ -23,6 +22,11 @@ public class ControleTatico {
     }
 
 //-----------------Escalação de titulares e reservas-----------------
+    /**
+     * Move um reserva para os titulares, respeitando o limite de 11 jogadores.
+     *
+     * @return {@code true} se o jogador estava na reserva e foi escalado
+     */
     public boolean escalarJogadorTitular(Jogador jogador) { //move um jogador do banco para os titulares
         if (time.getTitulares().size() >= 11) {
             return false;
@@ -35,6 +39,11 @@ public class ControleTatico {
         return true;
     }
 
+    /**
+     * Move um titular para a reserva.
+     *
+     * @return {@code true} se o jogador fazia parte dos titulares e foi movido
+     */
     public boolean enviarParaOBanco(Jogador jogador) { //move um jogador dos titulares para o banco
         if (time.getTitulares().contains(jogador) == false) {
             return false;
@@ -44,6 +53,11 @@ public class ControleTatico {
         return true;
     }
 
+    /**
+     * Verifica se a escalação contém exatamente 11 titulares com status {@code "Ativo"}.
+     *
+     * @return {@code true} somente quando as duas condições são atendidas
+     */
     public boolean validarOnzeTitulares() { //exige exatamente 11 titulares ativos para validar a escalação
         if (time.getTitulares().size() != 11) {
             return false;

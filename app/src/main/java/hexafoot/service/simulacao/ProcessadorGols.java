@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Entidade ProcessadorGols - Responsável por calcular as chances de gol a cada minuto
+ * Sorteia gols para cada equipe a cada minuto. O limiar da rolagem de 1 a 1.000 é
+ * {@code CHANCE_GOL * ataque² / (ataque² + defesa²)}, favorecendo diferenças de força.
  */
 public class ProcessadorGols implements ObserverMinuto {
 
@@ -19,6 +20,9 @@ public class ProcessadorGols implements ObserverMinuto {
         this.sorteador = new SorteadorJogador();
     }
 
+    /**
+     * Realiza uma tentativa independente para cada equipe no minuto informado.
+     */
     @Override
     public void atualizarMinuto(int minutoAtual, Partida partida) {
         tentarGol(minutoAtual, partida, partida.getMandante(), partida.getVisitante()); // Mandante atacando
@@ -26,6 +30,10 @@ public class ProcessadorGols implements ObserverMinuto {
     }
 
     //-----------------Lógica de gol-----------------
+    /**
+     * Em caso de sucesso, incrementa o placar, sorteia o autor entre os titulares
+     * ativos que não são goleiros e registra o evento correspondente ao lado atacante.
+     */
     private void tentarGol(int minutoAtual, Partida partida, Time atacante, Time defensor) {
         int forcaAtaque = atacante.calcularForcaAtaqueAtual();
         int forcaDefesa = defensor.calcularForcaDefesaAtual();
@@ -56,6 +64,9 @@ public class ProcessadorGols implements ObserverMinuto {
         }
     }
 
+    /**
+     * @return nova lista somente com jogadores ativos que não sejam goleiros
+     */
     private List<Jogador> filtrarNaoGoleiros(List<Jogador> jogadores) { //para goleiros nao marcar gols
         List<Jogador> candidatos = new ArrayList<>();
         

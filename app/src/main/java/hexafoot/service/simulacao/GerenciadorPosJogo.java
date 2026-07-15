@@ -8,13 +8,18 @@ import hexafoot.model.Time;
 import java.io.Serializable;
 
 /**
- * Entidade GerenciadorPosJogo, ela é responsável por aplicar as consequências após cada partida:
- * desgaste, recuperação, suspensões por cartões e evolução de lesões.
+ * Aplica recuperação física e consequências disciplinares ou médicas após uma partida.
  */
 public class GerenciadorPosJogo implements Serializable {
 
 //-----------------Desgaste e recuperação física-----------------
 
+    /**
+     * Aplica aos titulares o desgaste equivalente a 90 minutos, usando o
+     * multiplicador da tática atual do time.
+     *
+     * @param partida contexto da operação; não participa do cálculo atual
+     */
     public void aplicarDesgasteFisico(Time time, Partida partida) { //reduz o físico dos jogadores que jogaram
         float multiplicador = (float) time.getTaticaAtual().getMultiplicadorDesgaste();
 
@@ -23,6 +28,10 @@ public class GerenciadorPosJogo implements Serializable {
         }
     }
 
+    /**
+     * Recupera o elenco entre rodadas: titulares recebem 2 pontos de físico e
+     * reservas recebem 10, respeitando o limite de 100.
+     */
     public void regenerarFisicoElenco(Time time) { //recupera físico de todos entre rodadas (banco recupera mais)
         for (Jogador jogador : time.getTitulares()) {
             jogador.recuperarEnergiaPosJogo(true); //titular recupera pouco
@@ -35,6 +44,10 @@ public class GerenciadorPosJogo implements Serializable {
 
 //-----------------Controle disciplinar-----------------
 
+    /**
+     * Processa os eventos disciplinares de autores que ainda pertençam ao elenco:
+     * dois amarelos acumulados ou um vermelho deixam o jogador suspenso.
+     */
     public void processarCartoesAcumulados(Time time, Partida partida) { //varre eventos e aplica suspensão se acumulou 2 amarelos
         for (EventoPartida evento : partida.getEventos()) {
             Jogador autor = evento.getAutor();
@@ -56,6 +69,9 @@ public class GerenciadorPosJogo implements Serializable {
         }
     }
 
+    /**
+     * Zera os cartões amarelos de titulares e reservas na transição para a semifinal.
+     */
     public void limparCartoesFaseAvancada(Time time) { //zera os amarelos de todos quando chega na semifinal
         for (Jogador jogador : time.getTitulares()) {
             jogador.setCartoesAmarelos(0);
@@ -68,6 +84,11 @@ public class GerenciadorPosJogo implements Serializable {
 
 //-----------------Departamento médico-----------------
 
+    /**
+     * Avança uma rodada de afastamento para todo o elenco. Como o estado de
+     * afastamento é compartilhado pelo jogador, a operação também abrange suspensões;
+     * ao chegar a zero, o status volta a {@code "Ativo"}.
+     */
     public void atualizarStatusLesao(Time time) { //decrementa afastamento, quando chega em 0 volta a "Ativo"
         for (Jogador jogador : time.getTitulares()) {
             jogador.atualizarLesao();

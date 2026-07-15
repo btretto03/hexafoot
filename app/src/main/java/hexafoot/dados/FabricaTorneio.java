@@ -23,6 +23,12 @@ public class FabricaTorneio {
         this.leitor = new LeitorCSVTorneio();
     }
 
+    /**
+     * Monta os grupos descritos no CSV, associando seleções por nomes sem distinção
+     * de acentos, caixa ou espaços.
+     *
+     * @return grupos em ordem de leitura, em uma lista imutável
+     */
     public List<Grupo> montarGrupos(List<Time> selecoes) {
         Map<String, Time> selecoesPorNome = indexarSelecoes(selecoes);
         List<Grupo> grupos = new ArrayList<>();
@@ -43,6 +49,14 @@ public class FabricaTorneio {
         return List.copyOf(grupos);
     }
 
+    /**
+     * Monta o calendário da fase de grupos. Cada identificador segue o formato
+     * {@code FG-<grupo>-R<rodada>-J<ordem na rodada>}.
+     *
+     * @return partidas em ordem de leitura, em uma lista imutável
+     * @throws IllegalStateException se uma seleção do calendário não pertencer ao
+     *                               grupo indicado
+     */
     public List<PartidaTorneio> montarCalendarioFaseGrupos(List<Grupo> grupos) {
         Map<String, Grupo> gruposPorIdentificador = indexarGrupos(grupos);
         Map<String, Integer> partidasPorGrupo = new HashMap<>();
@@ -72,6 +86,13 @@ public class FabricaTorneio {
         return List.copyOf(partidas);
     }
 
+    /**
+     * Monta as eliminatórias com participantes inicialmente indefinidos. As origens
+     * preservam chaves como {@code 1A}, {@code 3_1}, {@code Vencedor_M1} e
+     * {@code Perdedor_M29} para resolução posterior.
+     *
+     * @return partidas em ordem de leitura, em uma lista imutável
+     */
     public List<PartidaTorneio> montarChaveamentoMataMata() {
         List<PartidaTorneio> partidas = new ArrayList<>();
         Set<String> idsPartidas = new HashSet<>();
@@ -87,6 +108,11 @@ public class FabricaTorneio {
         return List.copyOf(partidas);
     }
 
+    /**
+     * Converte os rótulos exatos usados pelo gabarito para fases do domínio.
+     *
+     * @throws IllegalStateException se o rótulo não for reconhecido
+     */
     private FaseTorneio converterFaseMataMata(String fase) {
         if (fase.equals("DezesseisAvos")) {
             return FaseTorneio.DEZESSEIS_AVOS;
@@ -121,6 +147,11 @@ public class FabricaTorneio {
         return gruposPorIdentificador;
     }
 
+    /**
+     * Localiza uma seleção do grupo pelo nome normalizado.
+     *
+     * @throws IllegalStateException se a seleção não estiver no grupo
+     */
     private Time buscarTimeNoGrupo(Grupo grupo, String nome) {
         String nomeNormalizado = normalizarNome(nome);
 
@@ -133,6 +164,9 @@ public class FabricaTorneio {
         throw new IllegalStateException("Seleção " + nome + " não encontrada no grupo " + grupo.getIdentificador());
     }
 
+    /**
+     * Gera uma chave independente da ordem entre mandante e visitante.
+     */
     private String criarChaveConfronto(Grupo grupo, Time mandante, Time visitante) {
         String primeiro = normalizarNome(mandante.getNome());
         String segundo = normalizarNome(visitante.getNome());
@@ -157,6 +191,10 @@ public class FabricaTorneio {
         return selecoesPorNome;
     }
 
+    /**
+     * Remove acentos e espaços externos, converte para minúsculas e troca espaços
+     * internos por sublinhados.
+     */
     private String normalizarNome(String nome) {
         String semAcentos = Normalizer.normalize(nome.trim(), Normalizer.Form.NFD).replaceAll("\\p{M}", "");
         return semAcentos.toLowerCase().replace(' ', '_');
