@@ -51,6 +51,10 @@ public class GameNavigator {
         applyScene(new hexafoot.ui.view.TabelasChaveamentoView(this));
     }
 
+    public void showCalendario() {
+        applyScene(new hexafoot.ui.view.CalendarioView(this));
+    }
+
     public void showCarregarJogo() {
         applyScene(new CarregarJogoView(this));
     }

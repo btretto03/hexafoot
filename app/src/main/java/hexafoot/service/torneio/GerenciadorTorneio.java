@@ -68,14 +68,14 @@ public class GerenciadorTorneio implements Serializable {
     }
 
     public Optional<PartidaTorneio> getProximaPartidaBrasil() {
-        if (faseAtual == FaseTorneio.FASE_DE_GRUPOS) {
-            return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodadaAtual).equals(partida.getRodada()))
-                                    .filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
-                                    .filter(this::envolveBrasil).findFirst();
-        }
-
-        return getPartidasFaseAtual().stream().filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
-                                .filter(this::envolveBrasil).findFirst();
+        List<PartidaTorneio> todas = new ArrayList<>();
+        todas.addAll(partidasFaseGrupos);
+        todas.addAll(partidasMataMata);
+        
+        return todas.stream()
+                .filter(this::envolveBrasil)
+                .filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
+                .min(Comparator.comparingInt(this::getDiaDaPartida));
     }
 
     public Partida iniciarPartida(String idPartida) {
@@ -93,6 +93,7 @@ public class GerenciadorTorneio implements Serializable {
         partida.aplicarResultadoNaTabela();
         aplicarConsequenciasPosJogo(partida);
         partidaTorneio.concluir();
+        partida.restaurarElencos();
         atualizarRodadaAtual();
         return true;
     }
@@ -117,6 +118,7 @@ public class GerenciadorTorneio implements Serializable {
         aplicarConsequenciasPosJogo(partida);
         partidaTorneio.concluir(vencedor);
         propagarResultado(partidaTorneio);
+        partida.restaurarElencos();
         atualizarFaseMataMata();
         return true;
     }
@@ -419,5 +421,81 @@ public class GerenciadorTorneio implements Serializable {
         }
 
         return "ELIMINADO_FASE_DE_GRUPOS"; //nao se classificou para o mata-mata
+    }
+
+    public int getDiaDaPartida(PartidaTorneio partida) {
+        if (partida.getFase() == FaseTorneio.FASE_DE_GRUPOS) {
+            int rodada = partida.getRodada();
+            if (partida.getGrupo() == null) {
+                return 1;
+            }
+            String grupo = partida.getGrupo().getIdentificador();
+            if (grupo == null || grupo.isEmpty()) {
+                return 1;
+            }
+            int grupoIndex = grupo.toUpperCase().charAt(0) - 'A';
+            int offsetDia = grupoIndex / 3;
+            return (rodada - 1) * 4 + 1 + offsetDia;
+        }
+        
+        String id = partida.getId();
+        if (id != null && id.startsWith("M")) {
+            try {
+                int num = Integer.parseInt(id.substring(1));
+                if (num >= 1 && num <= 16) {
+                    return 13 + (num - 1) / 4;
+                } else if (num >= 17 && num <= 24) {
+                    return 17 + (num - 17) / 2;
+                } else if (num >= 25 && num <= 28) {
+                    return 21 + (num - 25) / 2;
+                } else if (num == 29) {
+                    return 23;
+                } else if (num == 30) {
+                    return 24;
+                } else if (num == 31) {
+                    return 25;
+                } else if (num == 32) {
+                    return 26;
+                }
+            } catch (NumberFormatException e) {
+                return 1;
+            }
+        }
+        return 1;
+    }
+
+    public List<PartidaTorneio> simularPartidasDoDia(int dia) {
+        List<PartidaTorneio> todas = new ArrayList<>();
+        todas.addAll(partidasFaseGrupos);
+        todas.addAll(partidasMataMata);
+        
+        List<PartidaTorneio> doDia = todas.stream()
+                .filter(p -> getDiaDaPartida(p) == dia && p.getStatus() == StatusPartidaTorneio.AGENDADA)
+                .toList();
+                
+        List<PartidaTorneio> simuladas = new ArrayList<>();
+        
+        for (PartidaTorneio partidaTorneio : doDia) {
+            if (envolveBrasil(partidaTorneio)) {
+                continue;
+            }
+            
+            Partida partida = iniciarPartida(partidaTorneio.getId());
+            simuladorPartidaCpu.simularPartida(partida);
+            
+            if (partidaTorneio.getFase() == FaseTorneio.FASE_DE_GRUPOS) {
+                registrarResultado(partidaTorneio.getId(), partida);
+            } else {
+                Time vencedorDesempate = null;
+                if (gerenciadorPenaltis.verificarNecessidadeDeDesempate(partida, true)) {
+                    vencedorDesempate = gerenciadorPenaltis.disputarDecisaoPorPenaltis(partida, List.of());
+                }
+                registrarResultadoMataMata(partidaTorneio.getId(), partida, vencedorDesempate);
+            }
+            
+            simuladas.add(partidaTorneio);
+        }
+        
+        return simuladas;
     }
 }
