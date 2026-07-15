@@ -26,10 +26,11 @@ import javafx.scene.layout.VBox;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TabelasChaveamentoView implements ScreenView {
+public class TabelasChaveamentoView extends TelaBase {
     private final BorderPane root;
 
     public TabelasChaveamentoView(GameNavigator navigator) {
+        super(navigator);
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
 
