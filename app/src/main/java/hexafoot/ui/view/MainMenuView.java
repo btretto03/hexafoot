@@ -12,10 +12,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class MainMenuView implements ScreenView {
+public class MainMenuView extends TelaBase {
     private final BorderPane root;
 
     public MainMenuView(GameNavigator navigator) {
+        super(navigator);
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
 

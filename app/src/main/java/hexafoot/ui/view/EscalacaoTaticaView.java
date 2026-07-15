@@ -38,13 +38,12 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
-public class EscalacaoTaticaView implements ScreenView {
+public class EscalacaoTaticaView extends TelaBase {
     private enum Origem {
         CAMPO,
         BANCO
     }
 
-    private final GameNavigator navigator;
     private final BorderPane root;
     private final Time time;
     private final ObservableList<Jogador> titulares;
@@ -69,7 +68,7 @@ public class EscalacaoTaticaView implements ScreenView {
     }
 
     public EscalacaoTaticaView(GameNavigator navigator) {
-        this.navigator = navigator;
+        super(navigator);
         this.time = navigator.getSession().getElencoBrasil();
         removerJogadoresDuplicados();
         reorganizarTitularesConformeFormacao();
@@ -155,7 +154,7 @@ public class EscalacaoTaticaView implements ScreenView {
 
         formacaoBox.getChildren().addAll(formacaoTitle, formacaoLabel, criarBotoesFormacao());
         taticaBox.getChildren().addAll(taticaTitle, taticaLabel, criarBotoesTatica());
-        
+
         HBox controls = new HBox(18, formacaoBox, taticaBox);
         controls.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(formacaoBox, Priority.ALWAYS);
@@ -325,19 +324,19 @@ public class EscalacaoTaticaView implements ScreenView {
 
     private Button criarSlotJogador(Jogador jogador, Origem origem, int indice, String sigla, boolean campo) {
         Button botao = new Button();
-        
+
         // Bloquear largura para evitar tremidas horizontais
         double larguraFixa = 115;
         botao.setMinWidth(larguraFixa);
         botao.setPrefWidth(larguraFixa);
         botao.setMaxWidth(larguraFixa);
-        
+
         // Bloquear altura num tamanho otimizado (reduzido de 92 para 70) para caber na janela
-        double alturaFixa = campo ? 70 : 66; 
+        double alturaFixa = campo ? 70 : 66;
         botao.setMinHeight(alturaFixa);
         botao.setPrefHeight(alturaFixa);
         botao.setMaxHeight(alturaFixa);
-        
+
         botao.setWrapText(true);
         botao.getStyleClass().add(campo ? "field-player-card" : "bench-player-card");
         botao.getStyleClass().add(campo ? "slot-zone-" + sigla.toLowerCase() : "slot-bench");
@@ -375,7 +374,7 @@ public class EscalacaoTaticaView implements ScreenView {
         } else {
             Origem orig = jogadorSelecionadoOrigem;
             int ind = jogadorSelecionadoIndice;
-            
+
             if (orig == origem && ind == indice) {
                 atualizarTela();
             } else {
@@ -437,7 +436,7 @@ public class EscalacaoTaticaView implements ScreenView {
 
             Label hAtrib = new Label("Atributo");
             hAtrib.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
-            
+
             Label hVal1 = new Label(obterNomeCurto(jogadorSelecionado.getNome()));
             hVal1.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.6);");
             GridPane.setHalignment(hVal1, javafx.geometry.HPos.CENTER);
@@ -467,10 +466,10 @@ public class EscalacaoTaticaView implements ScreenView {
             painelComparacao.getChildren().add(statusLabel);
         } else {
             Jogador j = (jogadorSelecionado != null) ? jogadorSelecionado : jogadorHovered;
-            
+
             Label sub = new Label((jogadorSelecionado != null) ? "Jogador Selecionado" : "Visualizando Atleta");
             sub.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: rgba(255, 255, 255, 0.9); -fx-padding: 0 0 4 0;");
-            
+
             Label nome = new Label(j.getNome());
             nome.setStyle("-fx-font-size: 16px; -fx-font-weight: 800; -fx-text-fill: #8bf0a1;");
 
@@ -874,12 +873,12 @@ public class EscalacaoTaticaView implements ScreenView {
         private final Line centerLine = new Line();
         private final Circle centerCircle = new Circle();
         private final Circle centerSpot = new Circle();
-        
+
         // Bottom penalty area
         private final Rectangle bottomPenaltyBox = new Rectangle();
         private final Rectangle bottomGoalBox = new Rectangle();
         private final Arc bottomPenaltyArc = new Arc();
-        
+
         // Top penalty area
         private final Rectangle topPenaltyBox = new Rectangle();
         private final Rectangle topGoalBox = new Rectangle();
@@ -892,8 +891,8 @@ public class EscalacaoTaticaView implements ScreenView {
             // Alternating grass stripes (10 stripes)
             for (int i = 0; i < 10; i++) {
                 Rectangle stripe = new Rectangle();
-                stripe.setFill(i % 2 == 0 
-                    ? javafx.scene.paint.Color.web("rgba(255, 255, 255, 0.03)") 
+                stripe.setFill(i % 2 == 0
+                    ? javafx.scene.paint.Color.web("rgba(255, 255, 255, 0.03)")
                     : javafx.scene.paint.Color.web("rgba(0, 0, 0, 0.03)"));
                 stripes.add(stripe);
                 getChildren().add(stripe);

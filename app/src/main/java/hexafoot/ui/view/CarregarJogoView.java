@@ -14,11 +14,12 @@ import javafx.scene.layout.VBox;
 /**
  * Tela de carregamento de jogo salvo.
  */
-public class CarregarJogoView implements ScreenView {
+public class CarregarJogoView extends TelaBase {
     private final BorderPane root;
     private final GerenciadorSalvamento gerenciadorSalvamento;
 
     public CarregarJogoView(GameNavigator navigator) {
+        super(navigator);
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
         this.gerenciadorSalvamento = new GerenciadorSalvamento();
