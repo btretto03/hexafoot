@@ -171,7 +171,7 @@ public class HubView extends TelaBase {
         sectionText.setWrapText(true);
 
         Button escalacao = new Button("Abrir escalação e tática");
-        escalacao.getStyleClass().add("primary-button");
+        escalacao.getStyleClass().add("secondary-button");
         escalacao.setOnAction(event -> navigator.showEscalacaoTatica());
 
         // Criar o botão de simulação/partida dinâmico
@@ -190,13 +190,13 @@ public class HubView extends TelaBase {
         salvar.setOnAction(event -> salvarProgresso(salvar, navigator));
 
         Button menu = new Button("Voltar ao menu");
-        menu.getStyleClass().add("ghost-button");
+        menu.getStyleClass().add("secondary-button");
         menu.setOnAction(event -> navigator.showMainMenu());
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        actionsStack.getChildren().addAll(sectionTitle, sectionText, escalacao, btnPartidaSimulacao, tabela, calendario, salvar, spacer, menu);
+        actionsStack.getChildren().addAll(sectionTitle, sectionText, btnPartidaSimulacao, escalacao, tabela, calendario, salvar, spacer, menu);
 
         VBox panel = new VBox(14, actionsStack);
         panel.getStyleClass().add("info-card");
@@ -432,6 +432,10 @@ public class HubView extends TelaBase {
         
         if (proxima == null) {
             btnPartidaSimulacao.setText("Copa Encerrada");
+            btnPartidaSimulacao.getStyleClass().remove("primary-button");
+            if (!btnPartidaSimulacao.getStyleClass().contains("secondary-button")) {
+                btnPartidaSimulacao.getStyleClass().add("secondary-button");
+            }
             btnPartidaSimulacao.setDisable(true);
             return;
         }
@@ -439,21 +443,17 @@ public class HubView extends TelaBase {
         int diaAtual = calcularDiaAtual(gt);
         int diaProximoJogo = gt.getDiaDaPartida(proxima);
         
+        btnPartidaSimulacao.getStyleClass().remove("primary-button");
+        if (!btnPartidaSimulacao.getStyleClass().contains("secondary-button")) {
+            btnPartidaSimulacao.getStyleClass().add("secondary-button");
+        }
+        btnPartidaSimulacao.setDisable(false);
+        
         if (diaAtual == diaProximoJogo) {
             btnPartidaSimulacao.setText("Jogar próxima partida");
-            btnPartidaSimulacao.getStyleClass().remove("secondary-button");
-            if (!btnPartidaSimulacao.getStyleClass().contains("primary-button")) {
-                btnPartidaSimulacao.getStyleClass().add("primary-button");
-            }
-            btnPartidaSimulacao.setDisable(false);
             btnPartidaSimulacao.setOnAction(event -> navigator.showSimulacaoPartida(proxima));
         } else {
             btnPartidaSimulacao.setText("Simular calendário");
-            btnPartidaSimulacao.getStyleClass().remove("primary-button");
-            if (!btnPartidaSimulacao.getStyleClass().contains("secondary-button")) {
-                btnPartidaSimulacao.getStyleClass().add("secondary-button");
-            }
-            btnPartidaSimulacao.setDisable(false);
             btnPartidaSimulacao.setOnAction(event -> iniciarSimulacaoCalendario());
         }
     }

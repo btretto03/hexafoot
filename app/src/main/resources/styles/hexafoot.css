@@ -577,7 +577,24 @@
     -fx-font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
 }
 
-/* ComboBox Modern Dark Theme Styling */
+/* --- BUTTON HOVER INTERACTIONS --- */
+.primary-button:hover {
+    -fx-background-color: linear-gradient(to right, #a2f5b6, #58cd77);
+}
+
+.secondary-button:hover {
+    -fx-background-color: linear-gradient(to right, #8bf0a1, #49be68);
+    -fx-text-fill: #0a1810;
+    -fx-border-color: transparent;
+}
+
+.ghost-button:hover {
+    -fx-background-color: rgba(139, 240, 161, 0.12);
+    -fx-border-color: #8bf0a1;
+    -fx-text-fill: #8bf0a1;
+}
+
+/* --- COMBOBOX MODERN DARK THEME --- */
 .combo-box {
     -fx-background-color: rgba(255, 255, 255, 0.06);
     -fx-border-color: rgba(139, 240, 161, 0.18);
