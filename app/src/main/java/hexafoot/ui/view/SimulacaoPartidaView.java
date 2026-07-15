@@ -82,6 +82,8 @@ public class SimulacaoPartidaView extends TelaBase {
     private Button btnVelNormal;
     private Button btnVelRapida;
     private Button btnVoltar;
+    private Button btnSegundoTempo;
+    private boolean intervaloAtivo = false;
 
     private VBox painelTecnico;
     private ComboBox<Jogador> comboSai;
@@ -318,6 +320,12 @@ public class SimulacaoPartidaView extends TelaBase {
         btnVelRapida = new Button("Rápido");
         btnVelRapida.setOnAction(e -> alterarVelocidade(TAXA_RAPIDA));
 
+        btnSegundoTempo = new Button("Ir para o Segundo Tempo");
+        btnSegundoTempo.getStyleClass().add("primary-button");
+        btnSegundoTempo.setVisible(false);
+        btnSegundoTempo.setManaged(false);
+        btnSegundoTempo.setOnAction(e -> iniciarSegundoTempo());
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -329,7 +337,7 @@ public class SimulacaoPartidaView extends TelaBase {
             navigator.showHub();
         });
 
-        controles.getChildren().addAll(lblControle, btnPausar, btnVelLenta, btnVelNormal, btnVelRapida, spacer, btnVoltar);
+        controles.getChildren().addAll(lblControle, btnPausar, btnVelLenta, btnVelNormal, btnVelRapida, btnSegundoTempo, spacer, btnVoltar);
         return controles;
     }
 
@@ -349,6 +357,10 @@ public class SimulacaoPartidaView extends TelaBase {
      */
     private void alterarVelocidade(double taxa) {
         if (minutoAtual > 90) return;
+
+        if (intervaloAtivo && taxa != 0) {
+            return;
+        }
 
         if (taxa != 0 && substituicaoObrigatoriaPendente) {
             Alert alerta = new Alert(Alert.AlertType.WARNING, "Você precisa substituir o jogador lesionado antes de continuar a partida.");
@@ -499,16 +511,48 @@ public class SimulacaoPartidaView extends TelaBase {
     //-----------------Intervalo (aos 45 min)-----------------
 
     private void mostrarIntervalo() {
+        setIntervaloAtivo(true);
         overlayIntervalo = criarOverlayIntervalo();
         rootEmpilhado.getChildren().add(overlayIntervalo);
     }
 
     /**
-     * Remove o bloqueio do intervalo e inicia o segundo tempo na velocidade normal.
+     * Alterna os controles disponíveis enquanto a partida está no intervalo.
      */
-    private void fecharIntervalo() {
-        rootEmpilhado.getChildren().remove(overlayIntervalo);
-        overlayIntervalo = null;
+    private void setIntervaloAtivo(boolean ativo) {
+        this.intervaloAtivo = ativo;
+
+        btnPausar.setVisible(!ativo);
+        btnPausar.setManaged(!ativo);
+        btnVelLenta.setVisible(!ativo);
+        btnVelLenta.setManaged(!ativo);
+        btnVelNormal.setVisible(!ativo);
+        btnVelNormal.setManaged(!ativo);
+        btnVelRapida.setVisible(!ativo);
+        btnVelRapida.setManaged(!ativo);
+
+        btnSegundoTempo.setVisible(ativo);
+        btnSegundoTempo.setManaged(ativo);
+
+        atualizarEstadoBotoesTempo();
+        atualizarEstadoPainelTecnico();
+    }
+
+    /** Remove o overlay para permitir alterações antes do segundo tempo. */
+    private void fazerAlteracoesIntervalo() {
+        if (overlayIntervalo != null) {
+            rootEmpilhado.getChildren().remove(overlayIntervalo);
+            overlayIntervalo = null;
+        }
+    }
+
+    /** Encerra o intervalo e retoma a partida na velocidade normal. */
+    private void iniciarSegundoTempo() {
+        setIntervaloAtivo(false);
+        if (overlayIntervalo != null) {
+            rootEmpilhado.getChildren().remove(overlayIntervalo);
+            overlayIntervalo = null;
+        }
         alterarVelocidade(TAXA_NORMAL);
         tocadorDeSons.tocarComecoJogo(); // apito do segundo tempo
     }
@@ -527,15 +571,22 @@ public class SimulacaoPartidaView extends TelaBase {
         dica.setWrapText(true);
         dica.setStyle("-fx-text-alignment: center;");
 
-        Button continuarButton = new Button("Continuar");
-        continuarButton.getStyleClass().add("primary-button");
-        continuarButton.setOnAction(e -> fecharIntervalo());
+        Button btnFazerAlteracoes = new Button("Fazer Alterações");
+        btnFazerAlteracoes.getStyleClass().add("secondary-button");
+        btnFazerAlteracoes.setOnAction(e -> fazerAlteracoesIntervalo());
 
-        VBox cartao = new VBox(14, titulo, placar, dica, continuarButton);
+        Button btnIrSegundoTempo = new Button("Ir para o Segundo Tempo");
+        btnIrSegundoTempo.getStyleClass().add("primary-button");
+        btnIrSegundoTempo.setOnAction(e -> iniciarSegundoTempo());
+
+        HBox botoes = new HBox(12, btnFazerAlteracoes, btnIrSegundoTempo);
+        botoes.setAlignment(Pos.CENTER);
+
+        VBox cartao = new VBox(14, titulo, placar, dica, botoes);
         cartao.getStyleClass().add("hero-panel");
         cartao.setAlignment(Pos.CENTER);
         cartao.setPadding(new Insets(36));
-        cartao.setMaxWidth(420);
+        cartao.setMaxWidth(460);
         cartao.setMaxHeight(VBox.USE_PREF_SIZE);
 
         StackPane overlay = new StackPane(cartao);
