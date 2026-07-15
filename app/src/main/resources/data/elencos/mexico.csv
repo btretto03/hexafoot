@@ -1,27 +1,27 @@
 Nome,Clube,Posicao,Ataque,Defesa,Fisico,Estresse
-Guillermo Ochoa,AEL Limassol,Goleiro,17,92,83,30
-Raúl Rangel,Guadalajara,Goleiro,19,83,82,28
-Carlos Acevedo,Santos Laguna,Goleiro,24,91,78,17
-José Antonio Rodríguez,Tijuana,Goleiro,25,90,78,24
-Carlos Moreno,Pachuca,Goleiro,11,83,82,15
-Álex Padilla,Athletic Bilbao,Goleiro,16,92,88,20
-Jesús Gallardo,Toluca,Defensor,45,88,79,39
-César Montes,Lokomotiv Moscow,Defensor,59,86,85,29
-Jorge Sánchez,PAOK,Defensor,45,80,89,33
-Johan Vásquez,Genoa,Defensor,52,82,90,20
-Israel Reyes,América,Defensor,64,80,75,37
-Jesús Alberto Angulo,UANL,Defensor,64,84,89,23
-Julián Araujo,Celtic,Defensor,72,80,75,21
-Mateo Chávez,AZ,Defensor,42,85,77,32
-Víctor Guzmán,Monterrey,Defensor,55,86,82,23
-Richard Ledezma,Guadalajara,Defensor,46,75,83,27
-Everardo López,Toluca,Defensor,54,91,90,24
-Alejandro Gómez,Tijuana,Defensor,52,91,81,19
-Bryan González,Guadalajara,Defensor,75,83,84,40
-Ramón Juárez,América,Defensor,67,78,90,28
-Edson Álvarez,Fenerbahçe,Meio-Campo,60,73,79,22
-Orbelín Pineda,AEK Athens,Meio-Campo,63,83,81,23
-Carlos Rodríguez,Cruz Azul,Meio-Campo,87,69,79,20
-Roberto Alvarado,Guadalajara,Meio-Campo,77,77,89,24
-Luis Romo,Guadalajara,Meio-Campo,63,71,75,32
-Luis Chávez,Dynamo Moscow,Meio-Campo,83,83,92,13
+Guillermo Ochoa,AEL Limassol,Goleiro,34,86,83,30
+Raúl Rangel,Guadalajara,Goleiro,35,79,82,28
+Carlos Acevedo,Santos Laguna,Goleiro,37,85,78,17
+Santiago Giménez,AC Milan,Atacante,86,24,83,24
+Raúl Jiménez,Fulham,Atacante,81,26,79,30
+Hirving Lozano,San Diego FC,Atacante,83,22,86,22
+Jesús Gallardo,Toluca,Defensor,44,83,79,39
+César Montes,Lokomotiv Moscow,Defensor,49,81,85,29
+Jorge Sánchez,PAOK,Defensor,44,77,89,33
+Johan Vásquez,Genoa,Defensor,47,78,90,20
+Israel Reyes,América,Defensor,51,77,75,37
+Jesús Alberto Angulo,UANL,Defensor,51,80,89,23
+Julián Araujo,Celtic,Defensor,54,77,75,21
+Mateo Chávez,AZ,Defensor,43,81,77,32
+Julián Quiñones,América,Atacante,78,20,84,25
+Alexis Vega,Toluca,Atacante,80,24,82,28
+Uriel Antuna,Cruz Azul,Atacante,76,21,88,21
+Germán Berterame,Monterrey,Atacante,74,23,81,26
+César Huerta,Pumas UNAM,Atacante,75,25,85,20
+Erick Sánchez,Pachuca,Meio-Campo,72,76,83,19
+Edson Álvarez,Fenerbahçe,Meio-Campo,68,71,79,22
+Orbelín Pineda,AEK Athens,Meio-Campo,70,79,81,23
+Carlos Rodríguez,Cruz Azul,Meio-Campo,88,68,79,20
+Roberto Alvarado,Guadalajara,Meio-Campo,81,74,89,24
+Luis Romo,Guadalajara,Meio-Campo,70,70,75,32
+Luis Chávez,Dynamo Moscow,Meio-Campo,85,79,92,13

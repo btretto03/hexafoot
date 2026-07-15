@@ -1,27 +1,27 @@
 Nome,Clube,Posicao,Ataque,Defesa,Fisico,Estresse
-Manuel Neuer,Bayern Munich,Goleiro,13,85,85,29
-Oliver Baumann,TSG Hoffenheim,Goleiro,15,80,75,22
-Alexander Nübel,VfB Stuttgart,Goleiro,10,90,85,16
-Antonio Rüdiger,Real Madrid,Defensor,49,75,83,34
-Waldemar Anton,Borussia Dortmund,Defensor,70,86,80,23
-Jonathan Tah,Bayern Munich,Defensor,55,81,82,34
-Nico Schlotterbeck,Borussia Dortmund,Defensor,74,85,89,21
-Nathaniel Brown,Eintracht Frankfurt,Defensor,59,87,89,42
-David Raum,RB Leipzig,Defensor,75,77,76,39
-Malick Thiaw,Newcastle United,Defensor,62,79,75,40
-Aleksandar Pavlović,Bayern Munich,Meio-Campo,63,71,81,38
-Joshua Kimmich,Bayern Munich,Meio-Campo,60,78,79,15
-Leon Goretzka,Bayern Munich,Meio-Campo,81,68,87,36
-Jamie Leweling,VfB Stuttgart,Meio-Campo,77,73,84,37
-Jamal Musiala,Bayern Munich,Meio-Campo,86,73,82,24
-Pascal Groß,Brighton & Hove Albion,Meio-Campo,74,77,85,32
-Angelo Stiller,VfB Stuttgart,Meio-Campo,83,83,79,23
-Florian Wirtz,Liverpool,Meio-Campo,68,86,86,31
-Nadiem Amiri,Mainz 05,Meio-Campo,83,61,83,26
-Felix Nmecha,Borussia Dortmund,Meio-Campo,75,61,75,33
-Lennart Karl,Bayern Munich,Meio-Campo,86,84,86,23
-Kai Havertz,Arsenal,Atacante,96,24,75,44
-Nick Woltemade,Newcastle United,Atacante,91,53,89,17
-Maximilian Beier,Borussia Dortmund,Atacante,84,45,90,36
-Leroy Sané,Galatasaray,Atacante,79,34,79,45
-Deniz Undav,VfB Stuttgart,Atacante,76,53,90,32
+Manuel Neuer,Bayern Munich,Goleiro,41,90,85,29
+Oliver Baumann,TSG Hoffenheim,Goleiro,42,87,75,22
+Alexander Nübel,VfB Stuttgart,Goleiro,40,93,85,16
+Antonio Rüdiger,Real Madrid,Defensor,55,84,83,34
+Waldemar Anton,Borussia Dortmund,Defensor,63,91,80,23
+Jonathan Tah,Bayern Munich,Defensor,57,87,82,34
+Nico Schlotterbeck,Borussia Dortmund,Defensor,65,90,89,21
+Nathaniel Brown,Eintracht Frankfurt,Defensor,59,91,89,42
+David Raum,RB Leipzig,Defensor,65,85,76,39
+Malick Thiaw,Newcastle United,Defensor,60,86,75,40
+Aleksandar Pavlović,Bayern Munich,Meio-Campo,80,81,81,38
+Joshua Kimmich,Bayern Munich,Meio-Campo,78,86,79,15
+Leon Goretzka,Bayern Munich,Meio-Campo,89,79,87,36
+Jamie Leweling,VfB Stuttgart,Meio-Campo,87,82,84,37
+Jamal Musiala,Bayern Munich,Meio-Campo,92,82,82,24
+Pascal Groß,Brighton & Hove Albion,Meio-Campo,85,85,85,32
+Angelo Stiller,VfB Stuttgart,Meio-Campo,90,89,79,23
+Florian Wirtz,Liverpool,Meio-Campo,82,91,86,31
+Nadiem Amiri,Mainz 05,Meio-Campo,90,75,83,26
+Felix Nmecha,Borussia Dortmund,Meio-Campo,86,75,75,33
+Lennart Karl,Bayern Munich,Meio-Campo,92,89,86,23
+Kai Havertz,Arsenal,Atacante,97,18,75,44
+Nick Woltemade,Newcastle United,Atacante,94,38,89,17
+Maximilian Beier,Borussia Dortmund,Atacante,91,32,90,36
+Leroy Sané,Galatasaray,Atacante,88,25,79,45
+Deniz Undav,VfB Stuttgart,Atacante,86,38,90,32

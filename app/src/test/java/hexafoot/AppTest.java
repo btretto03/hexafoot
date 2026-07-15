@@ -3,12 +3,28 @@
  */
 package hexafoot;
 
+import hexafoot.dados.LeitorCSVSelecao;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppTest {
-    @Test void appHasAGreeting() {
-        App classUnderTest = new App();
-        assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+
+    @Test
+    void deveLocalizarElencosCSV() {
+        LeitorCSVSelecao leitor = new LeitorCSVSelecao();
+
+        assertFalse(leitor.listarArquivosDeSelecoes().isEmpty());
     }
+
+    @Test
+    void deveEncontrarBrasilEntreOsElencos() {
+        LeitorCSVSelecao leitor = new LeitorCSVSelecao();
+
+        assertTrue(leitor.listarArquivosDeSelecoes().stream().anyMatch(arquivo -> arquivo.isBrasil()));
+    }
+
 }
+
+

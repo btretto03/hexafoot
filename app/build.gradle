@@ -8,6 +8,8 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    // Plugin do JavaFX, necessario pra rodar a janela do jogo via gradle
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 repositories {
@@ -32,9 +34,13 @@ java {
     }
 }
 
+javafx {
+    version = '21'
+    modules = ['javafx.controls', 'javafx.media']
+}
+
 application {
-    // Define the main class for the application.
-    mainClass = 'hexafoot.App'
+    mainClass = 'hexafoot.HexafootApp'
 }
 
 tasks.named('test') {

@@ -1,27 +1,27 @@
 Nome,Clube,Posicao,Ataque,Defesa,Fisico,Estresse
-Luis Mejía,Nacional,Goleiro,20,90,82,10
-Orlando Mosquera,Al-Fayha,Goleiro,18,83,77,21
-César Samudio,Marathón,Goleiro,23,89,78,23
-Eric Davis,Plaza Amador,Defensor,50,92,82,27
-Fidel Escobar,Saprissa,Defensor,63,86,86,33
-Amir Murillo,Beşiktaş,Defensor,71,91,92,27
-Roderick Miller,Turan Tovuz,Defensor,66,76,77,26
-Andrés Andrade,LASK,Defensor,74,76,79,41
-César Blackman,Slovan Bratislava,Defensor,60,92,84,28
-José Córdoba,Norwich City,Defensor,70,87,76,32
-Jiovany Ramos,Puerto Cabello,Defensor,60,79,86,22
-Jorge Gutiérrez,Deportivo La Guaira,Defensor,67,92,84,24
-Edgardo Fariña,Pari Nizhny Novgorod,Defensor,74,84,90,18
-Aníbal Godoy,San Diego,Meio-Campo,80,85,81,13
-Alberto Quintero,Plaza Amador,Meio-Campo,76,87,92,22
-Yoel Bárcenas,''Unattached'',Meio-Campo,77,62,80,16
-Adalberto Carrasquilla,UNAM,Meio-Campo,68,68,91,30
-José Luis Rodríguez,Juárez,Meio-Campo,77,63,85,30
-Cristian Martínez,Ironi Kiryat Shmona,Meio-Campo,82,75,80,24
-César Yanis,Cobresal,Meio-Campo,79,78,82,24
-Carlos Harvey,Minnesota United,Meio-Campo,87,78,82,28
-Azarias Londoño,Universidad Católica,Meio-Campo,71,72,85,22
-José Fajardo,Universidad Católica,Atacante,81,29,90,43
-Ismael Díaz,León,Atacante,88,40,81,41
-Cecilio Waterman,Universidad de Concepción,Atacante,77,34,85,29
-Tomás Rodríguez,Saprissa,Atacante,97,45,81,34
+Luis Mejía,Nacional,Goleiro,16,69,82,10
+Orlando Mosquera,Al-Fayha,Goleiro,15,63,77,21
+César Samudio,Marathón,Goleiro,17,68,78,23
+Eric Davis,Plaza Amador,Defensor,25,70,82,27
+Fidel Escobar,Saprissa,Defensor,29,66,86,33
+Amir Murillo,Beşiktaş,Defensor,31,69,92,27
+Roderick Miller,Turan Tovuz,Defensor,30,58,77,26
+Andrés Andrade,LASK,Defensor,32,58,79,41
+César Blackman,Slovan Bratislava,Defensor,28,70,84,28
+José Córdoba,Norwich City,Defensor,31,66,76,32
+Jiovany Ramos,Puerto Cabello,Defensor,28,60,86,22
+Jorge Gutiérrez,Deportivo La Guaira,Defensor,30,70,84,24
+Edgardo Fariña,Pari Nizhny Novgorod,Defensor,32,64,90,18
+Aníbal Godoy,San Diego,Meio-Campo,53,65,81,13
+Alberto Quintero,Plaza Amador,Meio-Campo,49,66,92,22
+Yoel Bárcenas,''Unattached'',Meio-Campo,50,48,80,16
+Adalberto Carrasquilla,UNAM,Meio-Campo,42,52,91,30
+José Luis Rodríguez,Juárez,Meio-Campo,50,49,85,30
+Cristian Martínez,Ironi Kiryat Shmona,Meio-Campo,55,58,80,24
+César Yanis,Cobresal,Meio-Campo,52,60,82,24
+Carlos Harvey,Minnesota United,Meio-Campo,59,60,82,28
+Azarias Londoño,Universidad Católica,Meio-Campo,45,55,85,22
+José Fajardo,Universidad Católica,Atacante,54,8,90,43
+Ismael Díaz,León,Atacante,60,18,81,41
+Cecilio Waterman,Universidad de Concepción,Atacante,50,12,85,29
+Tomás Rodríguez,Saprissa,Atacante,68,22,81,34
