@@ -26,9 +26,15 @@ import javafx.scene.layout.VBox;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Exibe a classificação dos grupos e os confrontos já definidos ou ainda pendentes do mata-mata. */
 public class TabelasChaveamentoView extends TelaBase {
     private final BorderPane root;
 
+    /**
+     * Lê o torneio ativo e abre diretamente o mata-mata quando a competição já terminou.
+     *
+     * @param navigator navegador cuja sessão contém o torneio exibido
+     */
     public TabelasChaveamentoView(GameNavigator navigator) {
         super(navigator);
         this.root = new BorderPane();
@@ -145,6 +151,13 @@ public class TabelasChaveamentoView extends TelaBase {
         return card;
     }
 
+    /**
+     * Exibe o time definido ou preserva a referência de origem de uma vaga ainda pendente.
+     *
+     * @param time participante já resolvido, se houver
+     * @param origem descrição da vaga que produzirá o participante
+     * @return nome do time ou referência da vaga
+     */
     private String nomeParticipante(Time time, String origem) {
         if (time != null) {
             return nomeComBandeira(time);
@@ -157,8 +170,13 @@ public class TabelasChaveamentoView extends TelaBase {
         return obterBandeira(time.getNome()) + " " + formatarNomePais(time.getNome());
     }
 
+    /**
+     * Converte o identificador interno de país em selo textual, evitando emojis não renderizados pelo JavaFX.
+     *
+     * @param nomeBruto identificador do país
+     * @return selo de três letras ou {@code [INT]} quando não houver mapeamento
+     */
     private String obterBandeira(String nomeBruto) {
-        //javaFX nao renderiza direito o emoji de bandeira (vira quadradinho), entao usamos a sigla do pais como selo
         if (nomeBruto == null) return "";
         String nome = nomeBruto.trim().toLowerCase();
 

@@ -16,18 +16,36 @@ public class LeitorCSVTorneio {
     private static final String ARQUIVO_CALENDARIO_FASE_GRUPOS = "/data/info_torneio/calendario_fase_grupos.csv";
     private static final String ARQUIVO_GABARITO_MATA_MATA = "/data/info_torneio/gabarito_mata_mata.csv";
 
+    /**
+     * @return linhas no formato {@code [grupo, time1, time2, time3, time4]}
+     */
     public List<String[]> lerGrupos() {
         return lerArquivo(ARQUIVO_GRUPOS, 5);
     }
 
+    /**
+     * @return linhas no formato {@code [rodada, grupo, mandante, visitante]}
+     */
     public List<String[]> lerCalendarioFaseGrupos() {
         return lerArquivo(ARQUIVO_CALENDARIO_FASE_GRUPOS, 4);
     }
 
+    /**
+     * @return linhas no formato
+     *         {@code [fase, id, origemMandante, origemVisitante]}
+     */
     public List<String[]> lerGabaritoMataMata() {
         return lerArquivo(ARQUIVO_GABARITO_MATA_MATA, 4);
     }
 
+    /**
+     * Lê um recurso UTF-8 do classpath, descarta o cabeçalho e mantém campos vazios.
+     * O número de colunas descreve o esquema esperado, mas não é validado aqui.
+     *
+     * @param caminho caminho absoluto do recurso no classpath
+     * @param quantidadeColunas quantidade esperada de campos por linha
+     * @throws IllegalStateException se o recurso não existir ou não puder ser lido
+     */
     private List<String[]> lerArquivo(String caminho, int quantidadeColunas) {
         InputStream arquivo = getClass().getResourceAsStream(caminho);
         if (arquivo == null) {

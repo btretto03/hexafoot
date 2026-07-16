@@ -4,7 +4,9 @@ import hexafoot.model.*;
 import java.util.Random;
 
 /**
- * Entidade ProcessadorCartoes - Responsável por sortear eventos de cartão.
+ * Sorteia cartões para cada titular ativo a cada minuto.
+ * A chance base de ocorrência usa uma rolagem de 1 a 1.000; após a ocorrência,
+ * a chance de vermelho direto é percentual e cresce com o estresse do jogador.
  */
 public class ProcessadorCartoes implements ObserverMinuto {
     private Random random;
@@ -13,12 +15,20 @@ public class ProcessadorCartoes implements ObserverMinuto {
         this.random = new Random();
     }
 
+    /**
+     * Processa mandante e visitante independentemente no minuto informado.
+     */
     @Override
     public void atualizarMinuto(int minutoAtual, Partida partida) {
         processarCartaoParaTime(partida.getMandante(), partida, minutoAtual);
         processarCartaoParaTime(partida.getVisitante(), partida, minutoAtual);
     }
 
+    /**
+     * Aplica o cartão ao jogador e registra o evento. Vermelho direto ou segundo
+     * amarelo remove o atleta dos titulares sem substituição automática; no segundo
+     * amarelo, são registrados tanto o amarelo quanto a expulsão.
+     */
     private void processarCartaoParaTime(Time time, Partida partida, int minutoAtual) {
         
         for (int i = 0; i < time.getTitulares().size(); i ++) {

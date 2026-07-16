@@ -576,3 +576,71 @@
 .list-cell {
     -fx-font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
 }
+
+/* --- BUTTON HOVER INTERACTIONS --- */
+.primary-button:hover {
+    -fx-background-color: linear-gradient(to right, #a2f5b6, #58cd77);
+}
+
+.secondary-button:hover {
+    -fx-background-color: linear-gradient(to right, #8bf0a1, #49be68);
+    -fx-text-fill: #0a1810;
+    -fx-border-color: transparent;
+}
+
+.ghost-button:hover {
+    -fx-background-color: rgba(139, 240, 161, 0.12);
+    -fx-border-color: #8bf0a1;
+    -fx-text-fill: #8bf0a1;
+}
+
+/* --- COMBOBOX MODERN DARK THEME --- */
+.combo-box {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-border-color: rgba(139, 240, 161, 0.18);
+    -fx-border-width: 1px;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-padding: 0;
+}
+
+.combo-box:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-border-color: #8bf0a1;
+}
+
+.combo-box:showing {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-border-color: #8bf0a1;
+}
+
+.combo-box:disabled {
+    -fx-opacity: 0.4;
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+}
+
+.combo-box > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f8fbff;
+    -fx-padding: 10 12 10 12;
+}
+
+.combo-box > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0 14 14 0;
+    -fx-border-radius: 0 14 14 0;
+    -fx-padding: 0 12;
+}
+
+.combo-box > .arrow-button > .arrow {
+    -fx-background-color: #8bf0a1;
+}
+
+.combo-box-popup > .list-view {
+    -fx-background-color: #111c14;
+    -fx-border-color: rgba(139, 240, 161, 0.3);
+    -fx-border-width: 1px;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+}

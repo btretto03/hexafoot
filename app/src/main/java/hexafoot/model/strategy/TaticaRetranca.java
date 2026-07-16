@@ -1,5 +1,8 @@
 package hexafoot.model.strategy;
 
+/**
+ * Estratégia que aumenta defesa em 10% e reduz ataque e desgaste em 10%.
+ */
 public class TaticaRetranca implements EstrategiaSimulacao {
     // Formações defensivas
     // 5-4-1

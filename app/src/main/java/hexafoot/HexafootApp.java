@@ -6,7 +6,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 /**
-*Classe responsável por iniciar a aplicação, criar a sessão de jogo e o navegador de telas.
+ * Ponto de entrada principal da aplicação JavaFX.
  */
 public class HexafootApp extends Application {
 

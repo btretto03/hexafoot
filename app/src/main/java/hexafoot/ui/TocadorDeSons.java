@@ -2,9 +2,7 @@ package hexafoot.ui;
 
 import javafx.scene.media.AudioClip;
 
-/**
- * Entidade TocadorDeSons, responsável por gerenciar e reproduzir os efeitos sonoros do jogo.
- */
+/** Carrega e reproduz os efeitos sonoros usados pela interface da partida. */
 public class TocadorDeSons {
     private final AudioClip somComecoJogo;
     private final AudioClip somFimDeJogo;
@@ -22,6 +20,12 @@ public class TocadorDeSons {
         this.somLesao = carregarSom("Lesao.mp3");
     }
 
+    /**
+     * Carrega um áudio empacotado no diretório de recursos da aplicação.
+     *
+     * @param nomeArquivo nome do arquivo dentro de {@code /data/sons/}
+     * @return clipe pronto para reprodução
+     */
     private AudioClip carregarSom(String nomeArquivo) {
         String caminho = getClass().getResource("/data/sons/" + nomeArquivo).toExternalForm();
         return new AudioClip(caminho);

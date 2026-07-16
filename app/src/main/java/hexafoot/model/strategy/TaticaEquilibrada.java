@@ -1,5 +1,8 @@
 package hexafoot.model.strategy;
 
+/**
+ * Estratégia neutra, sem alteração de ataque, defesa ou desgaste.
+ */
 public class TaticaEquilibrada implements EstrategiaSimulacao {
     //tática padrão, sem modificadores
     // Formações equilibradas

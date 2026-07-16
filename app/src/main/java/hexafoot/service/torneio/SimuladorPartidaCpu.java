@@ -16,6 +16,10 @@ public class SimuladorPartidaCpu implements Serializable {
         this.relogio.adicionarProcessadoresPadrao();
     }
 
+    /**
+     * Percorre o relógio completo e altera placar, eventos e jogadores por meio dos
+     * processadores padrão. Não registra o resultado no torneio nem disputa pênaltis.
+     */
     public void simularPartida(Partida partida) {
         relogio.simularJogoCompleto(partida);
     }

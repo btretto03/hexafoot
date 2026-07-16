@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Coordena o estado e as consultas gerais da Copa.
+ * Coordena calendário, classificação, simulações da CPU e progressão do chaveamento.
+ * As equipes são mantidas pelas mesmas instâncias recebidas; registrar resultados
+ * altera suas estatísticas e o estado de seus jogadores.
  */
 public class GerenciadorTorneio implements Serializable {
 
@@ -42,6 +44,13 @@ public class GerenciadorTorneio implements Serializable {
     private FaseTorneio faseAtual;
     private int rodadaAtual;
 
+    /**
+     * Monta os grupos e calendários definidos nos dados do torneio e inicia a
+     * primeira rodada da fase de grupos.
+     *
+     * @param brasil seleção controlada pelo jogador
+     * @param selecoesInternacionais demais seleções, sem incluir o Brasil
+     */
     public GerenciadorTorneio(Time brasil, List<Time> selecoesInternacionais) {
         this.brasil = brasil;
         List<Time> todasSelecoes = new ArrayList<>(selecoesInternacionais);
@@ -57,32 +66,60 @@ public class GerenciadorTorneio implements Serializable {
         this.rodadaAtual = 1;
     }
 
+    /**
+     * Produz uma classificação imutável por pontos, saldo de gols, gols marcados
+     * e nome, nessa ordem.
+     *
+     * @param identificadorGrupo letra do grupo, sem distinção entre maiúsculas e minúsculas
+     * @throws IllegalArgumentException se o grupo não existir
+     */
     public List<Time> getClassificacaoGrupo(String identificadorGrupo) {
         List<Time> classificacao = new ArrayList<>(buscarGrupo(identificadorGrupo).getTimes());
         classificacao.sort(COMPARADOR_CLASSIFICACAO);
         return List.copyOf(classificacao);
     }
 
+    /**
+     * @return visão imutável das partidas da rodada informada
+     */
     public List<PartidaTorneio> getPartidasDaRodada(int rodada) {
         return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodada).equals(partida.getRodada())).toList();
     }
 
+    /**
+     * Busca a primeira partida agendada do Brasil na rodada atual da fase de grupos
+     * ou na fase eliminatória atual.
+     */
     public Optional<PartidaTorneio> getProximaPartidaBrasil() {
-        if (faseAtual == FaseTorneio.FASE_DE_GRUPOS) {
-            return partidasFaseGrupos.stream().filter(partida -> Integer.valueOf(rodadaAtual).equals(partida.getRodada()))
-                                    .filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
-                                    .filter(this::envolveBrasil).findFirst();
-        }
-
-        return getPartidasFaseAtual().stream().filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
-                                .filter(this::envolveBrasil).findFirst();
+        List<PartidaTorneio> todas = new ArrayList<>();
+        todas.addAll(partidasFaseGrupos);
+        todas.addAll(partidasMataMata);
+        
+        return todas.stream()
+                .filter(this::envolveBrasil)
+                .filter(partida -> partida.getStatus() == StatusPartidaTorneio.AGENDADA)
+                .min(Comparator.comparingInt(this::getDiaDaPartida));
     }
 
+    /**
+     * Cria e associa uma nova simulação à partida do calendário, alterando seu
+     * status para {@code EM_ANDAMENTO}.
+     *
+     * @throws IllegalArgumentException se o identificador não existir
+     */
     public Partida iniciarPartida(String idPartida) {
         PartidaTorneio partidaTorneio = buscarPartida(idPartida);
         return partidaTorneio.iniciar();
     }
 
+    /**
+     * Registra uma partida da fase de grupos: aplica placar e pontos à tabela,
+     * processa o pós-jogo, conclui a partida e avança a rodada quando possível.
+     *
+     * @return {@code false} se a partida já havia sido concluída; {@code true} se
+     *         o resultado foi aplicado
+     * @throws IllegalArgumentException se o identificador não for da fase de grupos
+     */
     public boolean registrarResultado(String idPartida, Partida partida) {
         PartidaTorneio partidaTorneio = buscarPartidaFaseGrupos(idPartida);
 
@@ -93,10 +130,22 @@ public class GerenciadorTorneio implements Serializable {
         partida.aplicarResultadoNaTabela();
         aplicarConsequenciasPosJogo(partida);
         partidaTorneio.concluir();
+        partida.restaurarElencos();
         atualizarRodadaAtual();
         return true;
     }
 
+    /**
+     * Registra uma partida eliminatória, propaga vencedor e perdedor no chaveamento
+     * e avança a fase quando todos os confrontos atuais terminarem. O resultado não
+     * é aplicado à tabela da fase de grupos.
+     *
+     * @param vencedorDesempate vencedor dos pênaltis quando o placar estiver empatado;
+     *                          deve ser {@code null} apenas se houver vencedor no tempo normal
+     * @return {@code false} se a partida já havia sido concluída; {@code true} se
+     *         o resultado foi aplicado
+     * @throws IllegalArgumentException se o identificador não for do mata-mata
+     */
     public boolean registrarResultadoMataMata(String idPartida, Partida partida, Time vencedorDesempate) {
         PartidaTorneio partidaTorneio = buscarPartidaMataMata(idPartida);
 
@@ -117,14 +166,25 @@ public class GerenciadorTorneio implements Serializable {
         aplicarConsequenciasPosJogo(partida);
         partidaTorneio.concluir(vencedor);
         propagarResultado(partidaTorneio);
+        partida.restaurarElencos();
         atualizarFaseMataMata();
         return true;
     }
 
+    /**
+     * @return {@code true} quando todas as partidas de todas as rodadas estiverem concluídas
+     */
     public boolean isFaseGruposConcluida() {
         return partidasFaseGrupos.stream().allMatch(partida -> partida.getStatus() == StatusPartidaTorneio.CONCLUIDA);
     }
 
+    /**
+     * Simula as partidas agendadas que não envolvem o Brasil na rodada ou fase atual.
+     * Empates eliminatórios são decididos automaticamente por pênaltis. Cada resultado
+     * é registrado e pode avançar o torneio.
+     *
+     * @return lista imutável das partidas simuladas nesta chamada
+     */
     public List<PartidaTorneio> simularPartidasCpu() {
         if (faseAtual == FaseTorneio.FASE_DE_GRUPOS) {
             return simularPartidasCpuFaseDeGrupos();
@@ -133,6 +193,11 @@ public class GerenciadorTorneio implements Serializable {
         return simularPartidasCpuMataMata();
     }
 
+    /**
+     * Fora da fase de grupos, simula fases sucessivas enquanto não houver partida
+     * agendada do Brasil. Encerra ao encontrar essa partida, ao terminar o torneio
+     * ou quando nenhuma simulação puder progredir.
+     */
     public void simularAteProximaPartidaBrasilOuFim() {
         while (faseAtual != FaseTorneio.FASE_DE_GRUPOS && faseAtual != FaseTorneio.ENCERRADO && getProximaPartidaBrasil().isEmpty()) {
             List<PartidaTorneio> partidasSimuladas = simularPartidasCpu();
@@ -185,10 +250,22 @@ public class GerenciadorTorneio implements Serializable {
         return List.copyOf(partidasSimuladas);
     }
 
+    /**
+     * Seleciona os oito melhores terceiros colocados usando os mesmos critérios
+     * de desempate da classificação dos grupos.
+     *
+     * @return lista imutável, ordenada do melhor para o pior
+     */
     public List<Time> getMelhoresTerceiros() {
         return calcularTerceirosOrdenados().stream().limit(8).toList();
     }
 
+    /**
+     * Mapeia primeiros e segundos colocados pelas chaves {@code 1A}, {@code 2A},
+     * etc., e os melhores terceiros por {@code 3_1} até {@code 3_8}.
+     *
+     * @return mapa imutável na ordem dos grupos e, depois, dos melhores terceiros
+     */
     public Map<String, Time> getClassificadosFaseGrupos() {
         Map<String, Time> classificados = new LinkedHashMap<>();
         List<Grupo> gruposOrdenados = grupos.stream().sorted(Comparator.comparing(Grupo::getIdentificador)).toList();
@@ -209,6 +286,10 @@ public class GerenciadorTorneio implements Serializable {
         return Collections.unmodifiableMap(classificados); //Retornando a classificação imutável
     }
 
+    /**
+     * Preenche os participantes dos dezesseis-avos conforme as chaves de origem e
+     * muda a fase atual. Pressupõe que a fase de grupos já esteja concluída.
+     */
     public void iniciarMataMata() {
         Map<String, Time> classificados = getClassificadosFaseGrupos();
 
@@ -223,6 +304,10 @@ public class GerenciadorTorneio implements Serializable {
         faseAtual = FaseTorneio.DEZESSEIS_AVOS;
     }
 
+    /**
+     * @return lista imutável da rodada atual, na fase de grupos, ou de todos os
+     *         confrontos da fase eliminatória atual
+     */
     public List<PartidaTorneio> getPartidasFaseAtual() {
         if (faseAtual == FaseTorneio.FASE_DE_GRUPOS) {
             return getPartidasDaRodada(rodadaAtual);
@@ -273,6 +358,10 @@ public class GerenciadorTorneio implements Serializable {
                                 .orElseThrow(() -> new IllegalArgumentException("Partida do mata-mata não encontrada: " + idPartida));
     }
 
+    /**
+     * Resolve as referências {@code Vencedor_<id>} e {@code Perdedor_<id>} das
+     * partidas posteriores usando o resultado recém-concluído.
+     */
     private void propagarResultado(PartidaTorneio partidaConcluida) {
         String origemVencedor = "Vencedor_" + partidaConcluida.getId();
         String origemPerdedor = "Perdedor_" + partidaConcluida.getId();
@@ -293,6 +382,10 @@ public class GerenciadorTorneio implements Serializable {
         }
     }
 
+    /**
+     * Avança somente após a conclusão de toda a fase atual. Ao entrar na semifinal,
+     * zera os amarelos das equipes já propagadas para essa fase.
+     */
     private void atualizarFaseMataMata() {
         for (PartidaTorneio partida : getPartidasFaseAtual()) {
             if (partida.getStatus() != StatusPartidaTorneio.CONCLUIDA) {
@@ -317,6 +410,10 @@ public class GerenciadorTorneio implements Serializable {
     }
 
     //-----------------Consequencias pos-jogo (desgaste, recuperacao, lesao e suspensao)-----------------
+    /**
+     * Processa cartões, avança uma rodada dos afastamentos e recupera a energia
+     * de titulares e reservas das duas equipes, nessa ordem.
+     */
     private void aplicarConsequenciasPosJogo(Partida partida) {
         Time mandante = partida.getMandante();
         Time visitante = partida.getVisitante();
@@ -331,6 +428,9 @@ public class GerenciadorTorneio implements Serializable {
         gerenciadorPosJogo.regenerarFisicoElenco(visitante);
     }
 
+    /**
+     * Zera os amarelos de todas as equipes já definidas para a fase informada.
+     */
     private void limparCartoesDaFase(FaseTorneio fase) {
         for (PartidaTorneio partida : partidasMataMata) {
             if (partida.getFase() != fase) {
@@ -345,6 +445,9 @@ public class GerenciadorTorneio implements Serializable {
         }
     }
 
+    /**
+     * Avança até a terceira rodada quando todas as partidas da rodada atual terminarem.
+     */
     private void atualizarRodadaAtual() {
         boolean rodadaConcluida = getPartidasDaRodada(rodadaAtual).stream().allMatch(partida -> partida.getStatus() == StatusPartidaTorneio.CONCLUIDA);
         if (rodadaConcluida && rodadaAtual < 3) {
@@ -389,10 +492,24 @@ public class GerenciadorTorneio implements Serializable {
     }
 
     //-----------------Resultado final da campanha do Brasil-----------------
+    /**
+     * Indica o encerramento de todo o torneio, não apenas uma eventual eliminação
+     * antecipada do Brasil.
+     *
+     * @return {@code true} somente na fase {@code ENCERRADO}
+     */
     public boolean campanhaBrasilEncerrada() {
         return faseAtual == FaseTorneio.ENCERRADO;
     }
 
+    /**
+     * Resume a colocação do Brasil após o torneio, distinguindo campeão, vice,
+     * terceiro, quarto e a fase da eliminação.
+     *
+     * @return um código estável como {@code CAMPEAO}, {@code VICE_CAMPEAO},
+     *         {@code TERCEIRO_LUGAR}, {@code QUARTO_LUGAR} ou
+     *         {@code ELIMINADO_<FASE>}
+     */
     public String getResultadoFinalBrasil() {
         if (getCampeao() == brasil) {
             return "CAMPEAO";
@@ -419,5 +536,80 @@ public class GerenciadorTorneio implements Serializable {
         }
 
         return "ELIMINADO_FASE_DE_GRUPOS"; //nao se classificou para o mata-mata
+    }
+    public int getDiaDaPartida(PartidaTorneio partida) {
+        if (partida.getFase() == FaseTorneio.FASE_DE_GRUPOS) {
+            int rodada = partida.getRodada();
+            if (partida.getGrupo() == null) {
+                return 1;
+            }
+            String grupo = partida.getGrupo().getIdentificador();
+            if (grupo == null || grupo.isEmpty()) {
+                return 1;
+            }
+            int grupoIndex = grupo.toUpperCase().charAt(0) - 'A';
+            int offsetDia = grupoIndex / 3;
+            return (rodada - 1) * 4 + 1 + offsetDia;
+        }
+        
+        String id = partida.getId();
+        if (id != null && id.startsWith("M")) {
+            try {
+                int num = Integer.parseInt(id.substring(1));
+                if (num >= 1 && num <= 16) {
+                    return 13 + (num - 1) / 4;
+                } else if (num >= 17 && num <= 24) {
+                    return 17 + (num - 17) / 2;
+                } else if (num >= 25 && num <= 28) {
+                    return 21 + (num - 25) / 2;
+                } else if (num == 29) {
+                    return 23;
+                } else if (num == 30) {
+                    return 24;
+                } else if (num == 31) {
+                    return 25;
+                } else if (num == 32) {
+                    return 26;
+                }
+            } catch (NumberFormatException e) {
+                return 1;
+            }
+        }
+        return 1;
+    }
+
+    public List<PartidaTorneio> simularPartidasDoDia(int dia) {
+        List<PartidaTorneio> todas = new ArrayList<>();
+        todas.addAll(partidasFaseGrupos);
+        todas.addAll(partidasMataMata);
+        
+        List<PartidaTorneio> doDia = todas.stream()
+                .filter(p -> getDiaDaPartida(p) == dia && p.getStatus() == StatusPartidaTorneio.AGENDADA)
+                .toList();
+                
+        List<PartidaTorneio> simuladas = new ArrayList<>();
+        
+        for (PartidaTorneio partidaTorneio : doDia) {
+            if (envolveBrasil(partidaTorneio)) {
+                continue;
+            }
+            
+            Partida partida = iniciarPartida(partidaTorneio.getId());
+            simuladorPartidaCpu.simularPartida(partida);
+            
+            if (partidaTorneio.getFase() == FaseTorneio.FASE_DE_GRUPOS) {
+                registrarResultado(partidaTorneio.getId(), partida);
+            } else {
+                Time vencedorDesempate = null;
+                if (gerenciadorPenaltis.verificarNecessidadeDeDesempate(partida, true)) {
+                    vencedorDesempate = gerenciadorPenaltis.disputarDecisaoPorPenaltis(partida, List.of());
+                }
+                registrarResultadoMataMata(partidaTorneio.getId(), partida, vencedorDesempate);
+            }
+            
+            simuladas.add(partidaTorneio);
+        }
+        
+        return simuladas;
     }
 }

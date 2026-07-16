@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *Entidade responsável por ler os arquivos csv das seleções e montar os objetos Jogador e Time para o jogo.
+ * Converte os CSVs de elencos em jogadores e seleções do jogo.
  */
 public class FabricaSelecao {
 
@@ -19,6 +19,13 @@ public class FabricaSelecao {
 
     //-----------------Criação de jogadores e times-----------------
 
+    /**
+     * Converte uma linha de elenco em jogador.
+     *
+     * @param campos vetor no formato
+     *               {@code [nome, clube, posição, ataque, defesa, resistência física, estresse]}
+     * @throws NumberFormatException se um atributo numérico não for inteiro
+     */
     public Jogador instanciarJogador(String[] campos) {
         String nome = campos[0];
         String posicao = campos[2];
@@ -30,6 +37,10 @@ public class FabricaSelecao {
         return new Jogador(nome, posicao, ataque, defesa, fisico, estresse);
     }
 
+    /**
+     * Cria uma seleção e redistribui todo o elenco entre titulares e reservas segundo
+     * a formação padrão e a qualidade por posição.
+     */
     public Time montarTime(String nomePais, List<Jogador> jogadores) {
         Time time = new Time(nomePais);
         for (int i = 0; i < jogadores.size(); i ++) {
@@ -45,7 +56,13 @@ public class FabricaSelecao {
     }
 
     
-    public List<Jogador> processarListaBrasil() { //processamento do brasil (precisa ser 50 jogadores)
+    /**
+     * Carrega todos os jogadores do primeiro arquivo identificado como Brasil, sem
+     * validar o tamanho do elenco.
+     *
+     * @return jogadores em ordem de leitura, ou lista vazia se o arquivo não existir
+     */
+    public List<Jogador> processarListaBrasil() {
         List<ArquivoCSVSelecao> arquivos = leitor.listarArquivosDeSelecoes();
         List<Jogador> jogadoresBrasil = new ArrayList<>();
 
@@ -63,7 +80,11 @@ public class FabricaSelecao {
     }
 
 
-    public List<Time> processarListasInternacionais() { //processa as outras seleções (precisa ser 26 jogadores cada)
+    /**
+     * Monta uma seleção para cada arquivo internacional, sem validar a quantidade de
+     * jogadores de cada elenco. O Brasil é excluído para ser tratado pela convocação.
+     */
+    public List<Time> processarListasInternacionais() {
         List<ArquivoCSVSelecao> arquivos = leitor.listarArquivosDeSelecoes();
         List<Time> selecoes = new ArrayList<>();
 

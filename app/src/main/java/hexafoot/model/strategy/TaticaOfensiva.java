@@ -1,5 +1,8 @@
 package hexafoot.model.strategy;
 
+/**
+ * Estratégia que aumenta ataque e desgaste em 10% e reduz defesa em 10%.
+ */
 public class TaticaOfensiva implements EstrategiaSimulacao {
     // Formações ofensivas
     // 4-3-3
