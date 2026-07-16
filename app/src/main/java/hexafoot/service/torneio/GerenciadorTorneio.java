@@ -548,8 +548,17 @@ public class GerenciadorTorneio implements Serializable {
                 return 1;
             }
             int grupoIndex = grupo.toUpperCase().charAt(0) - 'A';
-            int offsetDia = grupoIndex / 3;
-            return (rodada - 1) * 4 + 1 + offsetDia;
+            if (rodada == 1) {
+                return 1 + (grupoIndex / 2);
+            } else if (rodada == 2) {
+                return 7 + (grupoIndex / 2);
+            } else { // rodada == 3
+                if (grupoIndex <= 1) return 13;      // A, B
+                else if (grupoIndex <= 4) return 14; // C, D, E
+                else if (grupoIndex <= 7) return 15; // F, G, H
+                else if (grupoIndex <= 9) return 16; // I, J
+                else return 17;                      // K, L
+            }
         }
         
         String id = partida.getId();
@@ -557,19 +566,19 @@ public class GerenciadorTorneio implements Serializable {
             try {
                 int num = Integer.parseInt(id.substring(1));
                 if (num >= 1 && num <= 16) {
-                    return 13 + (num - 1) / 4;
+                    return 18 + (num - 1) / 3;
                 } else if (num >= 17 && num <= 24) {
-                    return 17 + (num - 17) / 2;
+                    return 24 + (num - 17) / 2;
                 } else if (num >= 25 && num <= 28) {
-                    return 21 + (num - 25) / 2;
+                    return 29 + (num - 25);
                 } else if (num == 29) {
-                    return 23;
+                    return 34;
                 } else if (num == 30) {
-                    return 24;
+                    return 35;
                 } else if (num == 31) {
-                    return 25;
+                    return 38;
                 } else if (num == 32) {
-                    return 26;
+                    return 39;
                 }
             } catch (NumberFormatException e) {
                 return 1;

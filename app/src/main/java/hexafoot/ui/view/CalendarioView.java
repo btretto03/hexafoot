@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 
 public class CalendarioView extends TelaBase {
     private final BorderPane root;
-    private int semanaAtual = 1; // 1 a 4
-    private int diaSelecionado = 1; // 1 a 26
+    private int semanaAtual = 1; // 1 a 6
+    private int diaSelecionado = 1; // 1 a 39
     private final VBox calendarRowContainer;
     private final VBox matchContainer;
     private final Label lblSemana;
@@ -44,8 +44,8 @@ public class CalendarioView extends TelaBase {
         int diaAtual = calcularDiaAtual(gerenciadorTorneio);
         this.diaSelecionado = diaAtual;
         this.semanaAtual = (diaSelecionado - 1) / 7 + 1;
-        if (semanaAtual > 4) {
-            semanaAtual = 4;
+        if (semanaAtual > 6) {
+            semanaAtual = 6;
         }
 
         VBox layout = new VBox(20);
@@ -124,7 +124,7 @@ public class CalendarioView extends TelaBase {
     }
 
     private int calcularDiaAtual(GerenciadorTorneio gerenciadorTorneio) {
-        int menorDiaNaoConcluido = 26;
+        int menorDiaNaoConcluido = 39;
         boolean encontrou = false;
         
         List<PartidaTorneio> todasPartidas = new ArrayList<>();
@@ -142,7 +142,7 @@ public class CalendarioView extends TelaBase {
         }
         
         if (!encontrou) {
-            return 26;
+            return 39;
         }
         
         return menorDiaNaoConcluido;
@@ -151,7 +151,7 @@ public class CalendarioView extends TelaBase {
 
     private void alterarSemana(int direcao) {
         int novaSemana = semanaAtual + direcao;
-        if (novaSemana >= 1 && novaSemana <= 4) {
+        if (novaSemana >= 1 && novaSemana <= 6) {
             semanaAtual = novaSemana;
             lblSemana.setText("Semana " + semanaAtual);
             atualizarCalendario();
@@ -179,7 +179,7 @@ public class CalendarioView extends TelaBase {
             tile.setCursor(javafx.scene.Cursor.HAND);
             tile.setStyle("-fx-min-width: 90; -fx-min-height: 80;");
             
-            LocalDate startDate = LocalDate.of(2026, 6, 14);
+            LocalDate startDate = LocalDate.of(2026, 6, 11);
             LocalDate date = startDate.plusDays(dia - 1);
             
             Label lblDiaSemana = new Label(formatarDiaSemana(date.getDayOfWeek()));
@@ -190,7 +190,7 @@ public class CalendarioView extends TelaBase {
             
             tile.getChildren().addAll(lblDiaSemana, lblDiaNumero);
             
-            if (dia > 26) {
+            if (dia > 39) {
                 tile.setDisable(true);
                 tile.setOpacity(0.3);
                 row.getChildren().add(tile);

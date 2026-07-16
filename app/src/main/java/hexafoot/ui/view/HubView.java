@@ -356,7 +356,7 @@ public class HubView extends TelaBase {
     }
 
     private int calcularDiaAtual(GerenciadorTorneio gerenciadorTorneio) {
-        int menorDiaNaoConcluido = 26;
+        int menorDiaNaoConcluido = 39;
         boolean encontrou = false;
         
         List<PartidaTorneio> todasPartidas = new ArrayList<>();
@@ -374,7 +374,7 @@ public class HubView extends TelaBase {
         }
         
         if (!encontrou) {
-            return 26;
+            return 39;
         }
         
         return menorDiaNaoConcluido;
@@ -392,7 +392,7 @@ public class HubView extends TelaBase {
             diaProximoJogo = gt.getDiaDaPartida(proximaPartidaBrasil);
         }
 
-        int startDay = Math.min(diaAtual, 24);
+        int startDay = Math.min(diaAtual, 37);
         if (startDay < 1) startDay = 1;
 
         for (int i = 0; i < 3; i++) {
@@ -404,7 +404,7 @@ public class HubView extends TelaBase {
             tile.setPadding(new Insets(6));
             tile.setStyle("-fx-min-width: 75; -fx-min-height: 65;");
 
-            LocalDate startDate = LocalDate.of(2026, 6, 14);
+            LocalDate startDate = LocalDate.of(2026, 6, 11);
             LocalDate date = startDate.plusDays(dia - 1);
 
             Label lblDiaSemana = new Label(formatarDiaSemana(date.getDayOfWeek()));
@@ -417,7 +417,7 @@ public class HubView extends TelaBase {
 
             tile.getChildren().addAll(lblDiaSemana, lblNumero);
 
-            if (dia > 26) {
+            if (dia > 39) {
                 tile.setDisable(true);
                 tile.setOpacity(0.3);
                 smallCalendarRow.getChildren().add(tile);
@@ -443,7 +443,7 @@ public class HubView extends TelaBase {
             smallCalendarRow.getChildren().add(tile);
         }
 
-        lblSmallCalendarInfo.setText("Dia " + diaAtual + " de 26 · " + formatarFase(gt.getFaseAtual()));
+        lblSmallCalendarInfo.setText("Dia " + diaAtual + " de 39 · " + formatarFase(gt.getFaseAtual()));
     }
 
     private void atualizarControleSimulacao() {
