@@ -114,8 +114,8 @@ public class HubView extends TelaBase {
 
         root.setCenter(layout);
 
-        atualizarSmallCalendar();
         atualizarControleSimulacao();
+        atualizarSmallCalendar();
     }
 
     /**
@@ -448,15 +448,27 @@ public class HubView extends TelaBase {
 
     private void atualizarControleSimulacao() {
         GerenciadorTorneio gt = navigator.getSession().getGerenciadorTorneio();
+
+        if (gt.getFaseAtual() == FaseTorneio.FASE_DE_GRUPOS && gt.isFaseGruposConcluida()) {
+            gt.iniciarMataMata();
+        }
+
         PartidaTorneio proxima = gt.getProximaPartidaBrasil().orElse(null);
         
         if (proxima == null) {
-            btnPartidaSimulacao.setText("Copa Encerrada");
             btnPartidaSimulacao.getStyleClass().remove("primary-button");
             if (!btnPartidaSimulacao.getStyleClass().contains("secondary-button")) {
                 btnPartidaSimulacao.getStyleClass().add("secondary-button");
             }
-            btnPartidaSimulacao.setDisable(true);
+
+            if (gt.getFaseAtual() == FaseTorneio.ENCERRADO) {
+                btnPartidaSimulacao.setText("Copa Encerrada");
+                btnPartidaSimulacao.setDisable(true);
+            } else {
+                btnPartidaSimulacao.setText("Simular calendário");
+                btnPartidaSimulacao.setDisable(false);
+                btnPartidaSimulacao.setOnAction(event -> iniciarSimulacaoCalendario());
+            }
             return;
         }
         
