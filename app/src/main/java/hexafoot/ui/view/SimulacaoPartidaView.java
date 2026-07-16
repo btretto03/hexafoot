@@ -159,6 +159,10 @@ public class SimulacaoPartidaView extends TelaBase {
         painelPlacar.setPadding(new Insets(20, 30, 20, 30));
         painelPlacar.setAlignment(Pos.CENTER);
 
+        Label lblTituloPartida = new Label(obterTituloPartida());
+        lblTituloPartida.getStyleClass().add("eyebrow");
+        lblTituloPartida.setStyle("-fx-text-fill: #8bf0a1; -fx-font-size: 14px; -fx-font-weight: bold;");
+
         lblTempo = new Label("0'");
         lblTempo.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #8bf0a1;");
 
@@ -189,7 +193,7 @@ public class SimulacaoPartidaView extends TelaBase {
         lblPlacarPenaltis.setManaged(false);
         lblPlacarPenaltis.setVisible(false);
 
-        painelPlacar.getChildren().addAll(lblTempo, timesBox, lblPlacarPenaltis);
+        painelPlacar.getChildren().addAll(lblTituloPartida, lblTempo, timesBox, lblPlacarPenaltis);
 
         return painelPlacar;
     }
@@ -916,6 +920,37 @@ public class SimulacaoPartidaView extends TelaBase {
             }
         }
         return sb.toString().trim();
+    }
+
+    private String obterTituloPartida() {
+        if (partidaTorneio == null) return "";
+        if (partidaTorneio.getFase() == FaseTorneio.FASE_DE_GRUPOS) {
+            return partidaTorneio.getRodada() + "ª Rodada · Fase de Grupos";
+        } else {
+            return formatarFaseSimulacao(partidaTorneio.getFase());
+        }
+    }
+
+    private String formatarFaseSimulacao(FaseTorneio fase) {
+        if (fase == FaseTorneio.DEZESSEIS_AVOS) {
+            return "Dezesseis-avos de final";
+        }
+        if (fase == FaseTorneio.OITAVAS) {
+            return "Oitavas de final";
+        }
+        if (fase == FaseTorneio.QUARTAS) {
+            return "Quartas de final";
+        }
+        if (fase == FaseTorneio.SEMIFINAL) {
+            return "Semifinal";
+        }
+        if (fase == FaseTorneio.TERCEIRO_LUGAR) {
+            return "Disputa de 3º lugar";
+        }
+        if (fase == FaseTorneio.FINAL) {
+            return "Final";
+        }
+        return fase.toString();
     }
 
     private String obterBandeira(String nomeBruto) {
