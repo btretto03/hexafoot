@@ -131,7 +131,7 @@ public class TabelasChaveamentoView extends TelaBase {
         String mandante = nomeParticipante(partidaTorneio.getMandante(), partidaTorneio.getIdentificadorOrigemMandante());
         String visitante = nomeParticipante(partidaTorneio.getVisitante(), partidaTorneio.getIdentificadorOrigemVisitante());
 
-        Label confronto = new Label(partidaTorneio.getId() + " | " + mandante + " x " + visitante);
+        Label confronto = new Label(formatarIdPartida(partidaTorneio.getId()) + " | " + mandante + " x " + visitante);
         confronto.getStyleClass().add("card-title");
 
         String detalhes = "Agendada";
@@ -163,6 +163,36 @@ public class TabelasChaveamentoView extends TelaBase {
             return nomeComBandeira(time);
         }
 
+        return formatarOrigem(origem);
+    }
+
+    private String formatarIdPartida(String id) {
+        if (id != null && id.startsWith("M")) {
+            return "Jogo " + id.substring(1);
+        }
+        return id;
+    }
+
+    private String formatarOrigem(String origem) {
+        if (origem == null) {
+            return "";
+        }
+        if (origem.startsWith("Vencedor_M")) {
+            return "Vencedor do Jogo " + origem.substring(10);
+        }
+        if (origem.startsWith("Perdedor_M")) {
+            return "Perdedor do Jogo " + origem.substring(10);
+        }
+        if (origem.startsWith("3_")) {
+            return "3º Colocado (Vaga " + origem.substring(2) + ")";
+        }
+        if (origem.length() == 2 && Character.isDigit(origem.charAt(0))) {
+            char posicao = origem.charAt(0);
+            char grupo = origem.charAt(1);
+            if (grupo >= 'A' && grupo <= 'L') {
+                return posicao + "º do Grupo " + grupo;
+            }
+        }
         return origem;
     }
 
