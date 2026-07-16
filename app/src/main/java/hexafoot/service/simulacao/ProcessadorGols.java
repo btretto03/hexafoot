@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Sorteia gols para cada equipe a cada minuto. O limiar da rolagem de 1 a 1.000 é
- * {@code CHANCE_GOL * ataque² / (ataque² + defesa²)}, favorecendo diferenças de força.
+ * Entidade ProcessadorGols - Responsável por calcular as chances de gol a cada minuto
+ * usando rolagem de dados (inteiros) e atualizar o placar.
  */
 public class ProcessadorGols implements ObserverMinuto {
 
@@ -20,9 +20,6 @@ public class ProcessadorGols implements ObserverMinuto {
         this.sorteador = new SorteadorJogador();
     }
 
-    /**
-     * Realiza uma tentativa independente para cada equipe no minuto informado.
-     */
     @Override
     public void atualizarMinuto(int minutoAtual, Partida partida) {
         tentarGol(minutoAtual, partida, partida.getMandante(), partida.getVisitante()); // Mandante atacando
@@ -30,21 +27,15 @@ public class ProcessadorGols implements ObserverMinuto {
     }
 
     //-----------------Lógica de gol-----------------
-    /**
-     * Em caso de sucesso, incrementa o placar, sorteia o autor entre os titulares
-     * ativos que não são goleiros e registra o evento correspondente ao lado atacante.
-     */
     private void tentarGol(int minutoAtual, Partida partida, Time atacante, Time defensor) {
         int forcaAtaque = atacante.calcularForcaAtaqueAtual();
         int forcaDefesa = defensor.calcularForcaDefesaAtual();
 
         int chanceBase = RegrasSimulacao.CHANCE_GOL.getValor();
 
-        //usamos o quadrado das forcas para a diferenca de qualidade entre os times pesar mais no resultado
-        //(so a proporcao direta deixava times bem mais fortes com uma chance quase igual a de times fracos)
-        int pesoAtaque = forcaAtaque * forcaAtaque;
-        int pesoDefesa = forcaDefesa * forcaDefesa;
-        int chanceFinal = (chanceBase * pesoAtaque) / (pesoAtaque + pesoDefesa);
+        long pesoAtaque = (long) forcaAtaque * forcaAtaque * forcaAtaque;
+        long pesoDefesa = (long) forcaDefesa * forcaDefesa * forcaDefesa;
+        int chanceFinal = (int) ((chanceBase * pesoAtaque) / (pesoAtaque + pesoDefesa));
 
         int rolagemGol = random.nextInt(1000) + 1;
 
@@ -64,9 +55,6 @@ public class ProcessadorGols implements ObserverMinuto {
         }
     }
 
-    /**
-     * @return nova lista somente com jogadores ativos que não sejam goleiros
-     */
     private List<Jogador> filtrarNaoGoleiros(List<Jogador> jogadores) { //para goleiros nao marcar gols
         List<Jogador> candidatos = new ArrayList<>();
         
