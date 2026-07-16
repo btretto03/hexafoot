@@ -1,5 +1,6 @@
 package hexafoot.ui.view;
 
+import hexafoot.model.EventoPartida;
 import hexafoot.model.FaseTorneio;
 import hexafoot.model.Grupo;
 import hexafoot.model.Partida;
@@ -139,7 +140,21 @@ public class TabelasChaveamentoView extends TelaBase {
             detalhes = "Em andamento";
         } else if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
             Partida partida = partidaTorneio.getPartida();
-            detalhes = "Placar: " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " | Vencedor: " + nomeComBandeira(partidaTorneio.getVencedor());
+            if (partida.getGolsMandante() == partida.getGolsVisitante() && partidaTorneio.getVencedor() != null) {
+                int penaltisMandante = 0;
+                int penaltisVisitante = 0;
+                for (EventoPartida ev : partida.getEventos()) {
+                    if ("PenaltiConvertidoMandante".equals(ev.getTipo())) {
+                        penaltisMandante++;
+                    } else if ("PenaltiConvertidoVisitante".equals(ev.getTipo())) {
+                        penaltisVisitante++;
+                    }
+                }
+                detalhes = "Placar: " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() +
+                           " (Pênaltis: " + penaltisMandante + " x " + penaltisVisitante + ") | Vencedor: " + nomeComBandeira(partidaTorneio.getVencedor());
+            } else {
+                detalhes = "Placar: " + partida.getGolsMandante() + " x " + partida.getGolsVisitante() + " | Vencedor: " + nomeComBandeira(partidaTorneio.getVencedor());
+            }
         }
 
         Label resultado = new Label(detalhes);

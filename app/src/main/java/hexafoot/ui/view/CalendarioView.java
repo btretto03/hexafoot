@@ -1,5 +1,6 @@
 package hexafoot.ui.view;
 
+import hexafoot.model.EventoPartida;
 import hexafoot.model.FaseTorneio;
 import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
@@ -273,6 +274,9 @@ public class CalendarioView extends TelaBase {
         Region spacer2 = new Region();
         HBox.setHgrow(spacer2, Priority.ALWAYS);
         
+        VBox centerContainer = new VBox(5);
+        centerContainer.setAlignment(Pos.CENTER);
+        
         HBox matchLayout = new HBox(15);
         matchLayout.setAlignment(Pos.CENTER);
         
@@ -289,6 +293,8 @@ public class CalendarioView extends TelaBase {
             lblStatus.setText("A definir");
             lblStatus.getStyleClass().add("match-pill");
             lblStatus.setStyle("-fx-background-color: rgba(255, 255, 255, 0.05); -fx-text-fill: rgba(255, 255, 255, 0.4); -fx-alignment: center; -fx-min-width: 100;");
+            
+            centerContainer.getChildren().add(matchLayout);
         } else {
             String mandanteNome = nomeComBandeira(partidaTorneio.getMandante());
             String visitanteNome = nomeComBandeira(partidaTorneio.getVisitante());
@@ -329,9 +335,28 @@ public class CalendarioView extends TelaBase {
             lblVisitante.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff; -fx-min-width: 180; -fx-alignment: CENTER_LEFT;");
             
             matchLayout.getChildren().addAll(lblMandante, lblPlacar, lblVisitante);
+            centerContainer.getChildren().add(matchLayout);
+            
+            if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
+                Partida partida = partidaTorneio.getPartida();
+                if (partida != null && partida.getGolsMandante() == partida.getGolsVisitante() && partidaTorneio.getVencedor() != null) {
+                    int penaltisMandante = 0;
+                    int penaltisVisitante = 0;
+                    for (EventoPartida ev : partida.getEventos()) {
+                        if ("PenaltiConvertidoMandante".equals(ev.getTipo())) {
+                            penaltisMandante++;
+                        } else if ("PenaltiConvertidoVisitante".equals(ev.getTipo())) {
+                            penaltisVisitante++;
+                        }
+                    }
+                    Label lblPenaltis = new Label("Pênaltis: " + penaltisMandante + " x " + penaltisVisitante + " (" + formatarNomePais(partidaTorneio.getVencedor().getNome()) + " venceu)");
+                    lblPenaltis.setStyle("-fx-font-size: 11px; -fx-text-fill: #8bf0a1; -fx-font-style: italic;");
+                    centerContainer.getChildren().add(lblPenaltis);
+                }
+            }
         }
         
-        card.getChildren().addAll(lblInfo, spacer1, matchLayout, spacer2, lblStatus);
+        card.getChildren().addAll(lblInfo, spacer1, centerContainer, spacer2, lblStatus);
         
         return card;
     }
