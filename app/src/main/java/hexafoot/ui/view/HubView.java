@@ -34,6 +34,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Exibe o estado da campanha ativa e conduz o usuário à próxima partida ou aos ajustes do elenco.
+ */
 public class HubView extends TelaBase {
     private final BorderPane root;
     private Button btnPartidaSimulacao;
@@ -115,7 +118,12 @@ public class HubView extends TelaBase {
         atualizarControleSimulacao();
     }
 
-    // banner fixo mostrando o resultado final da campanha (campeao, vice, eliminado, etc.) quando a Copa acaba pro Brasil
+    /**
+     * Traduz o código final da campanha em um aviso persistente no hub.
+     *
+     * @param resultado código de colocação; valores não premiados são tratados como eliminação
+     * @return banner correspondente ao resultado
+     */
     private VBox criarBannerResultado(String resultado) {
         String texto;
         String corFundo;
@@ -171,7 +179,7 @@ public class HubView extends TelaBase {
         sectionText.setWrapText(true);
 
         Button escalacao = new Button("Abrir escalação e tática");
-        escalacao.getStyleClass().add("primary-button");
+        escalacao.getStyleClass().add("secondary-button");
         escalacao.setOnAction(event -> navigator.showEscalacaoTatica());
 
         // Criar o botão de simulação/partida dinâmico
@@ -190,13 +198,13 @@ public class HubView extends TelaBase {
         salvar.setOnAction(event -> salvarProgresso(salvar, navigator));
 
         Button menu = new Button("Voltar ao menu");
-        menu.getStyleClass().add("ghost-button");
+        menu.getStyleClass().add("secondary-button");
         menu.setOnAction(event -> navigator.showMainMenu());
 
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        actionsStack.getChildren().addAll(sectionTitle, sectionText, escalacao, btnPartidaSimulacao, tabela, calendario, salvar, spacer, menu);
+        actionsStack.getChildren().addAll(sectionTitle, sectionText, btnPartidaSimulacao, escalacao, tabela, calendario, salvar, spacer, menu);
 
         VBox panel = new VBox(14, actionsStack);
         panel.getStyleClass().add("info-card");
@@ -209,7 +217,12 @@ public class HubView extends TelaBase {
         return panel;
     }
 
-    // salva no slot unico de save; feedback aparece no proprio texto do botao por alguns segundos, sem popup
+    /**
+     * Sobrescreve o slot único de salvamento e mostra o resultado temporariamente no botão.
+     *
+     * @param botao botão usado para o retorno visual da operação
+     * @param navigator navegador cuja sessão contém o torneio a salvar
+     */
     private void salvarProgresso(Button botao, GameNavigator navigator) {
         GerenciadorSalvamento gerenciadorSalvamento = new GerenciadorSalvamento();
         String textoOriginal = botao.getText();
@@ -258,6 +271,13 @@ public class HubView extends TelaBase {
         return panel;
     }
 
+    /**
+     * Representa um atleta com sua condição atual no elenco e seu desgaste.
+     *
+     * @param jogador atleta exibido
+     * @param situacaoCampo rótulo de vínculo, como {@code TITULAR} ou {@code BANCO}
+     * @return linha visual do atleta
+     */
     private HBox criarLinhaJogador(Jogador jogador, String situacaoCampo) {
         Label lblSituacao = new Label(situacaoCampo);
         lblSituacao.getStyleClass().add("status-pill");
@@ -432,6 +452,10 @@ public class HubView extends TelaBase {
         
         if (proxima == null) {
             btnPartidaSimulacao.setText("Copa Encerrada");
+            btnPartidaSimulacao.getStyleClass().remove("primary-button");
+            if (!btnPartidaSimulacao.getStyleClass().contains("secondary-button")) {
+                btnPartidaSimulacao.getStyleClass().add("secondary-button");
+            }
             btnPartidaSimulacao.setDisable(true);
             return;
         }
@@ -439,21 +463,17 @@ public class HubView extends TelaBase {
         int diaAtual = calcularDiaAtual(gt);
         int diaProximoJogo = gt.getDiaDaPartida(proxima);
         
+        btnPartidaSimulacao.getStyleClass().remove("primary-button");
+        if (!btnPartidaSimulacao.getStyleClass().contains("secondary-button")) {
+            btnPartidaSimulacao.getStyleClass().add("secondary-button");
+        }
+        btnPartidaSimulacao.setDisable(false);
+        
         if (diaAtual == diaProximoJogo) {
             btnPartidaSimulacao.setText("Jogar próxima partida");
-            btnPartidaSimulacao.getStyleClass().remove("secondary-button");
-            if (!btnPartidaSimulacao.getStyleClass().contains("primary-button")) {
-                btnPartidaSimulacao.getStyleClass().add("primary-button");
-            }
-            btnPartidaSimulacao.setDisable(false);
             btnPartidaSimulacao.setOnAction(event -> navigator.showSimulacaoPartida(proxima));
         } else {
             btnPartidaSimulacao.setText("Simular calendário");
-            btnPartidaSimulacao.getStyleClass().remove("primary-button");
-            if (!btnPartidaSimulacao.getStyleClass().contains("secondary-button")) {
-                btnPartidaSimulacao.getStyleClass().add("secondary-button");
-            }
-            btnPartidaSimulacao.setDisable(false);
             btnPartidaSimulacao.setOnAction(event -> iniciarSimulacaoCalendario());
         }
     }

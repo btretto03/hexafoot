@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+/** Apresenta as ações de iniciar, carregar ou encerrar o jogo. */
 public class MainMenuView extends TelaBase {
     private final BorderPane root;
 

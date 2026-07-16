@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * Executa o desempate por pênaltis e registra cada cobrança como evento da partida.
+ * O placar regulamentar da {@link Partida} não é alterado.
+ */
 public class GerenciadorPenaltis implements Serializable {
     private Random random;
 
@@ -17,6 +21,10 @@ public class GerenciadorPenaltis implements Serializable {
         this.random = new Random();
     }
 
+    /**
+     * @param isFaseEliminatoria indica se a partida precisa produzir um vencedor
+     * @return {@code true} quando a partida eliminatória terminou empatada
+     */
     public boolean verificarNecessidadeDeDesempate(Partida partida, boolean isFaseEliminatoria) {
         boolean estaEmpatado = false;
         
@@ -31,6 +39,13 @@ public class GerenciadorPenaltis implements Serializable {
         }
     }
 
+    /**
+     * Ordena os titulares por posição: atacantes, meio-campistas, defensores,
+     * goleiros e, por fim, posições não reconhecidas. A ordem original é mantida
+     * dentro de cada categoria.
+     *
+     * @return nova lista com todos os titulares
+     */
     public List<Jogador> definirOrdemDosBatedores(Time time) {
         List<Jogador> batedores = new ArrayList<>();
         
@@ -67,6 +82,18 @@ public class GerenciadorPenaltis implements Serializable {
         return batedores;
     }
 
+    /**
+     * Disputa até cinco cobranças por equipe, com encerramento antecipado, e segue
+     * em morte súbita enquanto houver empate. Ao esgotar a lista, os batedores são
+     * reutilizados ciclicamente.
+     * <p>
+     * A lista escolhida é usada apenas pela equipe cujo nome é {@code "Brasil"};
+     * a ordem das demais equipes é calculada automaticamente.
+     *
+     * @param batedoresEscolhidos ordem definida para o Brasil
+     * @return equipe vencedora do desempate
+     * @throws IllegalStateException se uma equipe não tiver batedores disponíveis
+     */
     public Time disputarDecisaoPorPenaltis(Partida partida, List<Jogador> batedoresEscolhidos) {
         List<Jogador> batedoresMandante = new ArrayList<>();
         List<Jogador> batedoresVisitante = new ArrayList<>();
@@ -140,6 +167,11 @@ public class GerenciadorPenaltis implements Serializable {
         return partida.getVisitante();
     }
 
+    /**
+     * Seleciona ciclicamente o batedor de uma cobrança.
+     *
+     * @throws IllegalStateException se a lista estiver vazia
+     */
     private Jogador obterBatedor(List<Jogador> batedores, int indice) {
         if (batedores.isEmpty()) {
             throw new IllegalStateException("O time precisa ter ao menos um jogador disponível para disputar os pênaltis");
@@ -148,6 +180,15 @@ public class GerenciadorPenaltis implements Serializable {
         return batedores.get(indice % batedores.size());
     }
 
+    /**
+     * Sorteia uma cobrança com chance percentual dada por
+     * {@code 75 + ataque/5 - defesa/5}, limitada ao intervalo de 30% a 95%.
+     * Registra o resultado no minuto 120.
+     *
+     * @param lado sufixo do tipo de evento, normalmente {@code "Mandante"} ou
+     *             {@code "Visitante"}
+     * @return {@code true} se a cobrança foi convertida
+     */
     public boolean realizarCobranca(Jogador batedor, Jogador goleiro, Partida partida, String lado) {
         int ataque = batedor.getAtaque();
         int defesa = goleiro.getDefesa();
@@ -179,6 +220,12 @@ public class GerenciadorPenaltis implements Serializable {
         return convertido;
     }
 
+    /**
+     * Localiza o primeiro titular cuja posição é {@code "Goleiro"}; se não houver,
+     * usa o primeiro titular como substituto.
+     *
+     * @throws IndexOutOfBoundsException se o time não possuir titulares
+     */
     public Jogador obterGoleiro(Time time) {
         for (Jogador jogador : time.getTitulares()) {
             if ("Goleiro".equals(jogador.getPosicao())) {
@@ -188,6 +235,14 @@ public class GerenciadorPenaltis implements Serializable {
         return time.getTitulares().get(0);
     }
 
+    /**
+     * Verifica se nem mesmo todas as cobranças restantes permitem ao time atrás
+     * alcançar o adversário.
+     *
+     * @param restantesA cobranças ainda disponíveis para A
+     * @param restantesB cobranças ainda disponíveis para B
+     * @return {@code true} se o vencedor já estiver definido
+     */
     public boolean matematicamenteDecidido(int golsA, int golsB, int restantesA, int restantesB) {
         if (golsA > (golsB + restantesB)) {
             return true;

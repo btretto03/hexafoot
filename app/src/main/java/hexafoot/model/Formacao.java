@@ -1,7 +1,7 @@
 package hexafoot.model;
 
 /**
- * Enum Formacao - Define a tática do time em campo.
+ * Formação em campo, com distribuição por posição e modificadores de ataque e defesa.
  */
 public enum Formacao {
 

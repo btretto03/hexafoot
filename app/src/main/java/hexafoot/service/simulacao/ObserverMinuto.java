@@ -4,10 +4,16 @@ import hexafoot.model.Partida;
 import java.io.Serializable;
 
 /**
- * Interface ObserverMinuto - Implementamos o  padrão Observer para o relógio do jogo.
- * Qualquer evento (gols, faltas, lesões) que implementar esta interface
- * será notificada a cada minuto para printar durante o andamento do jogo.
+ * Processador notificado pelo relógio a cada passo da simulação.
+ * As implementações podem alterar a partida e os jogadores das duas equipes.
  */
 public interface ObserverMinuto extends Serializable {
+    /**
+     * Processa um passo de tempo. Um mesmo número de minuto pode ser notificado
+     * mais de uma vez durante os acréscimos do primeiro tempo.
+     *
+     * @param minutoAtual minuto exibido para os eventos gerados neste passo
+     * @param partida estado mutável da partida
+     */
     void atualizarMinuto(int minutoAtual, Partida partida);
 }

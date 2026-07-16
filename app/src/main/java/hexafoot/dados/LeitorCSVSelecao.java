@@ -7,13 +7,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entidade que lê os arquivos .csv das seleções e retorna os dados brutos para a FabricaSelecao.
+ * Lê os CSVs de elencos e fornece seus registros brutos à fábrica de seleções.
  */
 public class LeitorCSVSelecao {
 
     private static final String PASTA_ELENCOS = "src/main/resources/data/elencos";
 
     //-----------------Leitura dos elencos-----------------
+    /**
+     * Lê os arquivos terminados em {@code .csv} na pasta de elencos relativa ao
+     * diretório de execução. A ordem resultante é a fornecida pelo sistema de arquivos.
+     *
+     * @throws IllegalStateException se a pasta não puder ser localizada ou listada
+     */
     public List<ArquivoCSVSelecao> listarArquivosDeSelecoes() {
         List<ArquivoCSVSelecao> arquivos = new ArrayList<>();
 
@@ -33,6 +39,14 @@ public class LeitorCSVSelecao {
         return arquivos;
     }
 
+    /**
+     * Lê um CSV simples, descartando o cabeçalho e linhas vazias. Vírgulas entre
+     * aspas não são tratadas e campos individuais não são normalizados.
+     *
+     * @param caminho caminho relativo ou absoluto do arquivo
+     * @return registros já lidos; em caso de erro, imprime a exceção e devolve a
+     *         lista vazia ou parcial
+     */
     public List<String[]> lerConteudoCSV(String caminho) {
         List<String[]> linhas = new ArrayList<>();
 

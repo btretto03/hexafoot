@@ -6,9 +6,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Entidade RelogioPartida - Motor central de tempo da simulação,
- * responsável por avançar os minutos do jogo e notificar todos os processadores seguindo o padrão Observer.
- * Adaptado para suportar simulação passo a passo (JavaFX).
+ * Notifica, em ordem de registro, os processadores de cada minuto da partida.
+ * Permite tanto a execução passo a passo quanto a simulação completa.
  */
 public class RelogioPartida implements Serializable {
     private ArrayList<ObserverMinuto> processadores;
@@ -17,16 +16,29 @@ public class RelogioPartida implements Serializable {
         this.processadores = new ArrayList<>();
     }
 
+    /**
+     * Acrescenta um processador ao fim da sequência de notificações.
+     */
     public void adicionarProcessador(ObserverMinuto processador) {
         this.processadores.add(processador);
     }
 
     //-----------------Registro dos processadores-----------------
+    /**
+     * Acrescenta os processadores padrão, com substituição automática por lesão
+     * para as duas equipes.
+     */
     public void adicionarProcessadoresPadrao() {
         adicionarProcessadoresPadrao(null);
     }
 
-    //time passado aqui não recebe substituição automática de lesão, quem decide é o jogador humano
+    /**
+     * Acrescenta, sem remover registros anteriores, os processadores de físico,
+     * lesões, cartões e gols, nessa ordem.
+     *
+     * @param timeSemAutoSubstituicao equipe controlada pelo usuário, identificada
+     *                               pela mesma instância; {@code null} automatiza ambas
+     */
     public void adicionarProcessadoresPadrao(Time timeSemAutoSubstituicao) {
         this.adicionarProcessador(new ProcessadorFisico());
         this.adicionarProcessador(new ProcessadorLesoes(timeSemAutoSubstituicao));
@@ -35,19 +47,28 @@ public class RelogioPartida implements Serializable {
     }
 
     //-----------------Motor principal da partida-----------------
+    /**
+     * Notifica cada processador na ordem em que foi adicionado.
+     */
     private void avisarProcessadores(int minuto, Partida partida) {
         for (ObserverMinuto processador : processadores) {
             processador.atualizarMinuto(minuto, partida);
         }
     }
 
-    // ---> NOVO MÉTODO PARA O JAVAFX <---
-    // A interface gráfica vai chamar este método a cada "X" milissegundos
+    /**
+     * Executa uma única notificação sem manter ou validar a progressão do relógio.
+     * Chamadas repetidas para o mesmo minuto reaplicam todos os processamentos.
+     */
     public void processarMinutoIsolado(int minuto, Partida partida) {
         avisarProcessadores(minuto, partida);
     }
 
-    // ---> MÉTODO ANTIGO (Mantido para testes no console) <---
+    /**
+     * Simula 90 minutos, de 0 a 3 passos de acréscimo no primeiro tempo e de
+     * 2 a 6 no segundo. Os acréscimos do primeiro tempo são registrados novamente
+     * como minuto 45.
+     */
     public void simularJogoCompleto(Partida partida) {
 
         //primeiro tempo

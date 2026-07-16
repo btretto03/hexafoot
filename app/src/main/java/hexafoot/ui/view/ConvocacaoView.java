@@ -31,6 +31,9 @@ import javafx.scene.input.KeyCode;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Edita a convocação brasileira e inicia o torneio somente quando houver 26 atletas.
+ */
 public class ConvocacaoView extends TelaBase {
     private final BorderPane root;
     private final ObservableList<Jogador> disponiveis;
@@ -43,6 +46,11 @@ public class ConvocacaoView extends TelaBase {
     private final ProgressBar progresso;
     private final Button avancarButton;
 
+    /**
+     * Vincula as listas visuais à convocação; ao avançar, define o 4-3-3, escala o time e inicia o torneio.
+     *
+     * @param navigator navegador cuja sessão receberá o torneio formado
+     */
     public ConvocacaoView(GameNavigator navigator) {
         super(navigator);
         this.root = new BorderPane();
@@ -213,7 +221,11 @@ public class ConvocacaoView extends TelaBase {
         return tabela;
     }
 
-    // clicar numa linha liga/desliga ela da seleção, sem precisar do Ctrl que o javafx exige por padrão
+    /**
+     * Faz cada clique alternar a seleção da linha sem exigir a tecla Ctrl.
+     *
+     * @param tabela tabela cuja seleção múltipla será personalizada
+     */
     private void ativarSelecaoPorClique(TableView<Jogador> tabela) {
         tabela.setRowFactory(tv -> {
             TableRow<Jogador> linha = new TableRow<>();
@@ -234,6 +246,14 @@ public class ConvocacaoView extends TelaBase {
         });
     }
 
+    /**
+     * Cria uma coluna ligada por reflexão a uma propriedade JavaBean de {@link Jogador}.
+     *
+     * @param titulo texto exibido no cabeçalho
+     * @param propriedade nome da propriedade usada por {@link PropertyValueFactory}
+     * @param largura largura preferencial da coluna
+     * @return coluna configurada
+     */
     private TableColumn<Jogador, ?> criarColuna(String titulo, String propriedade, double largura) {
         TableColumn<Jogador, Object> coluna = new TableColumn<>(titulo);
         coluna.setCellValueFactory(new PropertyValueFactory<>(propriedade));
@@ -241,7 +261,11 @@ public class ConvocacaoView extends TelaBase {
         return coluna;
     }
 
-    // colore o físico igual o resto do jogo: verde descansado, amarelo cansando, vermelho no limite
+    /**
+     * Cria a coluna de físico com faixas verde, amarela e vermelha para o desgaste.
+     *
+     * @return coluna formatada de percentual físico
+     */
     private TableColumn<Jogador, Integer> criarColunaFisico() {
         TableColumn<Jogador, Integer> coluna = new TableColumn<>("Físico");
         coluna.setCellValueFactory(new PropertyValueFactory<>("fisico"));
@@ -269,7 +293,11 @@ public class ConvocacaoView extends TelaBase {
         return coluna;
     }
 
-    // colore o status: ativo em verde, lesionado em vermelho, suspenso em amarelo
+    /**
+     * Cria a coluna de status distinguindo atletas ativos, lesionados e demais impedimentos.
+     *
+     * @return coluna de status formatada
+     */
     private TableColumn<Jogador, String> criarColunaStatus() {
         TableColumn<Jogador, String> coluna = new TableColumn<>("Status");
         coluna.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -325,6 +353,9 @@ public class ConvocacaoView extends TelaBase {
         focarConvocados();
     }
 
+    /**
+     * Reconstrói as listas observáveis a partir do gerenciador após uma alteração no elenco.
+     */
     private void sincronizarListas() {
         GerenciadorConvocacao gerenciador = navigator.getSession().getGerenciadorConvocacao();
         disponiveis.setAll(gerenciador.getJogadoresDisponiveis());
@@ -334,6 +365,11 @@ public class ConvocacaoView extends TelaBase {
         atualizarEstadoVisual();
     }
 
+    /**
+     * Filtra os disponíveis por trecho do nome, sem diferenciar maiúsculas e minúsculas.
+     *
+     * @param termo texto pesquisado; {@code null} ou vazio restaura todos os atletas
+     */
     private void aplicarFiltro(String termo) {
         String pesquisa = termo == null ? "" : termo.trim().toLowerCase();
         disponiveisFiltrados.setPredicate(jogador -> {

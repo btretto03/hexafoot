@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entidade Time - Representa cada seleção do torneio, com atributos como nome, titulares e reservas, tática atual e estatísticas da tabela.
+ * Seleção participante, com elenco, configuração tática e estatísticas do torneio.
  */
 public class Time implements Serializable {
     private String nome;
@@ -23,6 +23,9 @@ public class Time implements Serializable {
     private int empates;
     
 
+    /**
+     * Cria uma seleção sem jogadores, com tática equilibrada e formação 4-3-3.
+     */
     public Time(String nome) {
         this.nome = nome;
         this.titulares = new ArrayList<>();
@@ -38,12 +41,19 @@ public class Time implements Serializable {
     }
 
 //-----------------Gerenciamento de elenco-----------------
+    /**
+     * Adiciona um titular apenas se houver menos de 11 e o jogador não estiver em
+     * nenhuma das duas listas; caso contrário, não altera o elenco.
+     */
     public void adicionarTitular(Jogador jogador) {
         if (titulares.size() < 11 && titulares.contains(jogador) == false && reservas.contains(jogador) == false) {
             titulares.add(jogador);
         }
     }
 
+    /**
+     * Adiciona uma reserva apenas se o jogador ainda não pertencer ao elenco.
+     */
     public void adicionarReserva(Jogador jogador) {
         if (titulares.contains(jogador) == false && reservas.contains(jogador) == false) {
             reservas.add(jogador);
@@ -58,6 +68,12 @@ public class Time implements Serializable {
         return reservas.remove(jogador);
     }
 
+    /**
+     * Calcula o ataque dos titulares ativos, ponderando cada atributo entre 50% e
+     * 100% conforme o físico e aplicando os modificadores de tática e formação.
+     *
+     * @return força total arredondada para o inteiro mais próximo
+     */
     public int calcularForcaAtaqueAtual() {
         double soma = 0;
         for (Jogador jogador : titulares) {
@@ -71,6 +87,12 @@ public class Time implements Serializable {
         return (int) Math.round(soma);
     }
 
+    /**
+     * Calcula a defesa dos titulares ativos, ponderando cada atributo entre 50% e
+     * 100% conforme o físico e aplicando os modificadores de tática e formação.
+     *
+     * @return força total arredondada para o inteiro mais próximo
+     */
     public int calcularForcaDefesaAtual() {
         double soma = 0;
         for (Jogador jogador : titulares) {
@@ -190,6 +212,12 @@ public class Time implements Serializable {
         this.formacaoAtual = formacaoAtual;
     }
 
+    /**
+     * Redistribui todo o elenco segundo a formação atual. Goleiros e defensores são
+     * ordenados por defesa, meias pela soma de ataque e defesa e atacantes por ataque.
+     * Se faltar uma posição, completa os 11 titulares com as sobras das demais; o
+     * status de disponibilidade não é considerado.
+     */
     public void escalarMelhoresJogadores() {
         List<Jogador> todos = new ArrayList<>();
         todos.addAll(titulares);
@@ -254,6 +282,10 @@ public class Time implements Serializable {
         }
     }
 
+    /**
+     * Reconhece posição por fragmentos do texto; valores nulos ou não reconhecidos
+     * são classificados como atacante.
+     */
     private String normalizarPosicao(String posicao) {
         String limpa = posicao == null ? "" : posicao.trim().toLowerCase();
         if (limpa.contains("gole")) {

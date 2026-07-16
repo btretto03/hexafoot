@@ -3,7 +3,7 @@ package hexafoot.model;
 import java.io.Serializable;
 
 /**
- * Entidade Jogador - Representa cada atleta do time, com atributos como nome, posição, ataque, defesa, físico, estresse, cartões amarelos, rodadas de afastamento e status (ativo, suspenso ou lesionado).
+ * Atleta com atributos de desempenho, condição física e disponibilidade.
  */
 public class Jogador implements Serializable {
     private String nome;
@@ -18,6 +18,12 @@ public class Jogador implements Serializable {
     private int rodadasAfastamento;
     private String status;
 
+    /**
+     * Cria um jogador descansado e ativo. O valor recebido como {@code fisica} é a
+     * resistência permanente vinda do CSV, não o físico atual, que começa em 100.
+     *
+     * @param fisica resistência usada para acelerar ou reduzir o desgaste
+     */
     public Jogador(String nome, String posicao, int ataque, int defesa, int fisica, int estresse) {
         this.nome = nome;
         this.posicao = posicao;
@@ -33,6 +39,9 @@ public class Jogador implements Serializable {
     }
 
     //-----------------Métodos de disciplina e lesão-----------------
+    /**
+     * Acumula um amarelo e, ao atingir dois, suspende o jogador por uma rodada.
+     */
     public void aplicarCartaoAmarelo() {
         this.cartoesAmarelos ++;
         if (this.cartoesAmarelos == 2) { //na copa 2 amarelos já está suspenso
@@ -41,16 +50,28 @@ public class Jogador implements Serializable {
         }
     }
 
+    /**
+     * Suspende o jogador por uma rodada sem alterar os amarelos acumulados.
+     */
     public void aplicarCartaoVermelho() {
         this.rodadasAfastamento = 1;
         this.status = "Suspenso";
     }
 
+    /**
+     * Marca o jogador como lesionado e define o contador de afastamento.
+     *
+     * @param diasAfastamento quantidade de atualizações pós-jogo até o retorno
+     */
     public void sofrerLesao(int diasAfastamento) {
         this.rodadasAfastamento = diasAfastamento;
         this.status = "Lesionado";
     }
 
+    /**
+     * Avança um período do afastamento e reativa o jogador quando o contador zera.
+     * O mesmo contador também é usado para suspensões.
+     */
     public void atualizarLesao() {
         if (this.rodadasAfastamento > 0) {
             this.rodadasAfastamento --;
@@ -61,6 +82,13 @@ public class Jogador implements Serializable {
     }
 
     //-----------------Método de consumo de energia-----------------
+    /**
+     * Reduz o físico segundo posição, tempo jogado, tática e resistência. Frações de
+     * desgaste são acumuladas entre chamadas e o físico nunca fica abaixo de zero.
+     *
+     * @param minutosJogados duração considerada, sendo 90 uma partida completa
+     * @param multiplicadorTatico fator de desgaste da tática; {@code 1} é neutro
+     */
     public void consumirEnergia(int minutosJogados, float multiplicadorTatico) {
         float desgaste = 0;
 
@@ -92,6 +120,11 @@ public class Jogador implements Serializable {
         }
     }
 
+    /**
+     * Recupera 2 pontos para titular ou 10 para reserva, limitado ao máximo de 100.
+     *
+     * @param foiTitular indica qual taxa de recuperação deve ser aplicada
+     */
     public void recuperarEnergiaPosJogo(boolean foiTitular) {
         if (foiTitular) {
             this.fisico += 2;
@@ -163,6 +196,10 @@ public class Jogador implements Serializable {
         this.status = status;
     }
 
+    /**
+     * Considera iguais jogadores com o mesmo nome, respeitando maiúsculas e
+     * minúsculas.
+     */
     @Override
     public boolean equals(Object outro) { // resolve o bug do jogador duplicado na convocação
         if (this == outro) {
