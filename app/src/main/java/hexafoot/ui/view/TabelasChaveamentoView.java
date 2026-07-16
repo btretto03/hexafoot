@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Exibe a classificação dos grupos e os confrontos já definidos ou ainda pendentes do mata-mata. */
-public class TabelasChaveamentoView implements ScreenView {
+public class TabelasChaveamentoView extends TelaBase {
     private final BorderPane root;
 
     /**
@@ -36,6 +36,7 @@ public class TabelasChaveamentoView implements ScreenView {
      * @param navigator navegador cuja sessão contém o torneio exibido
      */
     public TabelasChaveamentoView(GameNavigator navigator) {
+        super(navigator);
         this.root = new BorderPane();
         root.getStyleClass().add("screen-root");
 
