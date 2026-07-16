@@ -169,9 +169,15 @@ public class SimulacaoPartidaView extends TelaBase {
         HBox timesBox = new HBox(30);
         timesBox.setAlignment(Pos.CENTER);
 
-        Label lblMandante = new Label(obterBandeira(partida.getMandante().getNome()) + " " + formatarNomePais(partida.getMandante().getNome()));
+        Label lblMandante = new Label(formatarNomePais(partida.getMandante().getNome()));
         lblMandante.getStyleClass().add("display-title");
         lblMandante.setStyle("-fx-font-size: 32px;");
+        javafx.scene.image.ImageView flagMandante = hexafoot.ui.BandeiraProvider.criarImageViewBandeira(partida.getMandante().getNome(), 36, 27);
+        if (flagMandante != null) {
+            lblMandante.setGraphic(flagMandante);
+            lblMandante.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+            lblMandante.setGraphicTextGap(12);
+        }
 
         lblPlacarMandante = new Label("0");
         lblPlacarMandante.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: white;");
@@ -182,9 +188,15 @@ public class SimulacaoPartidaView extends TelaBase {
         lblPlacarVisitante = new Label("0");
         lblPlacarVisitante.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        Label lblVisitante = new Label(obterBandeira(partida.getVisitante().getNome()) + " " + formatarNomePais(partida.getVisitante().getNome()));
+        Label lblVisitante = new Label(formatarNomePais(partida.getVisitante().getNome()));
         lblVisitante.getStyleClass().add("display-title");
         lblVisitante.setStyle("-fx-font-size: 32px;");
+        javafx.scene.image.ImageView flagVisitante = hexafoot.ui.BandeiraProvider.criarImageViewBandeira(partida.getVisitante().getNome(), 36, 27);
+        if (flagVisitante != null) {
+            lblVisitante.setGraphic(flagVisitante);
+            lblVisitante.setContentDisplay(javafx.scene.control.ContentDisplay.LEFT);
+            lblVisitante.setGraphicTextGap(12);
+        }
 
         timesBox.getChildren().addAll(lblMandante, lblPlacarMandante, lblX, lblPlacarVisitante, lblVisitante);
 

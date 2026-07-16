@@ -296,11 +296,17 @@ public class CalendarioView extends TelaBase {
             
             centerContainer.getChildren().add(matchLayout);
         } else {
-            String mandanteNome = nomeComBandeira(partidaTorneio.getMandante());
-            String visitanteNome = nomeComBandeira(partidaTorneio.getVisitante());
+            Time mandante = partidaTorneio.getMandante();
+            Time visitante = partidaTorneio.getVisitante();
             
-            Label lblMandante = new Label(mandanteNome);
+            Label lblMandante = new Label(formatarNomePais(mandante.getNome()));
             lblMandante.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff; -fx-min-width: 180; -fx-alignment: CENTER_RIGHT;");
+            javafx.scene.image.ImageView flagMandante = hexafoot.ui.BandeiraProvider.criarImageViewBandeira(mandante.getNome(), 20, 15);
+            if (flagMandante != null) {
+                lblMandante.setGraphic(flagMandante);
+                lblMandante.setContentDisplay(javafx.scene.control.ContentDisplay.RIGHT);
+                lblMandante.setGraphicTextGap(8);
+            }
             
             Label lblPlacar;
             if (partidaTorneio.getStatus() == StatusPartidaTorneio.CONCLUIDA) {
@@ -331,8 +337,14 @@ public class CalendarioView extends TelaBase {
                 lblStatus.setStyle("-fx-alignment: center; -fx-min-width: 100;");
             }
             
-            Label lblVisitante = new Label(visitanteNome);
+            Label lblVisitante = new Label(formatarNomePais(visitante.getNome()));
             lblVisitante.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f8fbff; -fx-min-width: 180; -fx-alignment: CENTER_LEFT;");
+            javafx.scene.image.ImageView flagVisitante = hexafoot.ui.BandeiraProvider.criarImageViewBandeira(visitante.getNome(), 20, 15);
+            if (flagVisitante != null) {
+                lblVisitante.setGraphic(flagVisitante);
+                lblVisitante.setContentDisplay(javafx.scene.control.ContentDisplay.LEFT);
+                lblVisitante.setGraphicTextGap(8);
+            }
             
             matchLayout.getChildren().addAll(lblMandante, lblPlacar, lblVisitante);
             centerContainer.getChildren().add(matchLayout);

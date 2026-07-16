@@ -344,7 +344,35 @@ public class TabelasChaveamentoView extends TelaBase {
         tabela.setMinHeight(220);
         tabela.setMaxHeight(220);
 
-        tabela.getColumns().add(criarColunaTexto("Time", this::nomeComBandeira, 1.8));
+        TableColumn<Time, String> colTime = new TableColumn<>("Time");
+        colTime.setPrefWidth(1.8 * 100);
+        colTime.setCellValueFactory(celula -> new ReadOnlyStringWrapper(celula.getValue().getNome()));
+        colTime.setCellFactory(col -> new javafx.scene.control.TableCell<Time, String>() {
+            private final javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView();
+            {
+                imageView.setFitWidth(18);
+                imageView.setFitHeight(13);
+            }
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    setText(formatarNomePais(item));
+                    javafx.scene.image.Image img = hexafoot.ui.BandeiraProvider.obterImagemBandeira(item);
+                    if (img != null) {
+                        imageView.setImage(img);
+                        setGraphic(imageView);
+                        setGraphicTextGap(6);
+                    } else {
+                        setGraphic(null);
+                    }
+                }
+            }
+        });
+        tabela.getColumns().add(colTime);
         tabela.getColumns().add(criarColunaInteiro("P", Time::getPontos, 0.6));
         tabela.getColumns().add(criarColunaInteiro("J", time -> time.getVitorias() + time.getEmpates() + time.getDerrotas(), 0.6));
         tabela.getColumns().add(criarColunaInteiro("V", Time::getVitorias, 0.6));
