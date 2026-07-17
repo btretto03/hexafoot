@@ -3,12 +3,23 @@ package hexafoot.service.simulacao;
 import hexafoot.model.Jogador;
 import hexafoot.model.Time;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Monta a convocação do Brasil a partir de uma lista mutável de jogadores disponíveis.
  */
 public class GerenciadorConvocacao {
+
+    //Convocação oficial anunciada por Ancelotti para a Copa de 2026 (nomes iguais aos do CSV da base de 50 atletas).
+    
+    private static final List<String> CONVOCACAO_OFICIAL_2026 = List.of(
+        "Alisson", "Ederson", "Weverton",
+        "Alex Sandro", "Bremer", "Danilo", "Douglas Santos", "Gabriel Magalhães", "Ibañez", "Léo Pereira", "Marquinhos",
+        "Bruno Guimarães", "Casemiro", "Danilo Santos", "Fabinho", "Lucas Paquetá", "Douglas Luiz",
+        "Endrick", "Gabriel Martinelli", "Igor Thiago", "Luiz Henrique", "Matheus Cunha", "Neymar", "Raphinha", "Rayan", "Vinícius Júnior"
+    );
+
     private List<Jogador> jogadoresDisponiveis;
     private Time elencoOficial;
 
@@ -59,6 +70,36 @@ public class GerenciadorConvocacao {
         if (eraTitular == true || eraReserva == true) { //se foi removido do time volta pra lista de disponiveis
             jogadoresDisponiveis.add(jogador);
         }
+    }
+
+    /**
+     * Esvazia a convocação atual e monta a lista oficial dos 26 jogadores anunciados
+     * para a Copa de 2026. Jogadores da lista oficial que não existirem na base de
+     * 50 atletas simplesmente não entram, sem travar a convocação.
+     */
+    public void convocarElencoOficial() {
+        for (Jogador jogador : new ArrayList<>(elencoOficial.getTitulares())) {
+            removerDoElenco(jogador);
+        }
+        for (Jogador jogador : new ArrayList<>(elencoOficial.getReservas())) {
+            removerDoElenco(jogador);
+        }
+
+        for (String nomeOficial : CONVOCACAO_OFICIAL_2026) {
+            Jogador jogador = buscarDisponivelPorNome(nomeOficial);
+            if (jogador != null) {
+                inserirNoElenco(jogador);
+            }
+        }
+    }
+
+    private Jogador buscarDisponivelPorNome(String nome) {
+        for (Jogador jogador : jogadoresDisponiveis) {
+            if (jogador.getNome().equals(nome)) {
+                return jogador;
+            }
+        }
+        return null;
     }
 
     /**

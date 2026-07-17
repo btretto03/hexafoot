@@ -103,6 +103,10 @@ public class ConvocacaoView extends TelaBase {
         removerButton.getStyleClass().add("secondary-button");
         removerButton.setOnAction(event -> removerConvocado());
 
+        Button convocacaoOficialButton = new Button("Convocação oficial 2026");
+        convocacaoOficialButton.getStyleClass().add("secondary-button");
+        convocacaoOficialButton.setOnAction(event -> selecionarConvocacaoOficial());
+
         Button voltarButton = new Button("Voltar");
         voltarButton.getStyleClass().add("ghost-button");
         voltarButton.setOnAction(event -> navigator.showMainMenu());
@@ -145,7 +149,7 @@ public class ConvocacaoView extends TelaBase {
             }
         });
 
-        VBox controlPanel = new VBox(14, adicionarButton, removerButton, voltarButton);
+        VBox controlPanel = new VBox(14, adicionarButton, removerButton, convocacaoOficialButton, voltarButton);
         controlPanel.getStyleClass().add("control-panel");
         controlPanel.setAlignment(Pos.CENTER);
         controlPanel.setPadding(new Insets(24));
@@ -351,6 +355,14 @@ public class ConvocacaoView extends TelaBase {
 
         sincronizarListas();
         focarConvocados();
+    }
+
+    /**
+     * Substitui a convocação atual pelos 26 jogadores oficialmente anunciados para a Copa de 2026.
+     */
+    private void selecionarConvocacaoOficial() {
+        navigator.getSession().getGerenciadorConvocacao().convocarElencoOficial();
+        sincronizarListas();
     }
 
     /**
