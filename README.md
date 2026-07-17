@@ -4,16 +4,16 @@ Hexafoot é um jogo de gerenciamento da Seleção Brasileira na Copa de 2026. O 
 
 ## ✨ Funcionalidades
 
-- 📋 convocação de 26 atletas a partir de uma base de 50 jogadores brasileiros, com um botão de **convocação oficial 2026** que seleciona de uma vez os jogadores anunciados por Ancelotti;
-- 🔀 organização de titulares e reservas por clique ou arrastar e soltar;
-- 🧠 nove formações e três posturas táticas, com impacto em ataque, defesa e desgaste;
-- 🌍 Copa completa com 48 seleções, fase de grupos e mata-mata;
-- ⏱️ simulação minuto a minuto de gols, cartões, lesões, fadiga e substituições;
-- ▶️ controle de velocidade, pausa, mudanças táticas e substituições durante a partida — os avisos do técnico (lesão, troca inválida etc.) aparecem no próprio painel da partida, sem popup travando o jogo;
-- 🥅 disputa de pênaltis nas partidas eliminatórias empatadas;
-- 📊 classificação de grupos, chaveamento e simulação das partidas controladas pela CPU;
-- 🏆 tela de resultado da campanha do Brasil assim que ela se define — campeão ou eliminado, com som e a opção de simular o restante da Copa até saber quem fica com o título;
-- 💾 salvamento e carregamento da campanha em um slot local.
+-  convocação de 26 atletas a partir de uma base de 50 jogadores brasileiros, com um botão de **convocação oficial 2026** que seleciona de uma vez os jogadores anunciados por Ancelotti;
+-  organização de titulares e reservas por clique ou arrastar e soltar;
+-  nove formações e três posturas táticas, com impacto em ataque, defesa e desgaste;
+-  Copa completa com 48 seleções, fase de grupos e mata-mata;
+-  simulação minuto a minuto de gols, cartões, lesões, fadiga e substituições;
+-  controle de velocidade, pausa, mudanças táticas e substituições durante a partida — os avisos do técnico (lesão, troca inválida etc.) aparecem no próprio painel da partida, sem popup travando o jogo;
+-  disputa de pênaltis nas partidas eliminatórias empatadas;
+-  classificação de grupos, chaveamento e simulação das partidas controladas pela CPU;
+-  tela de resultado da campanha do Brasil assim que ela se define — campeão ou eliminado, com som e a opção de simular o restante da Copa até saber quem fica com o título;
+-  salvamento e carregamento da campanha em um slot local.
 
 ## 🆕 Novidades recentes
 
