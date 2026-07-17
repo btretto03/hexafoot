@@ -23,7 +23,6 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -86,6 +85,7 @@ public class SimulacaoPartidaView extends TelaBase {
     private boolean intervaloAtivo = false;
 
     private VBox painelTecnico;
+    private Label lblAvisoTecnico;
     private ComboBox<Jogador> comboSai;
     private ComboBox<Jogador> comboEntra;
     private Button btnConfirmarSub;
@@ -310,10 +310,29 @@ public class SimulacaoPartidaView extends TelaBase {
 
         VBox boxSubstituicao = new VBox(8, comboSai, comboEntra, btnConfirmarSub);
 
-        painelTecnico.getChildren().addAll(tituloPainel, subTitulo, lblTaticaTitulo, boxBotoesTatica, lblSubTituloSecao, boxSubstituicao);
+        lblAvisoTecnico = new Label();
+        lblAvisoTecnico.setWrapText(true);
+        lblAvisoTecnico.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #ff6b6b;");
+        lblAvisoTecnico.setManaged(false);
+        lblAvisoTecnico.setVisible(false);
+
+        painelTecnico.getChildren().addAll(tituloPainel, subTitulo, lblTaticaTitulo, boxBotoesTatica, lblSubTituloSecao, boxSubstituicao, lblAvisoTecnico);
 
         atualizarEstiloBotoesTatica();
         return painelTecnico;
+    }
+
+
+    private void mostrarAvisoTecnico(String mensagem, boolean erro) {
+        lblAvisoTecnico.setText(mensagem);
+        lblAvisoTecnico.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + (erro ? "#ff6b6b" : "#f0d58b") + ";");
+        lblAvisoTecnico.setManaged(true);
+        lblAvisoTecnico.setVisible(true);
+    }
+
+    private void esconderAvisoTecnico() {
+        lblAvisoTecnico.setManaged(false);
+        lblAvisoTecnico.setVisible(false);
     }
 
     private HBox criarControlesInferiores() {
@@ -379,9 +398,7 @@ public class SimulacaoPartidaView extends TelaBase {
         }
 
         if (taxa != 0 && substituicaoObrigatoriaPendente) {
-            Alert alerta = new Alert(Alert.AlertType.WARNING, "Você precisa substituir o jogador lesionado antes de continuar a partida.");
-            alerta.initOwner(root.getScene().getWindow());
-            alerta.showAndWait();
+            mostrarAvisoTecnico("⏸ Substitua o jogador lesionado para continuar a partida.", true);
             return;
         }
 
@@ -662,9 +679,7 @@ public class SimulacaoPartidaView extends TelaBase {
         Jogador entra = comboEntra.getSelectionModel().getSelectedItem();
 
         if (sai == null || entra == null) {
-            Alert alerta = new Alert(Alert.AlertType.WARNING, "Selecione o jogador que vai sair e o que vai entrar.");
-            alerta.initOwner(root.getScene().getWindow());
-            alerta.showAndWait();
+            mostrarAvisoTecnico("Selecione o jogador que vai sair e o que vai entrar.", true);
             return;
         }
 
@@ -674,6 +689,7 @@ public class SimulacaoPartidaView extends TelaBase {
             EventoPartida evSub = new EventoPartida(minutoAtual, "Substituicao", sai, entra);
             partida.adicionarEvento(evSub);
             substituicaoObrigatoriaPendente = false;
+            esconderAvisoTecnico();
 
             String texto = "Substituição: Sai " + sai.getNome() + ", entra " + entra.getNome();
             containerEventos.getChildren().add(0, criarCardEventoPersonalizado(minutoAtual, texto, "neutro"));
@@ -681,9 +697,7 @@ public class SimulacaoPartidaView extends TelaBase {
             renderizarElencoAoVivo();
             carregarDadosTreinador();
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR, "Substituição inválida! Verifique o limite de trocas ou a integridade física do atleta.");
-            alerta.initOwner(root.getScene().getWindow());
-            alerta.showAndWait();
+            mostrarAvisoTecnico("Substituição inválida! Verifique o limite de trocas ou a integridade física do atleta.", true);
         }
     }
 
@@ -696,6 +710,9 @@ public class SimulacaoPartidaView extends TelaBase {
 
         if (!desativar) {
             carregarDadosTreinador();
+            if (substituicaoObrigatoriaPendente == false) { //aviso antigo nao se aplica mais a uma nova pausa
+                esconderAvisoTecnico();
+            }
         }
     }
 
