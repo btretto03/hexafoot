@@ -507,8 +507,12 @@ public class GerenciadorTorneio implements Serializable {
     /**
      * Indica se o desfecho da campanha do Brasil já está definido, mesmo que o
      * restante do torneio (outras seleções) ainda não tenha sido simulado.
-     * Perder a semifinal não conta como definido, pois ainda resta a disputa
-     * de terceiro lugar.
+     * Vencer uma fase do mata-mata não define o destino, pois o Brasil segue vivo
+     * na competição; perder a semifinal também não define, pois ainda resta a
+     * disputa de terceiro lugar.
+     *
+     * @return {@code true} quando o Brasil não se classificou para o mata-mata,
+     *         perdeu uma fase eliminatória ou já disputou a final ou o 3º lugar
      */
     public boolean brasilTemDestinoDefinido() {
         if (faseAtual == FaseTorneio.ENCERRADO) {
@@ -529,7 +533,13 @@ public class GerenciadorTorneio implements Serializable {
             if (partida.getFase() == FaseTorneio.SEMIFINAL) {
                 continue; //perder a semifinal ainda leva a disputa de terceiro lugar
             }
-            return true; //brasil disputou e terminou uma fase decisiva (oitavas, quartas, 3o lugar ou final)
+            if (partida.getFase() == FaseTorneio.FINAL || partida.getFase() == FaseTorneio.TERCEIRO_LUGAR) {
+                return true; //essas duas fases encerram a participacao do brasil, vencendo ou perdendo
+            }
+            if (partida.getPerdedor() == brasil) {
+                return true; //eliminado nessa fase, nao ha proxima partida pra jogar
+            }
+            //se o brasil venceu dezesseis-avos, oitavas ou quartas, a campanha continua
         }
 
         return false;
