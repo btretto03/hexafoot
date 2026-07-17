@@ -521,8 +521,12 @@ public class HubView extends TelaBase {
         
         boolean fimTorneio = gt.getFaseAtual() == FaseTorneio.ENCERRADO;
         boolean chegouNoJogo = (diaProximoJogoBrasil != -1 && novoDia >= diaProximoJogoBrasil);
-        
+
         if (chegouNoJogo || fimTorneio || novoDia == dia) {
+            if (gt.deveExibirResultadoCampanha()) { //destino do brasil (ex.: eliminado na fase de grupos) acabou de se definir
+                navigator.showHub();
+                return;
+            }
             setBotoesBloqueados(false);
             atualizarControleSimulacao();
         } else {

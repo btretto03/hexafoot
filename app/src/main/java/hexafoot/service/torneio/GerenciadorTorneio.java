@@ -43,6 +43,7 @@ public class GerenciadorTorneio implements Serializable {
     private final GerenciadorPosJogo gerenciadorPosJogo;
     private FaseTorneio faseAtual;
     private int rodadaAtual;
+    private boolean resultadoCampanhaExibido;
 
     /**
      * Monta os grupos e calendários definidos nos dados do torneio e inicia a
@@ -64,6 +65,7 @@ public class GerenciadorTorneio implements Serializable {
         this.gerenciadorPosJogo = new GerenciadorPosJogo();
         this.faseAtual = FaseTorneio.FASE_DE_GRUPOS;
         this.rodadaAtual = 1;
+        this.resultadoCampanhaExibido = false;
     }
 
     /**
@@ -500,6 +502,50 @@ public class GerenciadorTorneio implements Serializable {
      */
     public boolean campanhaBrasilEncerrada() {
         return faseAtual == FaseTorneio.ENCERRADO;
+    }
+
+    /**
+     * Indica se o desfecho da campanha do Brasil já está definido, mesmo que o
+     * restante do torneio (outras seleções) ainda não tenha sido simulado.
+     * Perder a semifinal não conta como definido, pois ainda resta a disputa
+     * de terceiro lugar.
+     */
+    public boolean brasilTemDestinoDefinido() {
+        if (faseAtual == FaseTorneio.ENCERRADO) {
+            return true;
+        }
+
+        if (isFaseGruposConcluida() && getClassificadosFaseGrupos().containsValue(brasil) == false) {
+            return true; //nao se classificou para o mata-mata
+        }
+
+        for (PartidaTorneio partida : partidasMataMata) {
+            if (partida.getStatus() != StatusPartidaTorneio.CONCLUIDA) {
+                continue;
+            }
+            if (envolveBrasil(partida) == false) {
+                continue;
+            }
+            if (partida.getFase() == FaseTorneio.SEMIFINAL) {
+                continue; //perder a semifinal ainda leva a disputa de terceiro lugar
+            }
+            return true; //brasil disputou e terminou uma fase decisiva (oitavas, quartas, 3o lugar ou final)
+        }
+
+        return false;
+    }
+
+    /**
+     * @return {@code true} quando o destino do Brasil está definido e a tela de
+     *         resultado da campanha ainda não foi mostrada ao jogador
+     */
+    public boolean deveExibirResultadoCampanha() {
+        return brasilTemDestinoDefinido() && resultadoCampanhaExibido == false;
+    }
+
+    /** Marca a tela de resultado da campanha como já exibida, evitando repeti-la. */
+    public void marcarResultadoCampanhaExibido() {
+        this.resultadoCampanhaExibido = true;
     }
 
     /**

@@ -2,12 +2,14 @@ package hexafoot.ui;
 
 import hexafoot.model.Partida;
 import hexafoot.model.PartidaTorneio;
+import hexafoot.service.torneio.GerenciadorTorneio;
 import hexafoot.ui.view.CarregarJogoView;
 import hexafoot.ui.view.ConvocacaoView;
 import hexafoot.ui.view.EscalacaoTaticaView;
 import hexafoot.ui.view.FeaturePlaceholderView;
 import hexafoot.ui.view.HubView;
 import hexafoot.ui.view.MainMenuView;
+import hexafoot.ui.view.ResultadoCampanhaView;
 import hexafoot.ui.view.ScreenView;
 import hexafoot.ui.view.SimulacaoPartidaView;
 import javafx.scene.Scene;
@@ -47,8 +49,24 @@ public class GameNavigator {
         applyScene(new ConvocacaoView(this));
     }
 
+    /**
+     * Abre o hub, exceto quando o destino da campanha do Brasil acabou de se definir
+     * e ainda não foi mostrado ao jogador; nesse caso, mostra o resultado antes.
+     */
     public void showHub() {
+        GerenciadorTorneio gerenciadorTorneio = session.getGerenciadorTorneio();
+
+        if (gerenciadorTorneio != null && gerenciadorTorneio.deveExibirResultadoCampanha()) {
+            gerenciadorTorneio.marcarResultadoCampanhaExibido();
+            showResultadoCampanha(gerenciadorTorneio.getResultadoFinalBrasil());
+            return;
+        }
+
         applyScene(new HubView(this));
+    }
+
+    public void showResultadoCampanha(String resultado) {
+        applyScene(new ResultadoCampanhaView(this, resultado));
     }
 
     public void showEscalacaoTatica() {
